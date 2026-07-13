@@ -286,6 +286,10 @@ const VESTIGES = [
     skills:["fragmento","chama"], flasks:2,
     desc:"Aprendeu a feitiçaria decorando os últimos gritos do Soberano. Frágil, mas certeira — e prefere distância.",
     base:{vit:10,fol:11,for:6,des:8,int:17,fe:14,sin:8} },
+  { id:"excom", name:"O Excomungado", role:"Apóstata", weapon:"cutelo",
+    skills:["chama"], flasks:3, locked:true,
+    desc:"Pregava que o Soberano devia morrer. Tinha razão cedo demais. A igreja o cortou; a fé, teimosa, ficou.",
+    base:{vit:14,fol:12,for:14,des:8,int:6,fe:13,sin:9} },
 ];
 
 /* ---------------- SELOS (relíquias) ---------------- */
@@ -563,6 +567,73 @@ const EVENTS = {
 };
 const EVENT_IDS=Object.keys(EVENTS);
 
+/* ---------------- META-PROGRESSÃO ---------------- */
+const Store={
+  ok:(function(){try{const k="__vg_t";localStorage.setItem(k,"1");localStorage.removeItem(k);return true;}catch(e){return false;}})(),
+  load(){ if(this.ok){try{return JSON.parse(localStorage.getItem("vespergloam_meta")||"null");}catch(e){}} return null; },
+  save(m){ if(this.ok){try{localStorage.setItem("vespergloam_meta",JSON.stringify(m));}catch(e){}} }
+};
+let META=Store.load()||{frag:0,upgrades:{},seen:{},dialog:{},runs:0,wins:0};
+function saveMeta(){Store.save(META);}
+function metaLv(id){return META.upgrades[id]||0;}
+const META_UPGRADES=[
+ {id:"vigor",name:"Cera Endurecida",max:3,cost:l=>30+l*35,desc:"+15 de vida máxima por nível."},
+ {id:"frasco",name:"Vidro Paciente",max:2,cost:l=>50+l*60,desc:"+1 carga de Frasco por nível."},
+ {id:"foco",name:"Pavio Interior",max:2,cost:l=>45+l*50,desc:"+1 Foco máximo por nível."},
+ {id:"heranca",name:"Herança Enterrada",max:1,cost:()=>40,desc:"Começas cada run com 80 ◈."},
+ {id:"selo",name:"Primeiro Juramento",max:1,cost:()=>120,desc:"Começas cada run com um Selo aleatório."},
+ {id:"excomungado",name:"O Quarto Vestígio",max:1,cost:()=>150,desc:"Desbloqueia o Excomungado — apóstata de fé e ferro."},
+];
+
+/* ---------------- NPCS E DIÁLOGO ---------------- */
+const NPCS={
+ setima:{name:"Sétima, a Vela que Sobrou", lines:[
+  "«Sete velas guardavam o Vestíbulo. As outras seis cumpriram o dever e apagaram. Eu fiquei. Chama-me de covarde ou de prática — ardo igual.»",
+  "«Trago de volta o que os mortos largam: fragmentos de véspera. Dão para comprar quase nada. O quase é o meu ramo.»",
+  "«Cada vez que morres, aprendes. Cada vez que aprendes, voltas. É um sistema terrível. Funciona.»",
+  "«O Soberano acendeu-me pessoalmente, sabias? Não. Ninguém sabe. É o problema de sobreviver a todos: as testemunhas.»",
+  "«Vaskarion ainda segura o trono. Mãos são assim — a última parte a aceitar qualquer coisa.»",
+  "«Não vendo esperança. Vendo cera, vidro e juramentos. A esperança trazes tu, se insistires.»",
+  "«Já pensaste em desistir? Os que desistem viram lodo no Claustro. Os que insistem também, mas mais tarde. O 'mais tarde' é tudo o que ofereço.»",
+  "«Volta sempre. É o que fazes de melhor.»",
+ ]},
+ mao:{name:"A Mão Trêmula", lines:[
+  "A Mão sai da parede e espalha a mercadoria. Não há rosto. Talvez nunca tenha havido — comércio dispensa formalidades.",
+  "Os dedos tamborilam, impacientes. O icor não vale nada para uma parede, e ainda assim ela cobra. Princípios, presume-se.",
+  "Hoje a Mão treme menos. Bom sinal para os preços. Péssimo para a conversa.",
+  "Dizem que a Mão pertencia a um mercador que enganou o Soberano. A parede foi a sentença; a loja, o hábito.",
+  "A Mão faz um gesto que talvez seja «boa sorte». Ou «próximo». Difícil dizer, sem rosto.",
+ ]},
+ ossin:{name:"Ossín, o Cartógrafo Cego", lines:[
+  "Um velho traça mapas na parede com o dedo. Não tem olhos. «Perdi-os no terceiro andar», diz, apontando o mapa. O mapa não tem terceiro andar.",
+  "«O Claustro afoga devagar por cortesia», explica Ossín. «Dá tempo de fazer as pazes. Ninguém faz. Mas a cortesia fica.»",
+  "«O Ossuário canta porque os ossos guardam a última nota de cada um. Junta ossos suficientes e tens um coro. Junta mais e tens um problema.»",
+  "«A Corte da Maré Baixa dança desde o naufrágio. Etiqueta é isto: continuar depois de morto para não constranger os vivos.»",
+  "«Mapeei a descida inteira sem ver um palmo dela. As pessoas confiam mais assim. Olhos mentem; dedos, raramente.»",
+  "«Sepulcra foi a primeira que desenhei. Riscou o próprio nome do mapa. Vigílias detestam ser encontradas.»",
+  "«Quando chegares ao trono, descreve-mo. Devagar. É o único lugar que nunca consegui traçar — o dedo recusa.»",
+ ]},
+};
+function npcLine(id){ const n=NPCS[id]; const i=META.dialog[id]||0; return n.lines[i%n.lines.length]; }
+function npcAdvance(id){ META.dialog[id]=((META.dialog[id]||0)+1); saveMeta(); }
+
+const BOSS_LINES={
+ sepulcra:[
+  "Sepulcra ergue-se do manto. «Outro Vestígio. Cava tua cova antes de subir — poupa-me o trabalho.»",
+  "«Tu de novo. A cova continua aberta. Considera isso hospitalidade.»",
+  "«Insistes. As covas têm nome, sabias? A tua já tem vários.»",
+ ],
+ coro:[
+  "O Coro afina cem gargantas vazias. A nota que sai é o teu nome, mal pronunciado.",
+  "O Coro te reconhece — e muda de tom. Réquiem, desta vez. Que atencioso.",
+ ],
+ vaskarion:[
+  "A Mão do Soberano se ergue sobre o trono partido. Não fala. Mãos não falam — apontam. Está apontando para ti.",
+  "Vaskarion já te esmagou antes. O gesto que faz agora talvez seja tédio. Ou saudade. Nas mãos, é parecido.",
+  "A Mão hesita meio segundo ao ver-te. Meio segundo, para uma relíquia de eras, é quase um elogio.",
+ ],
+};
+
 /* ---------------- ESTADO ---------------- */
 let G=null;
 const $app=document.getElementById("app");
@@ -573,10 +644,10 @@ function floatText(txt,color){ const el=document.createElement("div");el.classNa
   el.style.color=color||"var(--bone)"; el.style.left=(30+Math.random()*40)+"%";el.style.top=(36+Math.random()*10)+"%";
   document.body.appendChild(el);setTimeout(()=>el.remove(),1000); }
 
-function maxHP(a){ return 45 + a.vit*11 + (hasRelic("coracao")?30:0); }
+function maxHP(a){ return 45 + a.vit*11 + (hasRelic("coracao")?30:0) + metaLv("vigor")*15; }
 function maxAP(a){ return clamp(3 + Math.floor(a.fol/7), 3, 7); }
 function maxPoise(a){ return 30 + a.fol*2 + a.for; }
-function maxFoco(a){ return 4 + Math.floor((a.int+a.fe)/6) + (hasRelic("ampulheta")?1:0); }
+function maxFoco(a){ return 4 + Math.floor((a.int+a.fe)/6) + (hasRelic("ampulheta")?1:0) + metaLv("foco"); }
 function flaskHeal(a){ let h=Math.round(maxHP(a)*0.42)+a.fe*2; if(hasRelic("vela")) h=Math.round(h*1.35); return h; }
 function hasRelic(id){ return G && G.player.relics.includes(id); }
 
@@ -593,15 +664,18 @@ function makePlayer(v){
   const attr={...v.base};
   const p={ name:v.name, vestige:v.id, attr, weaponId:v.weapon, skills:[...v.skills],
     invWeapons:[v.weapon], relics:[], items:{}, levelsBought:0 };
-  p.hp=45+attr.vit*11; p.foco=4+Math.floor((attr.int+attr.fe)/6);
-  p.flaskMax=v.flasks; p.flask=v.flasks;
+  p.hp=45+attr.vit*11+metaLv("vigor")*15; p.foco=4+Math.floor((attr.int+attr.fe)/6)+metaLv("foco");
+  p.flaskMax=v.flasks+metaLv("frasco"); p.flask=p.flaskMax;
   return p;
 }
 
 function newRun(v){
   G={ player:makePlayer(v), zone:0, map:[], floor:0, lastWane:0, icor:0, mancha:null,
-      clearedNodes:{}, kills:0, deaths:0, curse:null, combat:null };
+      clearedNodes:{}, kills:0, deaths:0, curse:null, combat:null, fragEarned:0 };
   G.map=buildZoneFloors(ZONES[0],0);
+  if(metaLv("heranca")) G.icor=80;
+  if(metaLv("selo")) giveRelic();
+  META.runs++; saveMeta();
 }
 
 function giveRelic(forced){
@@ -635,9 +709,12 @@ function screenTitle(){
     <div style="max-width:360px;margin:0 auto">
       <button class="btn gold" id="start"><span class="k disp">DESCER</span>
         <span class="sub">Escolher um Vestígio e começar</span></button>
+      <button class="btn" id="vest"><span class="k disp">O VESTÍBULO</span>
+        <span class="sub">Sétima aguarda · <span class="mono" style="color:var(--frost)">✦ ${META.frag}</span> fragmentos</span></button>
       <button class="btn" id="how"><span class="k disp">O QUE TE ESPERA</span><span class="sub">Como se joga</span></button>
     </div></div>`);
   document.getElementById("start").onclick=screenSelect;
+  document.getElementById("vest").onclick=screenVestibulo;
   document.getElementById("how").onclick=screenHow;
 }
 
@@ -657,6 +734,13 @@ function screenHow(){
 
 function screenSelect(){
   const cards=VESTIGES.map(v=>{
+    if(v.locked&&!metaLv("excomungado")){
+      return `<button class="card" disabled style="opacity:.5;cursor:not-allowed">
+        <h3 class="disp faint">? ? ?</h3><div class="role">Excomungado</div>
+        <div class="desc">Uma silhueta espera no Vestíbulo. Sétima sabe o preço.</div>
+        <div class="hr" style="margin:12px 0"></div>
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--bone-faint)">✦ desbloqueável no Vestíbulo</div></button>`;
+    }
     const w=WEAPONS[v.weapon];
     const stat=ATTRS.map(a=>`<span>${a.name.slice(0,3)} <b>${v.base[a.k]}</b></span>`).join("");
     return `<button class="card" data-v="${v.id}">
@@ -668,9 +752,46 @@ function screenSelect(){
   render(`<h2 class="disp center" style="padding-top:14px">Escolhe o teu Vestígio</h2>
     <p class="center flavor" style="margin-top:4px">Cada morte deixou algo para trás. Qual desses restos te serve?</p>
     <div class="cards">${cards}</div>`);
-  document.querySelectorAll(".card").forEach(c=>{
+  document.querySelectorAll(".card[data-v]").forEach(c=>{
     c.onclick=()=>{ newRun(VESTIGES.find(v=>v.id===c.dataset.v)); screenZoneBanner(); };
   });
+}
+
+function screenVestibulo(){
+  const rows=META_UPGRADES.map(u=>{
+    const lv=metaLv(u.id), maxed=lv>=u.max, cost=maxed?0:u.cost(lv), can=META.frag>=cost&&!maxed;
+    return `<div class="attr-row"><div>
+      <div class="an disp">${u.name} <span class="mono dim" style="font-size:12px">${lv}/${u.max}</span></div>
+      <div class="eff">${u.desc}</div></div>
+      <button class="plus mono" data-up="${u.id}" ${can?"":"disabled"}>${maxed?"MÁX":"✦ "+cost}</button></div>`;
+  }).join("");
+  render(`<div class="wane-hero" style="padding-top:5vh">
+      <div class="candle" style="height:36px"></div>
+      <h2 class="disp ichor">O Vestíbulo</h2>
+      <p class="flavor" style="max-width:480px;margin:10px auto 0" id="npcline">${npcLine("setima")}</p>
+      <button class="tag" id="talk" style="margin-top:12px;cursor:pointer">ouvir Sétima</button></div>
+    <div class="hr"></div>
+    <div class="fl-lbl">Juramentos permanentes · <span class="mono" style="color:var(--frost)">✦ ${META.frag}</span> fragmentos de véspera</div>
+    ${rows}
+    <p class="flavor center" style="font-size:14px;margin-top:10px">Fragmentos são bancados a cada abate — a morte não os leva.${Store.ok?"":" <span class='faint'>(sem armazenamento aqui: valem só nesta sessão)</span>"}</p>
+    <div style="max-width:340px;margin:16px auto 0">
+      <button class="btn gold" id="godesc"><span class="k disp">DESCER</span></button>
+      <button class="btn" id="back"><span class="k disp faint">TÍTULO</span></button></div>`);
+  document.querySelectorAll(".plus[data-up]").forEach(b=>{
+    if(b.disabled)return;
+    b.onclick=()=>{
+      const u=META_UPGRADES.find(x=>x.id===b.dataset.up);
+      const cost=u.cost(metaLv(u.id));
+      if(META.frag<cost)return;
+      META.frag-=cost; META.upgrades[u.id]=metaLv(u.id)+1; saveMeta();
+      toast(u.name+" — juramento selado.");
+      screenVestibulo();
+    };
+  });
+  document.getElementById("talk").onclick=()=>{ npcAdvance("setima");
+    document.getElementById("npcline").textContent=npcLine("setima"); };
+  document.getElementById("godesc").onclick=screenSelect;
+  document.getElementById("back").onclick=screenTitle;
 }
 
 function screenZoneBanner(){
@@ -1253,6 +1374,8 @@ function winCombat(){
   const C=G.combat;if(!C||C.over)return;C.over=true;
   const foe=C.foe;
   G.kills++;
+  const fr=foe.final?40:foe.boss?20:foe.elite?6:1;
+  META.frag+=fr; G.fragEarned+=fr; saveMeta();
   let gain=Math.round(foe.icor*(hasRelic("moeda")?1.25:1));
   G.icor+=gain;
   markCleared();
@@ -1402,6 +1525,7 @@ function derivedHint(k){
 function renderWane(){
   const p=G.player,a=p.attr;
   const fl=G.map[G.floor];
+  const npcId=fl.merchant?"mao":"ossin";
   const attrRows=ATTRS.map(at=>{
     const cost=levelCost(),can=G.icor>=cost;
     return `<div class="attr-row"><div>
@@ -1420,6 +1544,10 @@ function renderWane(){
       <div class="candle" style="height:36px"></div>
       <h2 class="disp ichor">${fl.name||"Minguante"}</h2>
       <p class="flavor" style="max-width:460px;margin:8px auto 0">${pick(WANE_LINES)}</p></div>
+    <div class="floor" style="border-color:var(--edge)">
+      <div class="fl-lbl">${NPCS[npcId].name}</div>
+      <p class="flavor" style="font-size:15px" id="wnpcline">${npcLine(npcId)}</p>
+      <button class="tag" id="wtalk" style="margin-top:8px;cursor:pointer">ouvir</button></div>
     <div class="hr"></div>
     <div class="fl-lbl">Subir atributos · <span class="ichor mono">${G.icor} ◈</span> · próximo nível: ${levelCost()}◈</div>
     ${attrRows}
@@ -1431,6 +1559,9 @@ function renderWane(){
       <button class="btn gold" id="descend"><span class="k disp">CONTINUAR A DESCIDA</span>
         <span class="sub">Adiante. Sempre adiante.</span></button></div>`);
   document.querySelectorAll(".plus[data-at]").forEach(b=>{if(!b.disabled)b.onclick=()=>levelUp(b.dataset.at);});
+  const wt=document.getElementById("wtalk");
+  if(wt)wt.onclick=()=>{ npcAdvance(npcId);
+    document.getElementById("wnpcline").textContent=npcLine(npcId); };
   bindMerchant();bindSwap();
   document.getElementById("descend").onclick=()=>{G.floor++;screenMap();};
 }
@@ -1512,10 +1643,15 @@ function bindSwap(){
 function screenBossIntro(){
   const fl=G.map[G.floor];
   const foe=FOES[fl.foe];
+  const seen=META.seen[fl.foe]||0;
+  const bl=BOSS_LINES[fl.foe];
+  const line=bl?bl[Math.min(seen,bl.length-1)]:"";
+  META.seen[fl.foe]=seen+1; saveMeta();
   render(`<div class="epitaph" style="padding-top:8vh">
     <div class="tag" style="margin-bottom:18px">${foe.final?"A Última Vigília":"Vigília do "+ZONES[G.zone].name.split(" ").pop()}</div>
     <h1 class="disp" style="font-size:clamp(26px,6vw,44px);color:var(--bone)">${foe.name}</h1>
     <p class="line flavor" style="max-width:480px">${foe.flavor}</p>
+    ${line?`<p class="line" style="max-width:480px;color:var(--bone);font-style:italic;margin-top:-8px">${line}</p>`:""}
     <div style="max-width:320px;margin:20px auto 0">
       <button class="btn danger gold" id="fight"><span class="k disp">ENFRENTAR</span>
         <span class="sub">Não há como recuar. Nunca houve.</span></button></div></div>`);
@@ -1536,6 +1672,7 @@ function victoryScreen(){
 
 function screenSummary(won){
   const p=G.player;
+  if(won&&!G._winCounted){ META.wins++; G._winCounted=true; saveMeta(); }
   const rows=[
     ["Desfecho",won?"A Mão soltou o trono":"Run encerrado"],
     ["Vestígio",p.name],
@@ -1546,13 +1683,17 @@ function screenSummary(won){
     ["Mortes",G.deaths],
     ["Níveis comprados",p.levelsBought],
     ["Icor não gasto",G.icor+" ◈"],
+    ["Fragmentos bancados","✦ "+G.fragEarned],
   ].map(([k,v])=>`<div><span>${k}</span><b class="ichor">${v}</b></div>`).join("");
   render(`<div class="epitaph" style="padding-top:7vh">
     <h2 class="disp ${won?'ichor':''}">${won?"A descida, por hoje, chega ao fim.":"O Claustro fica com o resto."}</h2>
     <div class="runrec">${rows}</div>
     <div style="max-width:320px;margin:20px auto 0">
-      <button class="btn gold" id="again"><span class="k disp">NOVO VESTÍGIO</span></button>
+      <button class="btn gold" id="vest"><span class="k disp">O VESTÍBULO</span>
+        <span class="sub">Gastar fragmentos com Sétima · ✦ ${META.frag}</span></button>
+      <button class="btn" id="again"><span class="k disp">NOVO VESTÍGIO</span></button>
       <button class="btn" id="title"><span class="k disp faint">TÍTULO</span></button></div></div>`);
+  document.getElementById("vest").onclick=screenVestibulo;
   document.getElementById("again").onclick=screenSelect;
   document.getElementById("title").onclick=screenTitle;
 }
