@@ -272,6 +272,8 @@ const SKILLS = {
     desc:"Água do fundo, endurecida em ponta. Fria como a conta a pagar." },
   ira:{ name:"Ira do Soberano", ap:3, foco:3, kind:"faith", mult:1.6, poise:20, scale:"fe",
     desc:"O que resta da voz dele, dita por ti. Queima os dois lados, um pouco." },
+  aposta:{ name:"Aposta da Sina", ap:2, foco:1, kind:"gamble",
+    desc:"Cara: dano ×2.2. Coroa: sangras tu (10% da vida). A Sina decide — e a Sina te conhece." },
   sangria:{ name:"Explodir Feridas", ap:2, foco:2, kind:"burst", needPerto:true,
     desc:"Detona o sangue acumulado no alvo: dano = acúmulo de SANGUE ×1." },
 };
@@ -290,6 +292,14 @@ const VESTIGES = [
     skills:["fragmento","chama"], flasks:2,
     desc:"Aprendeu a feitiçaria decorando os últimos gritos do Soberano. Frágil, mas certeira — e prefere distância.",
     base:{vit:10,fol:11,for:6,des:8,int:17,fe:14,sin:8} },
+  { id:"vigia", name:"Vigia da Maré", role:"Sentinela", weapon:"lanca",
+    skills:["investida"], flasks:3,
+    desc:"Guardou o dique de Ostraga até o dique guardar-se sozinho. A lança alcança onde a paciência não vai.",
+    base:{vit:13,fol:14,for:12,des:12,int:6,fe:8,sin:8} },
+  { id:"sina", name:"Filho da Sina", role:"Ludíbrio", weapon:"estileto",
+    skills:["aposta","sangria"], flasks:2,
+    desc:"Apostou a alma contra a casa e empatou. Vive dos juros. A Sina cobra, mas às vezes paga.",
+    base:{vit:11,fol:12,for:7,des:13,int:8,fe:7,sin:17} },
   { id:"excom", name:"O Excomungado", role:"Apóstata", weapon:"cutelo",
     skills:["chama"], flasks:3, locked:true,
     desc:"Pregava que o Soberano devia morrer. Tinha razão cedo demais. A igreja o cortou; a fé, teimosa, ficou.",
@@ -312,6 +322,12 @@ const RELICS = {
   impeto:{ name:"Ímpeto do Naufrágio", desc:"Após avançares, teu próximo golpe no turno causa +30%." },
   ampulheta:{ name:"Ampulheta Rachada", desc:"+1 Foco máximo e +1 Foco por turno." },
   sanguessuga:{ name:"Sanguessuga Devota", desc:"Procs de SANGUE te curam 8." },
+  algema:{ name:"Algema Partida", desc:"+1 de AP máximo." },
+  lagrima:{ name:"Lágrima do Soberano", desc:"Uma vez por run, sobrevives a um golpe fatal com 1 de vida." },
+  badalo:{ name:"Badalo Mudo", desc:"Inimigos atordoados sofrem +35% a mais de dano teu." },
+  ferrolho:{ name:"Ferrolho Enferrujado", desc:"Todo dano recebido −2." },
+  corvo:{ name:"Corvo de Ossos", desc:"A cada Minguante, ele te traz um consumível aleatório." },
+  agulha:{ name:"Agulha no Coração", desc:"+15% de dano quando estás abaixo de 35% da vida." },
 };
 const RELIC_POOL = Object.keys(RELICS);
 
@@ -320,6 +336,10 @@ const ITEMS = {
   faca:{ name:"Faca de Arremesso", ap:1, desc:"12 de dano à distância + 10 SANGUE.", price:35 },
   bomba:{ name:"Bomba de Icor", ap:1, desc:"22 de dano e 14 de postura, qualquer distância.", price:55 },
   sal:{ name:"Sal de Geada", ap:1, desc:"Aplica 50 de GEADA no alvo.", price:45 },
+  oleo:{ name:"Óleo Sanguinário", ap:1, desc:"Neste turno, teus golpes aplicam +35 de SANGUE.", price:40 },
+  pedra:{ name:"Pedra de Amolar", ap:1, desc:"Teu próximo golpe causa +50% de dano.", price:45 },
+  incenso:{ name:"Incenso Cinéreo", ap:1, desc:"Cura 22 e limpa veneno e geada de ti.", price:50 },
+  sineta:{ name:"Sineta Rachada", ap:1, desc:"−20 de postura no alvo, a qualquer distância.", price:50 },
 };
 
 /* ---------------- ÁUDIO (WebAudio sintetizado — zero arquivos) ---------------- */
@@ -556,6 +576,32 @@ const FOES = {
    {n:"ceifa dupla", tell:"Erguem as foices em espelho. Lento e fatal.", dmg:34, poise:22, lento:true, wind:true},
   ], flavor:"Aprendizas de Ysolde, a Lâmina Impecável. Nasceram juntas, morreram juntas — a mestra ainda não as dispensou." },
 
+ ungido:{ name:"Ungido do Icor", hp:112, def:5, poise:34, icor:104, zone:4,
+  moves:[
+   {n:"salmo dourado", tell:"Recita com a boca cheia de ouro.", dmg:17, poise:9, ranged:true},
+   {n:"mão consagrada", tell:"A palma dele arde de icor.", dmg:20, poise:12},
+   {n:"unção", tell:"Espalha icor fresco nas próprias feridas.", block:true},
+  ], flavor:"Bebeu do veio até virar relicário. Reza para o sangue; o sangue, educado, responde." },
+ anselm:{ name:"Anselm, o Remendado", hp:200, def:6, poise:55, icor:260, elite:true, zone:3, graftEvery:3,
+  moves:[
+   {n:"costura viva", tell:"Os fios da pele dele chicoteiam.", dmg:15, poise:9, build:{bleed:14}},
+   {n:"prego torto", tell:"Martela-te com um punho que não combina com o corpo.", dmg:18, poise:14},
+   {n:"remendo", tell:"Aperta as próprias costuras, firmando-se.", block:true},
+  ], flavor:"O caco da Vaidade minguou; ele costura em si pedaços alheios para se sentir inteiro. A cada três turnos enxerta um membro novo — quebra-lhe a postura no momento certo para impedir." },
+ ysolde:{ name:"Ysolde, a Lâmina Impecável", hp:320, def:7, poise:65, icor:420, elite:true, super:true, zone:4, regen:8, rebirth:true,
+  moves:[
+   {n:"talho florido", tell:"O corte dela floresce antes de doer.", dmg:18, poise:11, build:{bleed:24}},
+   {n:"passo impecável", tell:"Ajusta a postura — impecável, impenetrável.", block:true},
+   {n:"A DANÇA", tell:"Ela inclina a lâmina. O que vem a seguir tem nome próprio. Lento.", dmg:11, poise:8, hits:4, lento:true, wind:true, build:{bleed:10}},
+  ], flavor:"O caco da Perfeição: nunca perdeu um duelo. É a maldição, não a bênção — cura ao ferir, e a Dança dela tem nome próprio. Luta implorando, sem palavras, que sejas melhor. E renasce uma vez, só para ter certeza." },
+
+ remador:{ name:"Remador Cego", hp:98, def:4, poise:30, icor:92, zone:4,
+  moves:[
+   {n:"remo largo", tell:"O remo assobia à altura das tuas costelas.", dmg:16, poise:12},
+   {n:"vaga curta", tell:"Bate o remo numa água que só ele vê.", dmg:12, poise:7, build:{geada:22}, ranged:true},
+   {n:"cadência", tell:"Rema no seco, marcando o compasso. A guarda acompanha.", block:true},
+  ], flavor:"Remou o Baluarte inteiro para o fundo sem errar o compasso. Continua remando. O destino é detalhe." },
+
  /* ===== CHEFES ===== */
  sepulcra:{ name:"Sepulcra, a Primeira Vigília", hp:230, def:6, poise:60, icor:260, boss:true, zone:1,
   moves:[
@@ -576,6 +622,28 @@ const FOES = {
   phase2:{ hpAt:.5, msg:"Metade do coro cala — a outra metade canta com o dobro da fúria.",
    add:{n:"réquiem", tell:"Uma única nota, sustentada, insuportável.", dmg:22, poise:14, ranged:true} },
   caco:"a Cantiga de Ninar", flavor:"Deviam cantar o Soberano até o sono final. Quando ele se partiu no meio da canção, a canção não parou. O volume só sobe — quebra a postura para calar o crescendo." },
+ nerith:{ name:"Nerith, a Mãe-Berço", hp:250, def:5, poise:70, icor:340, boss:true, zone:3, cocoons:160,
+  moves:[
+   {n:"canção gélida", tell:"A cantiga desce a temperatura da sala.", dmg:13, poise:8, build:{geada:30}, ranged:true, p1only:true},
+   {n:"sussurro", tell:"Um acalanto que não era para ti.", dmg:16, poise:9, ranged:true, p1only:true},
+   {n:"embalo", tell:"Volta-se para os casulos e embala-os, refazendo-os.", block:true, cocoonHeal:22, p1only:true},
+  ],
+  phaseMoves:[
+   {n:"garras do berço", tell:"As mãos que embalavam agora se abrem em garras.", dmg:19, poise:12, build:{bleed:20}},
+   {n:"«NÃO OS TOQUES»", tell:"Ela grita o que já não pode proteger. Lento e terminal.", dmg:38, poise:26, lento:true, wind:true},
+   {n:"lamento", tell:"O choro dela tem peso físico.", dmg:15, poise:8, ranged:true},
+  ],
+  caco:"o Ventre", flavor:"Para salvar a corte da morte que voltava, transformou-a em filhos: casulos de icor que nunca vão eclodir. Canta para eles, e não vai parar. Silencia os casulos primeiro — ela não luta enquanto tiver o que embalar." },
+ ostraga:{ name:"Ostraga, o General da Maré", hp:340, def:8, poise:95, icor:400, boss:true, zone:4, tideOnStagger:true, buildResist:0.5, caco:"o Muro",
+  moves:[
+   {n:"quebra-mar", tell:"O braço-dique desce em arco. Lento como um veredito.", dmg:34, poise:24, lento:true, wind:true},
+   {n:"cascos e cracas", tell:"O punho encrostado busca teu peito.", dmg:19, poise:16},
+   {n:"vaga de sal", tell:"Ele puxa a água com a mão livre.", dmg:15, poise:10, build:{geada:26}, ranged:true},
+   {n:"encostar no muro", tell:"Recosta o peso no muro invisível, firmando-se.", block:true},
+  ],
+  phase2:{ hpAt:.5, msg:"Ostraga solta o muro com a segunda mão. A água ruge atrás dele — a maré dobra o passo.", tideRate:2,
+   add:{n:"peso do oceano", tell:"Ergue os dois braços — todo o mar vem junto. Lento.", dmg:42, poise:30, lento:true, wind:true} },
+  flavor:"Segura a Maré Baixa há eras, sozinho, para que ela não afogue o que resta. Esqueceu o porquê; ficou o hábito. Quebrar-lhe a postura é abrir o dique: a maré sobe a cada turno depois disso, e guarda nenhuma a bloqueia. Mata-o depressa — ou afoga com ele." },
  vaskarion:{ name:"Vaskarion, Mão do Soberano", hp:400, def:7, poise:85, icor:0, boss:true, final:true, zone:3,
   moves:[
    {n:"punho selado", tell:"A mão imensa se fecha sobre ti.", dmg:20, poise:14},
@@ -590,6 +658,13 @@ const FOES = {
   caco:"o próprio Trono", flavor:"Quando o Soberano se partiu, a mão direita recusou-se a soltar o trono. Lealdade além da razão, além da morte, além do sentido. Ainda não soltou." },
 };
 
+const GRAFT_POOL=[
+ {n:"foice enxertada", tell:"O braço novo lembra-se de Sepulcra.", dmg:16, poise:12, build:{bleed:18}},
+ {n:"badalo roubado", tell:"O metal do Sino canta no pulso dele.", dmg:20, poise:12, ranged:true},
+ {n:"lamento costurado", tell:"A garganta da Viúva, de segunda mão.", dmg:12, poise:6, build:{poison:26}, ranged:true},
+ {n:"tesoura gêmea", tell:"Duas mãos que não eram dele se cruzam.", dmg:10, poise:7, hits:2, build:{bleed:14}},
+];
+
 /* ---------------- ZONAS E MAPA ---------------- */
 const ZONES = [
  { name:"O Claustro Afogado", sub:"Zona I",
@@ -600,7 +675,13 @@ const ZONES = [
    pool:["salmista","enxame","penitente","sentinela"], hard:["carregador"], elites:["viuva","sino"], boss:"coro" },
  { name:"A Corte da Maré Baixa", sub:"Zona III",
    intro:"O salão do trono, afogado com etiqueta. A corte insiste que a festa continua.",
-   pool:["cortesa","lampejo","ceifeiro","enxame"], hard:["guarda"], elites:["cavaleiro","gemeas"], boss:"vaskarion" },
+   pool:["cortesa","lampejo","ceifeiro","enxame"], hard:["guarda"], elites:["anselm","gemeas"], boss:"nerith" },
+ { name:"O Baluarte da Maré", sub:"Zona IV",
+   intro:"A muralha que o mar não venceu — porque um homem não deixou. Ele ainda está lá. É esse o problema.",
+   pool:["guarda","remador","ungido","enxame"], hard:["carregador"], elites:["cavaleiro","gemeas"], boss:"ostraga" },
+ { name:"A Escada de Icor", sub:"Zona V", compact:true,
+   intro:"Degraus de sangue divino, secos há eras. Cada passo range como um nome que ninguém pronuncia mais.",
+   pool:["ceifeiro","guarda","lampejo","ungido"], hard:["carregador"], elites:["ysolde","cavaleiro"], boss:"vaskarion" },
 ];
 
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -612,6 +693,16 @@ const pick2=a=>{const c=a.slice();const x=c.splice(Math.floor(Math.random()*c.le
 function buildZoneFloors(z, zi){
   const F=[];
   const P=()=>pick(z.pool), H=()=>pick(z.hard);
+  if(z.compact){
+    F.push({kind:"wane", name:"Minguante — "+z.name, zone:zi, merchant:true});
+    F.push({choices:[{t:"combat",foe:H()},{t:"combat",foe:P()}], zone:zi});
+    F.push({choices:[{t:"combat",foe:P()},{t:"treasure",loot:randLoot(zi)},{t:"event",ev:pick(EVENT_IDS)}], zone:zi});
+    const ec=pick2(z.elites).map(e=>({t:"elite",foe:e}));
+    F.push({choices:ec, zone:zi, label:"Vigília Menor"});
+    F.push({kind:"wane", name:"Minguante da Vigília", zone:zi});
+    F.push({kind:"boss", foe:z.boss, zone:zi});
+    return F;
+  }
   // 0 minguante de entrada
   F.push({kind:"wane", name:"Minguante — "+z.name, zone:zi, merchant:zi>0});
   // caminho até o elite
@@ -755,6 +846,16 @@ const BOSS_LINES={
   "O Coro afina cem gargantas vazias. A nota que sai é o teu nome, mal pronunciado.",
   "O Coro te reconhece — e muda de tom. Réquiem, desta vez. Que atencioso.",
  ],
+ nerith:[
+  "Nerith não te vê entrar. Está de costas, embalando. «Shhh», diz — para ti, para eles, para o mundo. «Estão quase dormindo.»",
+  "«Tu de novo.» Ela não se vira. «Faz menos barulho desta vez. O penúltimo quase acordou.»",
+  "Desta vez ela te encara antes dos casulos. Sabe ao que vens. Aperta o embalo — como se isso já tivesse salvado alguém.",
+ ],
+ ostraga:[
+  "Ostraga não se vira. «A maré sobe dois dedos por século», diz, para ninguém. «Eu conto. Alguém tem de contar.»",
+  "«Voltaste. A água lembrou de ti.» Ele ajeita o peso do muro nos ombros. «Ela lembra de todos. É o defeito dela.»",
+  "Desta vez os olhos dele te seguem a descida inteira. «Se me derrubares, conta os turnos. Eu contava.»",
+ ],
  vaskarion:[
   "A Mão do Soberano se ergue sobre o trono partido. Não fala. Mãos não falam — apontam. Está apontando para ti.",
   "Vaskarion já te esmagou antes. O gesto que faz agora talvez seja tédio. Ou saudade. Nas mãos, é parecido.",
@@ -773,7 +874,7 @@ function floatText(txt,color){ const el=document.createElement("div");el.classNa
   document.body.appendChild(el);setTimeout(()=>el.remove(),1000); }
 
 function maxHP(a){ return 45 + a.vit*11 + (hasRelic("coracao")?30:0) + metaLv("vigor")*15; }
-function maxAP(a){ return clamp(3 + Math.floor(a.fol/7), 3, 7); }
+function maxAP(a){ return clamp(3 + Math.floor(a.fol/7) + (hasRelic("algema")?1:0), 3, 8); }
 function maxPoise(a){ return 30 + a.fol*2 + a.for; }
 function maxFoco(a){ return 4 + Math.floor((a.int+a.fe)/6) + (hasRelic("ampulheta")?1:0) + metaLv("foco"); }
 function flaskHeal(a){ let h=Math.round(maxHP(a)*0.36)+a.fe*2; if(hasRelic("vela")) h=Math.round(h*1.35); return h; }
@@ -799,7 +900,7 @@ function makePlayer(v){
 
 function newRun(v){
   G={ player:makePlayer(v), zone:0, map:[], floor:0, lastWane:0, icor:0, mancha:null,
-      clearedNodes:{}, kills:0, deaths:0, curse:null, combat:null, fragEarned:0 };
+      clearedNodes:{}, kills:0, deaths:0, curse:null, combat:null, fragEarned:0, lagrimaUsed:false };
   G.map=buildZoneFloors(ZONES[0],0);
   if(metaLv("heranca")) G.icor=80;
   if(metaLv("selo")) giveRelic();
@@ -1073,17 +1174,24 @@ function resolveEvent(node){
 /* ============================================================ COMBATE */
 function startCombat(foeId,isElite){
   const base=FOES[foeId];
-  const HPB=base.boss?1.4:base.elite?1.32:1.22, DMGB=base.boss?1.25:1.2;
+  const zf=1+G.zone*0.06, zfd=1+G.zone*0.05;
+  const HPB=(base.boss?1.4:base.elite?1.32:1.22)*zf, DMGB=(base.boss?1.25:1.2)*zfd;
   const foe={ id:foeId,name:base.name,hp:Math.round(base.hp*HPB),maxHp:Math.round(base.hp*HPB),def:base.def,
     poise:base.poise,maxPoise:base.poise,staggered:false,blocking:false,
     icor:base.icor,moves:base.moves.map(m=>({...m,dmg:m.dmg?Math.round(m.dmg*DMGB):m.dmg})),boss:base.boss,elite:base.elite,final:base.final,
     regen:base.regen||0, thorns:base.thorns||0, crescendo:base.crescendo||0, cresc:0,
-    fragilePerto:base.fragilePerto||false, wary:0,
+    fragilePerto:base.fragilePerto||false, wary:0, _t:0,
+    graftEvery:base.graftEvery||0, grafted:0, super:base.super||false,
+    rebirth:base.rebirth||false, _reborn:false,
+    tideOnStagger:base.tideOnStagger||false, tideRate:base.tideOnStagger?1:0, buildResist:base.buildResist||1,
+    cocoons:base.cocoons?Math.round(base.cocoons*HPB):0, cocoonsMax:base.cocoons?Math.round(base.cocoons*HPB):0,
+    phaseMoves:(base.phaseMoves||[]).map(m=>({...m,dmg:m.dmg?Math.round(m.dmg*DMGB):m.dmg})),
+    caco:base.caco,
     phase2:base.phase2?{...base.phase2,add:{...base.phase2.add,dmg:Math.round(base.phase2.add.dmg*DMGB)},done:false}:null,
     phase3:base.phase3?{...base.phase3,add:{...base.phase3.add,dmg:Math.round(base.phase3.add.dmg*DMGB)},done:false}:null,
     status:{bleed:0,poison:0,geada:0}, poisonTurns:0, geadaTurns:0, intent:null };
   const p=G.player,a=p.attr;
-  const C={ foe,turn:"player",ap:maxAP(a),over:false,range:"longe",
+  const C={ foe,turn:"player",ap:maxAP(a),over:false,range:"longe",tide:0,tideStarted:false,
     pStatus:{bleed:0,poison:0,geada:0}, pPoise:maxPoise(a),pMaxPoise:maxPoise(a),
     pPoisonTurns:0,pGeadaTurns:0,pFoco:p.foco,log:[],guarding:hasRelic("manto"),
     movedFree:false, advancedThisTurn:false, impetus:false };
@@ -1096,6 +1204,7 @@ function startCombat(foeId,isElite){
   if(foe.thorns) clog(C,`<span class="frost">※ Devolve ${foe.thorns} de dano quando em guarda.</span>`);
   if(foe.crescendo) clog(C,`<span class="frost">※ Crescendo: dano +${foe.crescendo} por turno. Atordoa para zerar.</span>`);
   if(foe.fragilePerto) clog(C,`<span class="frost">※ De PERTO, quase inofensivo. De LONGE, devastador.</span>`);
+  if(foe.buildResist&&foe.buildResist<1) clog(C,`<span class="frost">※ A crosta de sal fecha feridas: acúmulo de status reduzido pela metade.</span>`);
   if(hasRelic("manto")) clog(C,`<span class="sys">O Manto do Vigília ergue tua guarda.</span>`);
   renderCombat();
 }
@@ -1105,6 +1214,10 @@ function clog(C,msg,cls){ C.log.push(`<p class="${cls||''}">${msg}</p>`); if(C.l
 function chooseIntent(foe,C){
   if(foe.staggered){ foe.intent={n:"—",tell:"Cambaleia, atordoado.",stagger:true}; return; }
   checkPhases(foe,C);
+  if(foe.graftEvery&&(foe._t+1)%foe.graftEvery===0&&foe.grafted<GRAFT_POOL.length){
+    foe.intent={n:"ENXERTO",graft:true,tell:"Abre a própria costura — um membro novo espera. Quebra-lhe a postura AGORA para impedir!",wind:true};
+    foe._last=foe.intent; return;
+  }
   let pool=foe.moves.slice();
   if(foe._last&&foe._last.block) pool=pool.filter(m=>!m.block);
   // aprendeu: depois de errar um golpe lento, evita repeti-lo
@@ -1120,6 +1233,8 @@ function chooseIntent(foe,C){
 function checkPhases(foe,C){
   if(foe.phase2&&!foe.phase2.done&&foe.hp<=foe.maxHp*foe.phase2.hpAt){
     foe.phase2.done=true; foe.moves.push(foe.phase2.add); foe._phaseMsg=foe.phase2.msg;
+    if(foe.phase2.tideRate){ foe.tideRate=foe.phase2.tideRate;
+      if(C&&foe.tideOnStagger&&!C.tideStarted){ C.tideStarted=true;C.tide=0; } }
   }
   if(foe.phase3&&!foe.phase3.done&&foe.hp<=foe.maxHp*foe.phase3.hpAt){
     foe.phase3.done=true; foe.moves.push(foe.phase3.add); foe._phaseMsg=foe.phase3.msg;
@@ -1151,6 +1266,8 @@ function renderCombat(){
         <div class="name disp">${foe.name} <small>${Math.max(0,foe.hp)}/${foe.maxHp} HP${foe.cresc?` · crescendo +${foe.cresc}`:""}</small></div>
         <div class="barlbl"><span>VIDA</span><span>${Math.max(0,foe.hp)}</span></div>
         <div class="bar hp"><i style="width:${clamp(foe.hp/foe.maxHp*100,0,100)}%"></i></div>
+        ${foe.cocoons>0?`<div class="barlbl"><span style="color:var(--frost)">CASULOS — protegem-na</span><span>${Math.max(0,Math.round(foe.cocoons))}/${foe.cocoonsMax}</span></div>
+        <div class="bar focus"><i style="width:${clamp(foe.cocoons/foe.cocoonsMax*100,0,100)}%"></i></div>`:""}
         <div class="barlbl"><span>POSTURA</span><span>${Math.max(0,Math.round(foe.poise))}/${foe.maxPoise}</span></div>
         <div class="bar poise"><i style="width:${clamp(foe.poise/foe.maxPoise*100,0,100)}%"></i></div>
         ${statusBars(foe.status)}${foeChips}
@@ -1158,6 +1275,7 @@ function renderCombat(){
           <b>${foe.staggered?"ATORDOADO":"INTENÇÃO"}</b> — ${foe.intent?foe.intent.tell:""} ${foe.intent?intentTags(foe.intent,C):""}
         </div>
       </div>
+      ${C.tideStarted?`<div class="fl-lbl" style="text-align:center;color:var(--frost);border:1px dashed var(--frost-deep);padding:6px;border-radius:2px">≈ A MARÉ SOBE — nível ${Math.max(1,C.tide)} · ${4*Math.max(1,C.tide)} de dano por turno ≈</div>`:""}
       <div class="rangeline ${C.range}">
         <span>TU</span><div class="track"></div><span>ELE</span>
         <b>· ${rlabel}</b>
@@ -1291,6 +1409,17 @@ function doAction(act){
     if(id==="faca"){ hitFoe(C,foe,p,12,4,{bleed:10},false,false,true); }
     if(id==="bomba"){ hitFoe(C,foe,p,22,14,null,false,true,true); }
     if(id==="sal"){ applyBuildToFoe(C,foe,{geada:50}); clog(C,`<span class="frost">O sal de geada cobre ${foe.name}.</span>`); }
+    if(id==="oleo"){ C.oil=true; clog(C,`<span class="proc">Untas a lâmina. Este turno, ela tem sede.</span>`); }
+    if(id==="pedra"){ C.whet=true; clog(C,`<span class="hit">O fio range na pedra. O próximo golpe decide.</span>`); }
+    if(id==="incenso"){ G.player.hp=clamp(G.player.hp+22,0,maxHP(G.player.attr));
+      C.pStatus.poison=0;C.pStatus.geada=0;C.pPoisonTurns=0;C.pGeadaTurns=0;
+      SFX.heal(); clog(C,`<span class="hit">O incenso limpa o que a descida deixou em ti. +22.</span>`); }
+    if(id==="sineta"){ foe.poise-=20;
+      clog(C,`<span class="frost">A sineta racha o ar — a postura de ${foe.name} verga (−20).</span>`);
+      if(!foe.staggered&&foe.poise<=0){ foe.poise=0;foe.staggered=true;foe.blocking=false;
+        if(foe.crescendo&&foe.cresc>0){foe.cresc=0;}
+        foe.intent={n:"—",tell:"Cambaleia, atordoado.",stagger:true};
+        SFX.stagger();clog(C,`<span class="crit">${foe.name} perde a postura — ATORDOADO!</span>`);} }
     return afterPlayerAct();
   }
   if(act==="attack"){
@@ -1319,15 +1448,28 @@ function doAction(act){
       clog(C,`<span class="hit">${sk.name}: a chama restaura +${h}.</span>`);
       return afterPlayerAct();
     }
+    if(sk.kind==="gamble"){
+      const winOdds=0.5+a.sin*0.008;
+      if(Math.random()<winOdds){
+        clog(C,`<span class="crit">A Sina sorri.</span>`);
+        hitFoe(C,foe,p,Math.round(weaponAtk(a,w)*2.2),w.poise,w.build,false);
+      } else {
+        const d=Math.max(4,Math.round(maxHP(a)*0.10));
+        p.hp-=d; SFX.hurt(); floatText("-"+d,"var(--blood)");
+        clog(C,`<span class="hurt">A Sina cobra: ${d} de ti.</span>`);
+        if(p.hp<=0&&!tearSave(C)) return loseCombat();
+      }
+      return afterPlayerAct();
+    }
     if(sk.kind==="burst"){
       const amt=Math.round(foe.status.bleed);
       if(amt<=0){ clog(C,`<span class="sys">Não há sangue acumulado para explodir.</span>`); return afterPlayerAct(); }
       foe.status.bleed=0;
       const dmg=Math.round(amt*(1+a.sin*0.015));
-      foe.hp-=dmg; floatText("-"+dmg,"var(--bleed)");
+      floatText("-"+dmg,"var(--bleed)");
       clog(C,`<span class="proc">EXPLODIR FERIDAS! ${dmg} de dano do sangue acumulado.</span>`);
       if(hasRelic("sanguessuga")){ p.hp=clamp(p.hp+8,0,maxHP(a)); clog(C,`<span class="hit">A Sanguessuga te devolve 8.</span>`); }
-      if(foe.hp<=0){foe.hp=0;winCombat();}
+      foeTakeRaw(C,foe,dmg);
       return afterPlayerAct();
     }
     let mult=1;
@@ -1344,23 +1486,57 @@ function applyBuildToFoe(C,foe,build){
   const relicB=(s)=>((s==="bleed"&&hasRelic("dente"))||(s==="poison"&&hasRelic("vespa")))?1.4:1;
   const mult=(1+a.sin*0.03)*(G.runBuild||1);
   for(const s in build){
-    foe.status[s]=clamp(foe.status[s]+build[s]*mult*relicB(s),0,100);
+    foe.status[s]=clamp(foe.status[s]+build[s]*mult*relicB(s)*(foe.buildResist||1),0,100);
     if(foe.status[s]>=100) procStatus(C,foe,s,true);
   }
 }
 
+function tearSave(C){
+  const p=G.player;
+  if(p.hp<=0&&hasRelic("lagrima")&&!G.lagrimaUsed){
+    G.lagrimaUsed=true; p.hp=1; SFX.relic();
+    clog(C,`<span class="crit">A Lágrima do Soberano escorre — e recusa o teu fim. 1 de vida.</span>`);
+    return true;
+  }
+  return false;
+}
+function foeTakeRaw(C,foe,dmg){
+  if(foe.cocoons>0){
+    foe.cocoons-=dmg;
+    if(foe.cocoons<=0){ foe.cocoons=0;
+      SFX.boss();
+      clog(C,`<span class="crit">O último casulo cala. Nerith deixa de embalar — e volta-se para ti. Não te odeia. Só já não tem mais nada.</span>`);
+      foe.moves=foe.moves.filter(m=>!m.p1only).concat(foe.phaseMoves||[]);
+      chooseIntent(foe,C);
+    }
+    return;
+  }
+  foe.hp-=dmg;
+  if(foe.hp<=0){
+    if(foe.rebirth&&!foe._reborn){
+      foe._reborn=true; foe.hp=Math.round(foe.maxHp*0.45); foe.poise=foe.maxPoise; foe.blocking=false;
+      SFX.boss();
+      clog(C,`<span class="crit">${foe.name} cai — e ergue-se. Desta vez, sorri. É a única que sorri.</span>`);
+      return;
+    }
+    foe.hp=0; winCombat();
+  }
+}
 function hitFoe(C,foe,p,rawAtk,poiseDmg,build,isCrit,ignoreDef,flat,guardcrush){
   const a=p.attr;
   let dmg=flat?rawAtk:Math.round(rawAtk*rnd(.9,1.1));
   const def=ignoreDef?Math.floor(foe.def/2):foe.def;
   dmg=Math.max(1,dmg-def);
   if(foe.blocking&&!guardcrush) dmg=Math.round(dmg*0.4);
-  if(foe.staggered) dmg=Math.round(dmg*1.75);
+  if(foe.staggered) dmg=Math.round(dmg*(hasRelic("badalo")?2.1:1.75));
   if(foe.fragilePerto&&C.range==="perto") dmg=Math.round(dmg*1.4);
   if(foe.geadaTurns>0) dmg=Math.round(dmg*1.15);
   if(C.impetus){ dmg=Math.round(dmg*1.3); C.impetus=false; clog(C,`<span class="hit">Ímpeto do Naufrágio!</span>`); }
+  if(hasRelic("agulha")&&p.hp<maxHP(p.attr)*0.35) dmg=Math.round(dmg*1.15);
+  if(C.whet){ dmg=Math.round(dmg*1.5); C.whet=false; clog(C,`<span class="hit">O fio amolado canta.</span>`); }
   if(isCrit) dmg=Math.round(dmg*2.3*(hasRelic("olho")?1.5:1));
-  foe.hp-=dmg;
+  foeTakeRaw(C,foe,dmg);
+  if(C.over)return;
   floatText("-"+dmg,isCrit?"var(--ichor)":"var(--bone)");
   if(isCrit)SFX.crit();else SFX.hit();
   clog(C,`<span class="${isCrit?'crit':'hit'}">Acertas ${foe.name} — ${dmg} de dano.${foe.blocking?(guardcrush?" (guarda esmagada!)":" (bloqueado)"):""}</span>`);
@@ -1369,7 +1545,7 @@ function hitFoe(C,foe,p,rawAtk,poiseDmg,build,isCrit,ignoreDef,flat,guardcrush){
     p.hp-=foe.thorns;
     floatText("-"+foe.thorns,"var(--blood)");
     clog(C,`<span class="hurt">Os espinhos devolvem ${foe.thorns}.</span>`);
-    if(p.hp<=0)return loseCombat();
+    if(p.hp<=0&&!tearSave(C))return loseCombat();
   }
   // postura
   if(!foe.staggered){
@@ -1381,10 +1557,12 @@ function hitFoe(C,foe,p,rawAtk,poiseDmg,build,isCrit,ignoreDef,flat,guardcrush){
       if(foe.crescendo&&foe.cresc>0){ foe.cresc=0; clog(C,`<span class="frost">O crescendo silencia.</span>`); }
       foe.intent={n:"—",tell:"Cambaleia, atordoado.",stagger:true};
       SFX.stagger();clog(C,`<span class="crit">${foe.name} perde a postura — ATORDOADO!</span>`);
+      if(foe.tideOnStagger&&!C.tideStarted){ C.tideStarted=true;C.tide=0;
+        clog(C,`<span class="crit">O MURO ESCAPA DA MÃO DELE. A água ruge — a maré começa a subir.</span>`); }
     }
   }
   if(build) applyBuildToFoe(C,foe,build);
-  if(foe.hp<=0){foe.hp=0;winCombat();}
+  if(C.oil&&!flat) applyBuildToFoe(C,foe,{bleed:35});
 }
 
 function procStatus(C,ent,type,isFoe){
@@ -1392,13 +1570,12 @@ function procStatus(C,ent,type,isFoe){
   if(type==="bleed"){
     SFX.bleed();
     const dmg=Math.round((isFoe?ent.maxHp:maxHP(G.player.attr))*0.11)+12;
-    if(isFoe){ent.hp-=dmg;}else{G.player.hp-=dmg;}
+    if(isFoe){foeTakeRaw(C,ent,dmg);}else{G.player.hp-=dmg;}
     ent.status.bleed=0;
     clog(C,`<span class="proc">SANGRAMENTO! ${name} perde ${dmg} de vida.</span>`);
     floatText("-"+dmg,"var(--bleed)");
     if(isFoe&&hasRelic("sanguessuga")){ G.player.hp=clamp(G.player.hp+8,0,maxHP(G.player.attr)); }
-    if(isFoe&&ent.hp<=0){ent.hp=0;winCombat();}
-    if(!isFoe&&G.player.hp<=0){loseCombat();}
+    if(!isFoe&&G.player.hp<=0&&!tearSave(C)){loseCombat();}
   }
   if(type==="poison"){
     SFX.poison();
@@ -1430,6 +1607,8 @@ function endPlayerTurn(){
 function foeTurn(){
   const C=G.combat;if(!C||C.over)return;
   const foe=C.foe,p=G.player,a=p.attr;
+  foe._t++;
+  if(C.tideStarted){ C.tide+=(foe.tideRate||1); }
   if(foe._phaseMsg){clog(C,`<span class="crit">${foe._phaseMsg}</span>`);foe._phaseMsg=null;}
 
   // regen do inimigo
@@ -1453,9 +1632,17 @@ function foeTurn(){
   }
 
   const m=foe.intent||{};
-  if(m.block){
+  if(m.graft){
+    const g=GRAFT_POOL[foe.grafted];
+    if(g){ foe.moves.push({...g,dmg:Math.round(g.dmg*1.2)}); foe.grafted++;
+      foe.hp=clamp(foe.hp+18,0,foe.maxHp);
+      SFX.bleed();
+      clog(C,`<span class="crit">A costura aceita o membro. Anselm aprende: ${g.n} (+18 de vida).</span>`); }
+  } else if(m.block){
     foe.blocking=true;
     foe.poise=clamp(foe.poise+20,0,foe.maxPoise);
+    if(m.cocoonHeal&&foe.cocoons>0){ foe.cocoons=Math.min(foe.cocoonsMax,foe.cocoons+m.cocoonHeal);
+      clog(C,`<span class="frost">Nerith embala os casulos — eles refazem-se (+${m.cocoonHeal}).</span>`); }
     clog(C,`<span class="sys">${foe.name} firma a guarda.${foe.thorns?" Os espinhos brilham.":""}</span>`);
   } else {
     foe.blocking=false;
@@ -1467,6 +1654,8 @@ function foeTurn(){
         foe.intent={n:"—",tell:"Cambaleia, atordoado.",stagger:true};
         SFX.stagger();clog(C,`<span class="crit">${foe.name} perde a postura — ATORDOADO!</span>`);
         if(foe.crescendo&&foe.cresc>0){foe.cresc=0;clog(C,`<span class="frost">O crescendo silencia.</span>`);}
+        if(foe.tideOnStagger&&!C.tideStarted){ C.tideStarted=true;C.tide=0;
+          clog(C,`<span class="crit">O MURO ESCAPA DA MÃO DELE. A água ruge — a maré começa a subir.</span>`); }
         return startPlayerTurn();}
     } else {
       // golpes corpo-a-corpo fecham a distância
@@ -1495,8 +1684,9 @@ function foeHit(C,foe,p,m){
       if(foe.hp<=0){foe.hp=0;return winCombat();}
     }
   }
-  dmg=Math.max(1,dmg-Math.floor(a.fol/6));
+  dmg=Math.max(1,dmg-Math.floor(a.fol/6)-(hasRelic("ferrolho")?2:0));
   p.hp-=dmg;
+  if(p.hp<=0)tearSave(C);
   if(C.guarding)SFX.guard();else SFX.hurt();
   floatText("-"+dmg,"var(--blood)");
   clog(C,`<span class="hurt">${foe.name} usa ${m.n}: ${dmg}.${C.guarding?" (defendido)":""}</span>`);
@@ -1520,14 +1710,20 @@ function startPlayerTurn(){
   C.turn="player";
   C.ap=maxAP(a);
   if(C.pGeadaTurns>0)C.ap=Math.max(2,C.ap-1);
-  C.guarding=false;C.movedFree=false;C.advancedThisTurn=false;C.impetus=false;
+  C.guarding=false;C.movedFree=false;C.advancedThisTurn=false;C.impetus=false;C.oil=false;
   C.pPoise=clamp(C.pPoise+10,0,C.pMaxPoise);
   C.pFoco=clamp(C.pFoco+2+(hasRelic("ampulheta")?1:0),0,maxFoco(a));
+  if(C.tideStarted){
+    const td=4*C.tide;
+    p.hp-=td; SFX.geada(); floatText("-"+td,"var(--frost)");
+    clog(C,`<span class="frost">A maré sobe até ti: ${td} de dano. Nada a bloqueia.</span>`);
+    if(p.hp<=0&&!tearSave(C))return loseCombat();
+  }
   if(C.pPoisonTurns>0){
     const d=Math.round(maxHP(a)*0.04)+2;p.hp-=d;C.pPoisonTurns--;
     clog(C,`<span class="proc">O veneno arde: ${d}.</span>`);
     floatText("-"+d,"var(--poison)");
-    if(p.hp<=0)return loseCombat();
+    if(p.hp<=0&&!tearSave(C))return loseCombat();
   }
   renderCombat();
 }
@@ -1538,9 +1734,9 @@ function winCombat(){
   const foe=C.foe;
   SFX.win();
   G.kills++;
-  const fr=foe.final?40:foe.boss?20:foe.elite?6:1;
+  const fr=foe.final?40:foe.boss?20:foe.super?15:foe.elite?6:1;
   META.frag+=fr; G.fragEarned+=fr; saveMeta();
-  let gain=Math.round(foe.icor*(hasRelic("moeda")?1.25:1));
+  let gain=Math.round(foe.icor*(1+G.zone*0.08)*(hasRelic("moeda")?1.25:1));
   G.icor+=gain;
   markCleared();
   const p=G.player,a=p.attr;
@@ -1662,6 +1858,7 @@ function screenWane(){
   const p=G.player,a=p.attr;
   G.lastWane=G.floor;
   while(G.debts&&G.debts.length){ a[G.debts.pop()]++; toast("O verso devolve o que cobrou."); }
+  if(hasRelic("corvo")&&!fl._corvo){ fl._corvo=true; const it=pick(Object.keys(ITEMS)); giveItem(it); toast("O Corvo de Ossos te traz: "+ITEMS[it].name); }
   p.hp=maxHP(a);p.flask=p.flaskMax;p.foco=maxFoco(a);
   if(!fl._rested){
     for(const key in G.clearedNodes){
@@ -1868,7 +2065,7 @@ function screenSummary(won){
   const rows=[
     ["Desfecho",won?"A Mão soltou o trono":"Run encerrado"],
     ["Vestígio",p.name],
-    ["Zona alcançada",ZONES[Math.min(G.zone,2)].sub],
+    ["Zona alcançada",ZONES[Math.min(G.zone,ZONES.length-1)].sub],
     ["Arma final",WEAPONS[p.weaponId].name],
     ["Selos",p.relics.length],
     ["Abates",G.kills],
