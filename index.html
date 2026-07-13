@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VESPERGLOAM — O Claustro Afogado</title>
+<title>VESPERGLOAM — A Descida</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -34,131 +34,115 @@ body{
 #app{max-width:960px;margin:0 auto;min-height:100vh;padding:22px 18px 60px;position:relative}
 .disp{font-family:var(--font-disp);letter-spacing:.04em}
 .mono{font-family:var(--font-mono)}
-.dim{color:var(--bone-dim)}
-.faint{color:var(--bone-faint)}
-.ichor{color:var(--ichor)}
+.dim{color:var(--bone-dim)} .faint{color:var(--bone-faint)} .ichor{color:var(--ichor)}
 .flavor{font-style:italic;color:var(--bone-dim);line-height:1.55}
 h1,h2,h3{font-family:var(--font-disp);font-weight:600;letter-spacing:.05em;color:var(--bone)}
 button{font-family:inherit;color:inherit;cursor:pointer;background:none;border:none}
 button:focus-visible{outline:2px solid var(--ichor);outline-offset:2px}
 .hr{height:1px;background:linear-gradient(90deg,transparent,var(--edge),transparent);margin:16px 0}
 
-/* ---- generic action buttons ---- */
-.btn{
-  display:block;width:100%;text-align:left;padding:13px 16px;margin:8px 0;
+.btn{display:block;width:100%;text-align:left;padding:13px 16px;margin:8px 0;
   background:linear-gradient(180deg,var(--stone-2),var(--stone));
-  border:1px solid var(--edge);border-radius:2px;color:var(--bone);
-  transition:.14s; position:relative; font-size:17px;
-}
+  border:1px solid var(--edge);border-radius:2px;color:var(--bone);transition:.14s;position:relative;font-size:17px}
 .btn:hover:not(:disabled){border-color:var(--ichor-deep);background:linear-gradient(180deg,#222933,var(--stone-2));transform:translateX(3px)}
 .btn:disabled{opacity:.38;cursor:not-allowed}
 .btn .k{font-family:var(--font-disp);letter-spacing:.03em}
 .btn .sub{display:block;font-size:14.5px;color:var(--bone-dim);font-style:italic;margin-top:3px}
-.btn .cost{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-family:var(--font-mono);font-size:13px;color:var(--frost)}
 .btn.gold{border-color:var(--ichor-deep)}
 .btn.gold:hover:not(:disabled){box-shadow:0 0 18px -6px var(--ichor)}
 .btn.danger:hover:not(:disabled){border-color:var(--blood)}
-
 .center{text-align:center}
-.pad{padding:24px 8px}
 .tag{display:inline-block;font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--bone-dim);border:1px solid var(--edge);
-  padding:3px 9px;border-radius:2px}
+  text-transform:uppercase;color:var(--bone-dim);border:1px solid var(--edge);padding:3px 9px;border-radius:2px}
 
-/* ---- title ---- */
-.title-wrap{text-align:center;padding-top:8vh}
+.title-wrap{text-align:center;padding-top:7vh}
 .title-wrap .game{font-family:var(--font-disp);font-weight:700;font-size:clamp(38px,9vw,72px);
-  letter-spacing:.16em;color:var(--bone);
-  text-shadow:0 0 40px var(--ichor-glow); margin-bottom:2px}
-.title-wrap .sub{font-family:var(--font-disp);letter-spacing:.34em;font-size:13px;
-  color:var(--ichor-deep);text-transform:uppercase}
-.title-wrap .epigraph{max-width:520px;margin:34px auto 40px;font-style:italic;color:var(--bone-dim)}
+  letter-spacing:.16em;color:var(--bone);text-shadow:0 0 40px var(--ichor-glow);margin-bottom:2px}
+.title-wrap .sub{font-family:var(--font-disp);letter-spacing:.34em;font-size:13px;color:var(--ichor-deep);text-transform:uppercase}
+.title-wrap .epigraph{max-width:520px;margin:30px auto 36px;font-style:italic;color:var(--bone-dim)}
 .candle{width:2px;height:46px;margin:0 auto 26px;background:linear-gradient(var(--ichor),transparent);
   border-radius:2px;position:relative;filter:drop-shadow(0 0 8px var(--ichor))}
 .candle::before{content:"";position:absolute;top:-10px;left:50%;transform:translateX(-50%);
   width:8px;height:12px;background:radial-gradient(circle at 50% 60%,#fff2cf,var(--ichor) 55%,transparent 75%);
   border-radius:50% 50% 50% 50%/60% 60% 40% 40%;animation:flick 2.6s infinite}
-@keyframes flick{0%,100%{transform:translateX(-50%) scale(1);opacity:.95}
-  50%{transform:translateX(-52%) scale(1.12,.92);opacity:.75}}
+@keyframes flick{0%,100%{transform:translateX(-50%) scale(1);opacity:.95}50%{transform:translateX(-52%) scale(1.12,.92);opacity:.75}}
 
-/* ---- class select ---- */
 .cards{display:grid;grid-template-columns:1fr;gap:12px;margin-top:18px}
 @media(min-width:720px){.cards{grid-template-columns:1fr 1fr 1fr}}
 .card{border:1px solid var(--edge);background:linear-gradient(180deg,var(--stone-2),var(--stone));
   padding:18px 16px;border-radius:2px;transition:.16s;cursor:pointer;text-align:left}
-.card:hover,.card:focus-visible{border-color:var(--ichor-deep);transform:translateY(-3px);
-  box-shadow:0 10px 30px -18px var(--ichor)}
+.card:hover,.card:focus-visible{border-color:var(--ichor-deep);transform:translateY(-3px);box-shadow:0 10px 30px -18px var(--ichor)}
 .card h3{font-size:20px;margin-bottom:2px}
 .card .role{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--frost);margin-bottom:10px}
 .card .desc{font-style:italic;color:var(--bone-dim);font-size:15px;min-height:66px}
 .card .stats{display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:12px;font-family:var(--font-mono);font-size:12px}
-.card .stats span{color:var(--bone-dim)}
-.card .stats b{color:var(--bone);font-weight:600}
+.card .stats span{color:var(--bone-dim)} .card .stats b{color:var(--bone);font-weight:600}
 
-/* ---- HUD / bars ---- */
 .bar{height:9px;background:#0c0e12;border:1px solid var(--edge-soft);border-radius:2px;overflow:hidden;position:relative}
 .bar>i{display:block;height:100%;transition:width .35s}
 .bar.hp>i{background:linear-gradient(90deg,var(--blood-deep),var(--blood))}
 .bar.poise>i{background:linear-gradient(90deg,#4a463c,var(--ichor-deep))}
 .bar.focus>i{background:linear-gradient(90deg,var(--frost-deep),var(--frost))}
-.bar.bleed>i{background:var(--bleed)}
-.bar.poison>i{background:var(--poison)}
-.bar.geada>i{background:var(--geada)}
-.barlbl{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;
-  color:var(--bone-dim);margin:9px 0 3px;letter-spacing:.04em}
+.bar.bleed>i{background:var(--bleed)} .bar.poison>i{background:var(--poison)} .bar.geada>i{background:var(--geada)}
+.barlbl{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;color:var(--bone-dim);margin:9px 0 3px;letter-spacing:.04em}
 
-/* ---- combat ---- */
-.arena{display:grid;grid-template-columns:1fr;gap:14px;margin-top:6px}
+.arena{display:grid;grid-template-columns:1fr;gap:10px;margin-top:6px}
 .combatant{border:1px solid var(--edge);background:var(--stone);padding:15px 16px;border-radius:2px;position:relative}
 .combatant.foe{border-color:#2f2622;background:linear-gradient(180deg,#191411,var(--stone))}
-.combatant .name{font-family:var(--font-disp);font-size:18px;display:flex;justify-content:space-between;align-items:baseline}
+.combatant .name{font-family:var(--font-disp);font-size:18px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .combatant .name small{font-family:var(--font-mono);font-size:12px;color:var(--bone-dim);letter-spacing:.06em}
-.intent{margin-top:11px;font-size:15px;font-style:italic;color:var(--bone-dim);
-  border-left:2px solid var(--edge);padding-left:10px}
+.intent{margin-top:11px;font-size:15px;font-style:italic;color:var(--bone-dim);border-left:2px solid var(--edge);padding-left:10px}
 .intent b{color:var(--blood);font-style:normal;font-family:var(--font-disp);font-size:13px;letter-spacing:.05em}
 .intent.stagger b{color:var(--ichor)}
+.intent .rtag{font-family:var(--font-mono);font-size:11px;font-style:normal;letter-spacing:.06em;padding:1px 6px;border:1px solid var(--edge);border-radius:2px;margin-left:6px}
+.intent .rtag.lento{color:var(--frost);border-color:var(--frost-deep)}
+.intent .rtag.alc{color:var(--bleed);border-color:#5a2626}
 .statuschips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
 .chip{font-family:var(--font-mono);font-size:11px;padding:2px 7px;border-radius:2px;border:1px solid var(--edge)}
-.chip.poison{color:var(--poison);border-color:#3a4a24}
-.chip.geada{color:var(--geada);border-color:#33505a}
-.chip.bleed{color:var(--bleed);border-color:#5a2626}
-.chip.buff{color:var(--ichor);border-color:var(--ichor-deep)}
+.chip.poison{color:var(--poison);border-color:#3a4a24} .chip.geada{color:var(--geada);border-color:#33505a}
+.chip.bleed{color:var(--bleed);border-color:#5a2626} .chip.buff{color:var(--ichor);border-color:var(--ichor-deep)}
+.chip.mech{color:var(--frost);border-color:var(--frost-deep)}
 
-.ap-track{display:flex;gap:6px;margin:2px 0 4px}
+.rangeline{display:flex;align-items:center;gap:10px;justify-content:center;margin:2px 0;
+  font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;color:var(--bone-dim)}
+.rangeline .track{flex:1;max-width:220px;height:1px;background:var(--edge);position:relative}
+.rangeline .track::before,.rangeline .track::after{content:"";position:absolute;top:-3px;width:7px;height:7px;border-radius:50%}
+.rangeline .track::before{left:0;background:var(--bone)}
+.rangeline .track::after{right:0;background:var(--blood)}
+.rangeline.perto .track{max-width:70px}
+.rangeline b{color:var(--ichor);font-weight:600}
+
+.ap-track{display:flex;gap:6px;margin:2px 0 4px;flex-wrap:wrap}
 .ap-pip{width:16px;height:16px;border:1px solid var(--ichor-deep);border-radius:50%;background:transparent}
 .ap-pip.on{background:radial-gradient(circle,#fff2cf,var(--ichor) 60%);box-shadow:0 0 8px var(--ichor)}
 
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 @media(max-width:520px){.actions{grid-template-columns:1fr}}
-.act{padding:11px 13px;border:1px solid var(--edge);background:linear-gradient(180deg,var(--stone-2),var(--stone));
+.act{padding:10px 12px;border:1px solid var(--edge);background:linear-gradient(180deg,var(--stone-2),var(--stone));
   border-radius:2px;text-align:left;transition:.13s;position:relative}
 .act:hover:not(:disabled){border-color:var(--ichor-deep);transform:translateY(-2px)}
 .act:disabled{opacity:.34;cursor:not-allowed}
 .act .an{font-family:var(--font-disp);font-size:15px}
 .act .ad{font-size:13px;color:var(--bone-dim);font-style:italic}
-.act .ap{position:absolute;right:11px;top:11px;font-family:var(--font-mono);font-size:12px;color:var(--frost)}
+.act .ap{position:absolute;right:11px;top:9px;font-family:var(--font-mono);font-size:12px;color:var(--frost)}
 .act.crit{border-color:var(--ichor);box-shadow:0 0 16px -6px var(--ichor)}
+.act.move{border-style:dashed}
 .act.end{grid-column:1/-1;text-align:center;color:var(--bone-dim)}
 
-.log{margin-top:16px;border-top:1px solid var(--edge-soft);padding-top:12px;
-  max-height:190px;overflow-y:auto;font-size:15.5px}
+.log{margin-top:16px;border-top:1px solid var(--edge-soft);padding-top:12px;max-height:200px;overflow-y:auto;font-size:15.5px}
 .log p{margin:5px 0;color:var(--bone-dim);animation:fade .3s}
-.log p.hit{color:var(--bone)}
-.log p.crit{color:var(--ichor);font-style:italic}
-.log p.hurt{color:var(--blood)}
-.log p.proc{color:var(--bleed)}
-.log p.sys{color:var(--bone-faint);font-style:italic}
+.log p.hit{color:var(--bone)} .log p.crit{color:var(--ichor);font-style:italic}
+.log p.hurt{color:var(--blood)} .log p.proc{color:var(--bleed)} .log p.sys{color:var(--bone-faint);font-style:italic}
+.log p.frost{color:var(--frost);font-style:italic}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
 
-.float{position:fixed;pointer-events:none;font-family:var(--font-mono);font-weight:600;
-  font-size:20px;animation:rise 1s forwards;z-index:50;text-shadow:0 1px 4px #000}
-@keyframes rise{0%{opacity:0;transform:translateY(0) scale(.8)}
-  20%{opacity:1;transform:translateY(-8px) scale(1.1)}100%{opacity:0;transform:translateY(-40px)}}
+.float{position:fixed;pointer-events:none;font-family:var(--font-mono);font-weight:600;font-size:20px;
+  animation:rise 1s forwards;z-index:50;text-shadow:0 1px 4px #000}
+@keyframes rise{0%{opacity:0;transform:translateY(0) scale(.8)}20%{opacity:1;transform:translateY(-8px) scale(1.1)}100%{opacity:0;transform:translateY(-40px)}}
 
-/* ---- map ---- */
 .floor{border:1px solid var(--edge-soft);border-radius:2px;padding:12px;margin:10px 0;
   background:linear-gradient(180deg,rgba(27,33,42,.5),transparent)}
-.floor .fl-lbl{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:var(--bone-faint);text-transform:uppercase;margin-bottom:8px}
+.fl-lbl{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:var(--bone-faint);text-transform:uppercase;margin-bottom:8px}
 .nodegrid{display:grid;grid-template-columns:1fr;gap:8px}
 @media(min-width:560px){.nodegrid.two{grid-template-columns:1fr 1fr}.nodegrid.three{grid-template-columns:1fr 1fr 1fr}}
 .node{border:1px solid var(--edge);background:var(--stone);padding:12px 14px;border-radius:2px;text-align:left;transition:.14s}
@@ -168,43 +152,42 @@ button:focus-visible{outline:2px solid var(--ichor);outline-offset:2px}
 .node .nd{font-size:13px;color:var(--bone-dim);font-style:italic;margin-top:3px}
 .node.done{opacity:.45;border-style:dashed}
 .node.mancha{border-color:var(--ichor);box-shadow:0 0 18px -8px var(--ichor)}
-.ic-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
-.d-combat{background:var(--blood)} .d-elite{background:var(--bleed)}
+.ic-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.d-combat{background:var(--blood)} .d-elite{background:var(--bleed);box-shadow:0 0 7px var(--bleed)}
 .d-wane{background:var(--ichor);box-shadow:0 0 7px var(--ichor)} .d-treasure{background:var(--frost)}
 .d-merchant{background:var(--poison)} .d-boss{background:#fff;box-shadow:0 0 8px var(--blood)}
+.d-event{background:#9a7fb8}
 
-.hud-top{display:flex;justify-content:space-between;align-items:center;
-  border-bottom:1px solid var(--edge-soft);padding-bottom:12px;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+.hud-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--edge-soft);
+  padding-bottom:12px;margin-bottom:8px;flex-wrap:wrap;gap:8px}
 .hud-top .who{font-family:var(--font-disp);font-size:16px}
 .hud-top .who small{color:var(--bone-dim);font-family:var(--font-body);font-style:italic}
-.res{display:flex;gap:16px;font-family:var(--font-mono);font-size:14px;align-items:center}
+.res{display:flex;gap:14px;font-family:var(--font-mono);font-size:14px;align-items:center;flex-wrap:wrap}
 .res .icor{color:var(--ichor)} .res .flask{color:var(--blood)}
 
-/* ---- wane ---- */
 .wane-hero{text-align:center;padding:14px 0 6px}
 .attr-row{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;
   border:1px solid var(--edge-soft);border-radius:2px;margin:6px 0;background:var(--stone)}
 .attr-row .an{font-family:var(--font-disp);font-size:15px}
 .attr-row .av{font-family:var(--font-mono);font-size:16px;color:var(--ichor);min-width:34px;text-align:right}
-.attr-row .plus{padding:6px 14px;border:1px solid var(--ichor-deep);border-radius:2px;
-  font-family:var(--font-mono);font-size:13px;color:var(--ichor);transition:.13s}
+.attr-row .plus{padding:6px 14px;border:1px solid var(--ichor-deep);border-radius:2px;font-family:var(--font-mono);font-size:13px;color:var(--ichor);transition:.13s}
 .attr-row .plus:hover:not(:disabled){background:var(--ichor-glow)}
 .attr-row .plus:disabled{opacity:.35;cursor:not-allowed}
 .attr-row .eff{font-size:12px;color:var(--bone-faint);font-style:italic}
 
-/* ---- death / victory ---- */
-.epitaph{text-align:center;padding-top:10vh}
+.epitaph{text-align:center;padding-top:9vh}
 .epitaph .word{font-family:var(--font-disp);font-weight:700;font-size:clamp(46px,12vw,96px);
   letter-spacing:.2em;color:var(--blood);text-shadow:0 0 60px rgba(165,56,47,.4)}
 .epitaph .word.win{color:var(--ichor);text-shadow:0 0 60px var(--ichor-glow)}
-.epitaph .line{margin:22px auto 30px;max-width:440px;font-style:italic;color:var(--bone-dim)}
+.epitaph .line{margin:22px auto 30px;max-width:460px;font-style:italic;color:var(--bone-dim)}
 .runrec{font-family:var(--font-mono);font-size:13px;color:var(--bone-dim);margin:18px auto;max-width:340px}
 .runrec div{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--edge-soft)}
 
-.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
-  background:var(--stone-2);border:1px solid var(--ichor-deep);padding:10px 20px;border-radius:2px;
-  font-family:var(--font-disp);font-size:14px;letter-spacing:.04em;color:var(--ichor);
-  box-shadow:0 8px 30px -10px #000;animation:fade .3s;z-index:60}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--stone-2);
+  border:1px solid var(--ichor-deep);padding:10px 20px;border-radius:2px;font-family:var(--font-disp);
+  font-size:14px;letter-spacing:.04em;color:var(--ichor);box-shadow:0 8px 30px -10px #000;animation:fade .3s;z-index:60}
+.zonebanner{text-align:center;padding-top:14vh}
+.zonebanner .zn{font-family:var(--font-disp);font-weight:700;font-size:clamp(28px,7vw,52px);letter-spacing:.12em}
 </style>
 </head>
 <body>
@@ -212,480 +195,698 @@ button:focus-visible{outline:2px solid var(--ichor);outline-offset:2px}
 <script>
 "use strict";
 /* ============================================================
-   VESPERGLOAM — vertical slice
-   BuriedBornes-style turn combat + Elden Ring stats/scaling/runes
-   Single file, no deps.  © Elzerath Studio (protótipo)
+   VESPERGLOAM — A Descida (v2)
+   3 zonas · distância tática · Selos · elites · 3 chefes
    ============================================================ */
 
-/* ---------------- CONSTANTES E DADOS ---------------- */
 const SCALE = { S:1.0, A:.75, B:.55, C:.4, D:.25, E:.1, "—":0 };
-
 const ATTRS = [
   { k:"vit", name:"Vitalidade", eff:"vida" },
   { k:"fol", name:"Fôlego",     eff:"ações e postura" },
   { k:"for", name:"Força",      eff:"armas pesadas" },
-  { k:"des", name:"Destreza",   eff:"armas ágeis" },
+  { k:"des", name:"Destreza",   eff:"armas ágeis e arcos" },
   { k:"int", name:"Intelecto",  eff:"feitiçaria" },
   { k:"fe",  name:"Fé",         eff:"cura e chama" },
-  { k:"sin", name:"Sina",       eff:"sangue e sorte" },
+  { k:"sin", name:"Sina",       eff:"sangue, veneno e sorte" },
 ];
 
-// ---- Armas ----
+/* ---------------- ARMAS ---------------- */
 const WEAPONS = {
   cinzalamina:{ name:"Cinzalâmina", kind:"Espadão", base:15, poise:22, ap:3, hits:1,
     scale:{for:"B",des:"D"}, build:{}, art:"investida",
     desc:"Ferro de coveiro, gasto de tanto cavar. Pesada como uma sentença." },
   presas:{ name:"Presas Gêmeas", kind:"Adagas", base:7, poise:6, ap:2, hits:2,
-    scale:{des:"A",sin:"C"}, build:{bleed:20}, art:"retalho",
+    scale:{des:"A",sin:"C"}, build:{bleed:18}, art:"retalho",
     desc:"Duas lâminas famintas. Preferem a jugular, mas aceitam qualquer coisa." },
   vara:{ name:"Vara do Fim", kind:"Catalisador", base:5, poise:4, ap:2, hits:1,
     scale:{int:"C"}, build:{}, art:"fragmento", catalyst:true,
     desc:"Um osso do próprio Soberano, dizem. Sussurra fórmulas que ninguém pediu." },
-  // pickups
-  malho:{ name:"Malho do Ossuário", kind:"Maça", base:20, poise:30, ap:4, hits:1,
+  malho:{ name:"Malho do Ossuário", kind:"Maça", base:21, poise:32, ap:4, hits:1,
     scale:{for:"A"}, build:{}, art:"esmagar",
     desc:"Não corta. Reorganiza. A diferença importa pouco para o alvo." },
   estileto:{ name:"Estilete Séptico", kind:"Adaga", base:6, poise:5, ap:2, hits:1,
-    scale:{des:"C",sin:"B"}, build:{poison:26}, art:null,
+    scale:{des:"C",sin:"B"}, build:{poison:28}, art:"punctura",
     desc:"A ferrugem aqui é intencional. Corte raso; deixe o veneno terminar." },
+  arco:{ name:"Arco do Luto", kind:"Arco", base:10, poise:7, ap:2, hits:1, ranged:true,
+    scale:{des:"B",sin:"D"}, build:{bleed:8}, art:"chuva",
+    desc:"As flechas assobiam um lamento. Ninguém fica para o refrão." },
+  lanca:{ name:"Lança da Maré", kind:"Lança", base:13, poise:16, ap:3, hits:1, reach:true,
+    scale:{for:"C",des:"C"}, build:{}, art:"estocada",
+    desc:"Longa o bastante para ferir sem cumprimentar. Educação de Vespergloam." },
+  cutelo:{ name:"Cutelo do Penitente", kind:"Machado", base:17, poise:24, ap:3, hits:1,
+    scale:{for:"B",sin:"D"}, build:{bleed:14}, art:"talho",
+    desc:"Cada entalhe no cabo foi um pedido de perdão. Nenhum foi atendido." },
+  cajado:{ name:"Cajado Abissal", kind:"Catalisador", base:7, poise:5, ap:2, hits:1, catalyst:true,
+    scale:{int:"B"}, build:{}, art:"lancaabissal",
+    desc:"Cresceu no fundo da Maré Baixa, onde a luz deve pedir licença." },
+  selo:{ name:"Selo Cinéreo", kind:"Selo Sacro", base:6, poise:5, ap:2, hits:1, catalyst:true, sacred:true,
+    scale:{fe:"B"}, build:{}, art:"ira",
+    desc:"Um sinete do Soberano. Ainda sela promessas — e cobra as quebradas." },
 };
 
-// ---- Habilidades / Artes de arma ----
+/* ---------------- HABILIDADES ---------------- */
 const SKILLS = {
-  investida:{ name:"Investida Sepulcral", ap:3, foco:2, kind:"phys", mult:1.35, poise:34,
-    desc:"Avanço que quebra guarda e postura. Feito para derrubar." },
-  retalho:{ name:"Dança do Retalho", ap:3, foco:2, kind:"phys", hits:3, mult:.6, poise:5, build:{bleed:16},
+  investida:{ name:"Investida Sepulcral", ap:3, foco:2, kind:"phys", mult:1.35, poise:36, closes:true,
+    desc:"Avanço que quebra guarda e postura. Aproxima e derruba." },
+  retalho:{ name:"Dança do Retalho", ap:3, foco:2, kind:"phys", hits:3, mult:.6, poise:5, build:{bleed:15}, needPerto:true,
     desc:"Três cortes rasos. O sangramento cobra o resto." },
   fragmento:{ name:"Fragmento Estelar", ap:3, foco:3, kind:"sorcery", mult:1.7, poise:10, scale:"int",
     desc:"Estilhaço de luz morta. Ignora parte da armadura." },
-  esmagar:{ name:"Esmagar", ap:4, foco:2, kind:"phys", mult:1.25, poise:44,
-    desc:"Um golpe. Sem elegância, sem apelação." },
+  esmagar:{ name:"Esmagar", ap:4, foco:2, kind:"phys", mult:1.25, poise:48, needPerto:true, guardcrush:true,
+    desc:"Um golpe. Contra guardas erguidas, devastador." },
+  punctura:{ name:"Punctura Profunda", ap:2, foco:2, kind:"phys", mult:.8, poise:4, build:{poison:45}, needPerto:true,
+    desc:"Encontra a veia. O veneno agradece a carona." },
   chama:{ name:"Chama Suplicante", ap:3, foco:3, kind:"heal", scale:"fe",
     desc:"Um pedido de clemência que arde. Restaura vida." },
+  chuva:{ name:"Chuva de Lamentos", ap:3, foco:2, kind:"phys", hits:3, mult:.55, poise:6, build:{bleed:8}, needLonge:true,
+    desc:"Três flechas em arco. Só de longe — o luto precisa de espaço." },
+  estocada:{ name:"Estocada da Maré", ap:3, foco:2, kind:"phys", mult:1.4, poise:22,
+    desc:"Perfura de qualquer distância. A maré sempre alcança." },
+  talho:{ name:"Talho Aberto", ap:3, foco:2, kind:"phys", mult:1.1, poise:18, build:{bleed:34}, needPerto:true,
+    desc:"Abre a ferida de lado a lado. Ela não fecha sozinha." },
+  lancaabissal:{ name:"Lança Abissal", ap:3, foco:3, kind:"sorcery", mult:1.9, poise:14, scale:"int",
+    desc:"Água do fundo, endurecida em ponta. Fria como a conta a pagar." },
+  ira:{ name:"Ira do Soberano", ap:3, foco:3, kind:"faith", mult:1.6, poise:20, scale:"fe",
+    desc:"O que resta da voz dele, dita por ti. Queima os dois lados, um pouco." },
+  sangria:{ name:"Explodir Feridas", ap:2, foco:2, kind:"burst", needPerto:true,
+    desc:"Detona o sangue acumulado no alvo: dano = acúmulo de SANGUE ×1." },
 };
 
-// ---- Vestígios (classes) ----
+/* ---------------- VESTÍGIOS ---------------- */
 const VESTIGES = [
   { id:"ferro", name:"Lâmina de Ferro", role:"Guardião", weapon:"cinzalamina",
     skills:["investida"], flasks:3,
     desc:"Morreu de pé, defendendo um portão que já não existe. O hábito ficou.",
     base:{vit:16,fol:12,for:16,des:9,int:6,fe:8,sin:7} },
   { id:"presa", name:"Presa Pálida", role:"Algoz", weapon:"presas",
-    skills:["retalho"], flasks:2,
-    desc:"Rápida, faminta, sem paciência para armaduras. Deixa o sangue trabalhar.",
+    skills:["retalho","sangria"], flasks:2,
+    desc:"Rápida, faminta, sem paciência para armaduras. Deixa o sangue trabalhar — e sabe cobrá-lo.",
     base:{vit:11,fol:14,for:8,des:17,int:7,fe:6,sin:14} },
   { id:"cinza", name:"Voz das Cinzas", role:"Herege", weapon:"vara",
     skills:["fragmento","chama"], flasks:2,
-    desc:"Aprendeu a feitiçaria decorando os últimos gritos do Soberano. Frágil, mas certeira.",
+    desc:"Aprendeu a feitiçaria decorando os últimos gritos do Soberano. Frágil, mas certeira — e prefere distância.",
     base:{vit:10,fol:11,for:6,des:8,int:17,fe:14,sin:8} },
 ];
 
-// ---- Inimigos ----
-const FOES = {
-  servo:{ name:"Servo Afogado", hp:52, def:2, poise:20, icor:34,
-    moves:[
-      {n:"golpe inchado", tell:"Ergue um braço encharcado.", dmg:9, poise:8},
-      {n:"agarrão", tell:"Estende as mãos, faminto.", dmg:12, poise:6},
-    ],
-    flavor:"O Claustro afogou-o há tempos. Ele não percebeu." },
-  larva:{ name:"Larva de Icor", hp:38, def:1, poise:12, icor:28,
-    moves:[
-      {n:"cuspe séptico", tell:"Incha, prestes a arrotar.", dmg:6, poise:3, build:{poison:30}},
-      {n:"mordida", tell:"Range as gengivas.", dmg:8, poise:4},
-    ],
-    flavor:"Nasceu de uma poça do sangue errado. Cresceu com raiva." },
-  carniceiro:{ name:"Carniceiro do Ossuário", hp:88, def:4, poise:40, icor:62,
-    moves:[
-      {n:"talho largo", tell:"Arma o cutelo bem alto — golpe pesado.", dmg:20, poise:16, heavy:true},
-      {n:"empurrão", tell:"Avança o ombro.", dmg:10, poise:10},
-      {n:"recompor", tell:"Respira fundo, firmando a guarda.", block:true, poise:0},
-    ],
-    flavor:"Cortava carne antes. Ainda corta. Mudaram só os cortes." },
-  sentinela:{ name:"Sentinela de Cinza", hp:74, def:6, poise:34, icor:58,
-    moves:[
-      {n:"lâmina gélida", tell:"A lâmina cobre-se de geada.", dmg:13, poise:8, build:{geada:34}},
-      {n:"postura de escudo", tell:"Ergue o escudo — reduz o dano recebido.", block:true},
-      {n:"estocada", tell:"Aponta a ponta ao teu peito.", dmg:15, poise:9},
-    ],
-    flavor:"Guarda uma porta que dá para lugar nenhum. Com convicção." },
-  coveiro:{ name:"O Coveiro", hp:130, def:5, poise:52, icor:120, elite:true,
-    moves:[
-      {n:"golpe de pá", tell:"Ergue a pá como quem vai rachar lenha.", dmg:22, poise:20, heavy:true},
-      {n:"terra nos olhos", tell:"Junta um punhado de terra fria.", dmg:8, poise:5, build:{geada:22}},
-      {n:"cava fundo", tell:"Prepara um golpe descendente — devastador.", dmg:34, poise:26, heavy:true, wind:true},
-    ],
-    flavor:"Cava covas há eras. A tua já está pronta; ele só espera educadamente." },
-  sepulcra:{ name:"Sepulcra, a Primeira Vigília", hp:210, def:6, poise:60, icor:0, boss:true,
-    moves:[
-      {n:"foice em arco", tell:"Descreve um arco largo com a foice.", dmg:18, poise:14},
-      {n:"flor de sangue", tell:"Gira a lâmina numa flor de cortes.", dmg:10, poise:8, hits:2, build:{bleed:24}},
-      {n:"«cava tua cova»", tell:"Ergue a foice ao teto apodrecido — golpe fatal.", dmg:40, poise:30, heavy:true, wind:true},
-      {n:"vigília", tell:"Recolhe-se sob o manto, refazendo a guarda.", block:true},
-    ],
-    phase2:{ hpAt:.5, msg:"Sepulcra despe o manto. O frio da Maré Baixa preenche a sala.",
-      add:{n:"lamento gélido", tell:"O ar congela ao redor — geada iminente.", dmg:16, poise:10, build:{geada:40}} },
-    flavor:"A primeira a morrer defendendo o Minguante. A última a aceitar que falhou." },
+/* ---------------- SELOS (relíquias) ---------------- */
+const RELICS = {
+  dente:{ name:"Dente da Primeira Fome", desc:"Acúmulo de SANGUE que causas +40%.", },
+  vespa:{ name:"Vespa Embalsamada", desc:"Acúmulo de VENENO que causas +40%." },
+  bigorna:{ name:"Lasca de Bigorna", desc:"Teu dano de postura +30%." },
+  vela:{ name:"Pavio Duplo", desc:"Frascos curam +35%." },
+  moeda:{ name:"Moeda do Barqueiro", desc:"Icor recolhido +25%." },
+  olho:{ name:"Olho Sem Pálpebra", desc:"Golpes Críticos causam +50% de dano." },
+  espinho:{ name:"Cilício de Espinhos", desc:"Quem te fere de perto sofre 6 de dano." },
+  manto:{ name:"Manto do Vigília", desc:"Começas cada combate em guarda." },
+  brasa:{ name:"Brasa Interior", desc:"Imune a GEADA." },
+  coracao:{ name:"Coração de Chumbo", desc:"+30 de vida máxima." },
+  passo:{ name:"Passo de Cinza", desc:"O 1º movimento (avançar/recuar) do turno é grátis." },
+  impeto:{ name:"Ímpeto do Naufrágio", desc:"Após avançares, teu próximo golpe no turno causa +30%." },
+  ampulheta:{ name:"Ampulheta Rachada", desc:"+1 Foco máximo e +1 Foco por turno." },
+  sanguessuga:{ name:"Sanguessuga Devota", desc:"Procs de SANGUE te curam 8." },
+};
+const RELIC_POOL = Object.keys(RELICS);
+
+/* ---------------- CONSUMÍVEIS ---------------- */
+const ITEMS = {
+  faca:{ name:"Faca de Arremesso", ap:1, desc:"12 de dano à distância + 10 SANGUE.", price:35 },
+  bomba:{ name:"Bomba de Icor", ap:1, desc:"22 de dano e 14 de postura, qualquer distância.", price:55 },
+  sal:{ name:"Sal de Geada", ap:1, desc:"Aplica 50 de GEADA no alvo.", price:45 },
 };
 
-// ---- Textos de sabor ----
-const DEATHS = [
-  "A morte, como sempre, chegou pontual.",
-  "Vespergloam mal notou. Já viu tantos.",
-  "O Icor esfria. Alguém virá recolhê-lo. Não serás tu — por ora.",
-  "Não foi bravura. Foi teimosia. A diferença raramente sobrevive.",
-  "O Claustro afoga mais um nome. Não guardava os anteriores.",
-];
-const WANE_LINES = [
-  "A vela range, indecisa entre arder e ceder. Como tu.",
-  "Aqui os mortos param para lembrar que estão mortos. É reconfortante.",
-  "O Minguante não promete salvação. Só uma pausa antes da próxima.",
-  "Descansa. O trono não vai a lugar nenhum — está preso, como o resto de nós.",
+/* ---------------- INIMIGOS ---------------- */
+/* flags: lento (erra se Longe), ranged (acerta em qualquer distância),
+   onlyLonge/onlyPerto (seleção de intent), block, wind (aviso dramático)
+   mecânicas: regen, thorns, crescendo, fragilePerto */
+const FOES = {
+ /* ===== ZONA 1 — O Claustro Afogado ===== */
+ servo:{ name:"Servo Afogado", hp:54, def:2, poise:20, icor:36, zone:1,
+  moves:[
+   {n:"golpe inchado", tell:"Ergue um braço encharcado.", dmg:9, poise:8},
+   {n:"agarrão", tell:"Estende as mãos, faminto.", dmg:13, poise:6},
+   {n:"peso morto", tell:"Tomba o corpo inteiro sobre ti — pesado e lento.", dmg:20, poise:14, lento:true},
+  ], flavor:"O Claustro afogou-o há tempos. Ele não percebeu." },
+ larva:{ name:"Larva de Icor", hp:40, def:1, poise:12, icor:30, zone:1,
+  moves:[
+   {n:"cuspe séptico", tell:"Incha, prestes a arrotar.", dmg:6, poise:3, build:{poison:30}, ranged:true},
+   {n:"mordida", tell:"Range as gengivas.", dmg:9, poise:4},
+  ], flavor:"Nasceu de uma poça do sangue errado. Cresceu com raiva." },
+ afogadela:{ name:"Afogadelas", hp:34, def:0, poise:10, icor:26, zone:1,
+  moves:[
+   {n:"enxame de mordidas", tell:"A água ferve de corpos pequenos.", dmg:4, poise:2, hits:3},
+   {n:"puxão", tell:"Dedos finos agarram teu tornozelo.", dmg:7, poise:5},
+  ], flavor:"Ratos que aprenderam a nadar. Depois, a odiar." },
+ carniceiro:{ name:"Carniceiro do Ossuário", hp:92, def:4, poise:42, icor:66, zone:1,
+  moves:[
+   {n:"talho largo", tell:"Arma o cutelo bem alto — golpe pesado e lento.", dmg:21, poise:16, lento:true},
+   {n:"empurrão", tell:"Avança o ombro.", dmg:10, poise:10},
+   {n:"recompor", tell:"Respira fundo, firmando a guarda.", block:true},
+  ], flavor:"Cortava carne antes. Ainda corta. Mudaram só os cortes." },
+ sentinela:{ name:"Sentinela de Cinza", hp:76, def:6, poise:34, icor:60, zone:1,
+  moves:[
+   {n:"lâmina gélida", tell:"A lâmina cobre-se de geada.", dmg:13, poise:8, build:{geada:32}},
+   {n:"postura de escudo", tell:"Ergue o escudo — reduz o dano recebido.", block:true},
+   {n:"estocada", tell:"Aponta a ponta ao teu peito.", dmg:15, poise:9},
+  ], flavor:"Guarda uma porta que dá para lugar nenhum. Com convicção." },
+
+ /* ===== ZONA 2 — O Ossuário Cantante ===== */
+ salmista:{ name:"Salmista Oco", hp:70, def:3, poise:22, icor:64, zone:2,
+  moves:[
+   {n:"hino gélido", tell:"Abre a mandíbula vazia — um hino de frio.", dmg:12, poise:6, build:{geada:30}, ranged:true},
+   {n:"nota rachada", tell:"Um som que faz teus ossos tremerem.", dmg:16, poise:10, ranged:true},
+   {n:"tapa oco", tell:"Acerta-te com a mão descarnada.", dmg:8, poise:5, onlyPerto:true},
+  ], flavor:"Canta desde que morreu. Ninguém teve coragem de pedir silêncio." },
+ carregador:{ name:"Carregador de Ossos", hp:110, def:5, poise:55, icor:78, zone:2,
+  moves:[
+   {n:"descarga de ossos", tell:"Verga-se — vai despejar a carga inteira sobre ti. Lento.", dmg:28, poise:20, lento:true},
+   {n:"cotovelada", tell:"Gira o tronco imenso.", dmg:12, poise:12},
+   {n:"firmar carga", tell:"Ajeita os ossos nas costas, endurecendo.", block:true},
+  ], flavor:"Carrega os mortos que ninguém enterrou. A pilha só cresce." },
+ enxame:{ name:"Enxame de Dedos", hp:58, def:1, poise:14, icor:58, zone:2,
+  moves:[
+   {n:"mil arranhões", tell:"Os dedos ondulam, afiados.", dmg:5, poise:3, hits:4, build:{bleed:8}},
+   {n:"garra fechada", tell:"O enxame se condensa num punho.", dmg:16, poise:9},
+  ], flavor:"Mãos que continuaram procurando algo depois dos donos. Acharam companhia." },
+ penitente:{ name:"Penitente Costurado", hp:86, def:4, poise:36, icor:70, zone:2, thorns:5,
+  moves:[
+   {n:"chibata de arame", tell:"Desenrola o arame do próprio braço.", dmg:14, poise:9, build:{bleed:16}},
+   {n:"oração fechada", tell:"Encolhe-se em prece — a pele de arame reduz e devolve dano.", block:true},
+   {n:"abraço", tell:"Abre os braços costurados para ti. Lento.", dmg:24, poise:15, lento:true},
+  ], flavor:"Costurou os próprios pecados na pele. Tocar nele é assinar embaixo." },
+
+ /* ===== ZONA 3 — A Corte da Maré Baixa ===== */
+ cortesa:{ name:"Cortesã Afogada", hp:96, def:4, poise:30, icor:88, zone:3, regen:6,
+  moves:[
+   {n:"beijo salgado", tell:"Aproxima o rosto inchado, quase terna.", dmg:15, poise:8, build:{poison:24}},
+   {n:"véu d'água", tell:"O vestido ondula, drenando o ar.", dmg:12, poise:6, ranged:true},
+   {n:"reverência", tell:"Curva-se — e a água a recompõe.", block:true},
+  ], flavor:"A corte afundou dançando. Ela ainda não terminou a valsa. Regenera: fere fundo ou envenena." },
+ guarda:{ name:"Guarda da Maré", hp:118, def:7, poise:60, icor:96, zone:3, thorns:8,
+  moves:[
+   {n:"alabarda baixa", tell:"Varre a alabarda à altura dos joelhos.", dmg:17, poise:12},
+   {n:"muralha", tell:"Planta o escudo no chão — devolve cada golpe recebido.", block:true},
+   {n:"julgamento", tell:"Ergue a alabarda acima da cabeça. Lento e terminal.", dmg:32, poise:22, lento:true},
+  ], flavor:"O último decreto da corte foi «resistir». Ele é o decreto." },
+ lampejo:{ name:"Lampejo de Icor", hp:84, def:3, poise:26, icor:92, zone:3, crescendo:3,
+  moves:[
+   {n:"clarão", tell:"Brilha mais forte — e mais forte ainda.", dmg:11, poise:6, ranged:true},
+   {n:"queimadura dourada", tell:"O brilho condensa numa lança de luz.", dmg:15, poise:9, ranged:true},
+  ], flavor:"Sangue do Soberano que aprendeu a arder sozinho. Cresce a cada instante: não demores." },
+ ceifeiro:{ name:"Ceifeiro Menor", hp:100, def:5, poise:38, icor:90, zone:3,
+  moves:[
+   {n:"arco raso", tell:"A foice sussurra rente ao chão.", dmg:16, poise:10, build:{bleed:20}},
+   {n:"flor de cortes", tell:"Gira a lâmina numa flor.", dmg:9, poise:6, hits:2, build:{bleed:14}},
+   {n:"colheita", tell:"Firma a foice para o corte definitivo. Lento.", dmg:30, poise:20, lento:true},
+  ], flavor:"Aprendiz de Sepulcra. O talento é inegável; a vocação, questionável." },
+
+ /* ===== ELITES (semi-chefes) ===== */
+ coveiro:{ name:"O Coveiro", hp:150, def:5, poise:52, icor:150, elite:true, zone:1,
+  moves:[
+   {n:"golpe de pá", tell:"Ergue a pá como quem vai rachar lenha. Lento.", dmg:23, poise:20, lento:true},
+   {n:"terra nos olhos", tell:"Junta um punhado de terra fria.", dmg:8, poise:5, build:{geada:24}, ranged:true},
+   {n:"cava fundo", tell:"Prepara um golpe descendente — devastador e lento.", dmg:36, poise:26, lento:true, wind:true},
+   {n:"apoiar na pá", tell:"Descansa o peso na pá, recompondo-se.", block:true},
+  ], flavor:"Cava covas há eras. A tua já está pronta; ele só espera educadamente." },
+ viuva:{ name:"A Viúva do Poço", hp:170, def:4, poise:44, icor:180, elite:true, zone:2, regen:10,
+  moves:[
+   {n:"lamento afiado", tell:"O choro dela corta o ar.", dmg:14, poise:8, ranged:true},
+   {n:"abraço de luto", tell:"Abre os braços encharcados. Lento.", dmg:26, poise:16, lento:true},
+   {n:"lágrimas pretas", tell:"As lágrimas escorrem, tóxicas.", dmg:10, poise:5, build:{poison:30}, ranged:true},
+  ], flavor:"Chora o marido no fundo do poço. A água sempre a devolve inteira — só veneno ou sangue apagam o luto." },
+ sino:{ name:"O Sino Ambulante", hp:160, def:6, poise:48, icor:185, elite:true, zone:2, fragilePerto:true,
+  moves:[
+   {n:"REPIQUE", tell:"O badalo recua — de longe, o som é devastador.", dmg:30, poise:18, ranged:true, onlyLonge:true},
+   {n:"dobre fúnebre", tell:"Um toque grave rola pelo salão.", dmg:18, poise:10, ranged:true, onlyLonge:true},
+   {n:"balanço torto", tell:"De perto, só consegue balançar o corpo de bronze.", dmg:9, poise:8, onlyPerto:true},
+  ], flavor:"Um sino que anda. De longe, um massacre; de perto, quase constrangedor. Cola nele." },
+ cavaleiro:{ name:"Cavaleiro Naufragado", hp:190, def:8, poise:70, icor:210, elite:true, zone:3, thorns:10,
+  moves:[
+   {n:"montante enferrujado", tell:"A espada range ao subir. Lento.", dmg:28, poise:20, lento:true},
+   {n:"pontapé de placa", tell:"A bota de ferro busca teu joelho.", dmg:13, poise:14},
+   {n:"âncora e aço", tell:"Crava a espada e fecha-se na armadura — devolve cada golpe.", block:true},
+  ], flavor:"Afundou com o navio, o cavalo e a honra. Recuperou duas. Bater na guarda dele é doar sangue." },
+ gemeas:{ name:"As Gêmeas da Foice", hp:175, def:5, poise:50, icor:220, elite:true, zone:3,
+  moves:[
+   {n:"tesoura", tell:"As duas foices se cruzam à altura do teu pescoço.", dmg:14, poise:9, hits:2, build:{bleed:16}},
+   {n:"valsa rubra", tell:"Giram uma ao redor da outra, cada vez mais rápido.", dmg:9, poise:6, hits:3, build:{bleed:12}},
+   {n:"ceifa dupla", tell:"Erguem as foices em espelho. Lento e fatal.", dmg:34, poise:22, lento:true, wind:true},
+  ], flavor:"Nasceram juntas, morreram juntas, e não veem motivo para mudar de método." },
+
+ /* ===== CHEFES ===== */
+ sepulcra:{ name:"Sepulcra, a Primeira Vigília", hp:230, def:6, poise:60, icor:260, boss:true, zone:1,
+  moves:[
+   {n:"foice em arco", tell:"Descreve um arco largo com a foice.", dmg:18, poise:14},
+   {n:"flor de sangue", tell:"Gira a lâmina numa flor de cortes.", dmg:10, poise:8, hits:2, build:{bleed:22}},
+   {n:"«cava tua cova»", tell:"Ergue a foice ao teto apodrecido — golpe fatal e lento.", dmg:40, poise:30, lento:true, wind:true},
+   {n:"vigília", tell:"Recolhe-se sob o manto, refazendo a guarda.", block:true},
+  ],
+  phase2:{ hpAt:.5, msg:"Sepulcra despe o manto. O frio da Maré Baixa preenche a sala.",
+   add:{n:"lamento gélido", tell:"O ar congela ao redor — geada iminente.", dmg:16, poise:10, build:{geada:38}, ranged:true} },
+  flavor:"A primeira a morrer defendendo o Minguante. A última a aceitar que falhou." },
+ coro:{ name:"O Coro Descarnado", hp:300, def:5, poise:75, icor:380, boss:true, zone:2, crescendo:4,
+  moves:[
+   {n:"uníssono", tell:"Cem mandíbulas abrem ao mesmo tempo.", dmg:14, poise:9, ranged:true},
+   {n:"dissonância", tell:"As vozes desencontram — o som rasga.", dmg:10, poise:6, hits:2, ranged:true},
+   {n:"CRESCENDO FINAL", tell:"O coro inteiro inspira. O que vem depois é ensurdecedor. Lento.", dmg:34, poise:24, lento:true, wind:true},
+  ],
+  phase2:{ hpAt:.5, msg:"Metade do coro cala — a outra metade canta com o dobro da fúria.",
+   add:{n:"réquiem", tell:"Uma única nota, sustentada, insuportável.", dmg:22, poise:14, ranged:true} },
+  flavor:"Todos os que morreram cantando, cantando ainda. O volume só sobe — quebra a postura para calar o crescendo." },
+ vaskarion:{ name:"Vaskarion, Mão do Soberano", hp:400, def:7, poise:85, icor:0, boss:true, final:true, zone:3,
+  moves:[
+   {n:"punho selado", tell:"A mão imensa se fecha sobre ti.", dmg:20, poise:14},
+   {n:"unhas de icor", tell:"Cinco lâminas douradas riscam o ar.", dmg:11, poise:7, hits:2, build:{bleed:18}},
+   {n:"PALMA ABERTA", tell:"Ergue a palma inteira — o teto some da tua vista. Lento.", dmg:44, poise:32, lento:true, wind:true},
+   {n:"juramento", tell:"Fecha-se em torno de si, selando a guarda.", block:true},
+  ],
+  phase2:{ hpAt:.66, msg:"Vaskarion sangra ouro. O sangue do Soberano desperta na ferida.",
+   add:{n:"lágrima do trono", tell:"Uma gota de icor puro cai — e congela tudo.", dmg:18, poise:12, build:{geada:40}, ranged:true} },
+  phase3:{ hpAt:.33, msg:"A Mão se abre por inteiro. Dentro dela, um fragmento do trono ainda pulsa.", regen:8,
+   add:{n:"éco do soberano", tell:"A voz que não devia existir mais pronuncia teu nome. Lento.", dmg:38, poise:26, lento:true, wind:true} },
+  flavor:"Quando partiram o Soberano, a mão direita recusou-se a soltar o trono. Ainda não soltou." },
+};
+
+/* ---------------- ZONAS E MAPA ---------------- */
+const ZONES = [
+ { name:"O Claustro Afogado", sub:"Zona I",
+   intro:"Aqui a água sobe devagar, para que ninguém possa dizer que não foi avisado.",
+   pool:["servo","larva","afogadela","sentinela"], hard:["carniceiro"], elites:["coveiro"], boss:"sepulcra" },
+ { name:"O Ossuário Cantante", sub:"Zona II",
+   intro:"Os ossos daqui nunca aprenderam a ficar em silêncio. Alguns afinaram.",
+   pool:["salmista","enxame","penitente","sentinela"], hard:["carregador"], elites:["viuva","sino"], boss:"coro" },
+ { name:"A Corte da Maré Baixa", sub:"Zona III",
+   intro:"O salão do trono, afogado com etiqueta. A corte insiste que a festa continua.",
+   pool:["cortesa","lampejo","ceifeiro","enxame"], hard:["guarda"], elites:["cavaleiro","gemeas"], boss:"vaskarion" },
 ];
 
-/* ---------------- ESTADO ---------------- */
-let G = null;   // estado global do run
-const $app = document.getElementById("app");
-
-/* ---------------- UTIL ---------------- */
-const rnd = (a,b)=>a+Math.random()*(b-a);
-const ri  = (a,b)=>Math.floor(rnd(a,b+1));
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const ri=(a,b)=>Math.floor(rnd(a,b+1));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
-const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const pick2=a=>{const c=a.slice();const x=c.splice(Math.floor(Math.random()*c.length),1)[0];return [x,pick(c.length?c:[x])];};
 
-function toast(msg){
-  const t=document.createElement("div");t.className="toast";t.textContent=msg;
-  document.body.appendChild(t);setTimeout(()=>t.remove(),1900);
-}
-function floatText(txt,color){
-  const el=document.createElement("div");el.className="float";el.textContent=txt;
-  el.style.color=color||"var(--bone)";
-  el.style.left=(30+Math.random()*40)+"%";el.style.top=(38+Math.random()*10)+"%";
-  document.body.appendChild(el);setTimeout(()=>el.remove(),1000);
+function buildZoneFloors(z, zi){
+  const F=[];
+  const P=()=>pick(z.pool), H=()=>pick(z.hard);
+  // 0 minguante de entrada
+  F.push({kind:"wane", name:"Minguante — "+z.name, zone:zi, merchant:zi>0});
+  // caminho até o elite
+  F.push({choices:[{t:"combat",foe:P()},{t:"combat",foe:P()}], zone:zi});
+  F.push({choices:[{t:"combat",foe:P()},{t:"treasure",loot:randLoot(zi)},{t:"event",ev:pick(EVENT_IDS)}], zone:zi});
+  F.push({choices:[{t:"combat",foe:H()},{t:"combat",foe:P()},{t:"event",ev:pick(EVENT_IDS)}], zone:zi});
+  // semi-chefe: escolha entre elite e combate difícil+tesouro implícito
+  const els = z.elites.length>1 ? pick2(z.elites) : [z.elites[0]];
+  const eliteChoices = els.map(e=>({t:"elite",foe:e}));
+  if(eliteChoices.length===1) eliteChoices.push({t:"combat",foe:H()});
+  F.push({choices:eliteChoices, zone:zi, label:"Vigília Menor"});
+  // minguante do meio com mercador
+  F.push({kind:"wane", name:"Minguante do Poço", zone:zi, merchant:true});
+  F.push({choices:[{t:"combat",foe:P()},{t:"treasure",loot:randLoot(zi)}], zone:zi});
+  F.push({choices:[{t:"combat",foe:H()},{t:"event",ev:pick(EVENT_IDS)},{t:"combat",foe:P()}], zone:zi});
+  // minguante pré-chefe
+  F.push({kind:"wane", name:"Minguante da Vigília", zone:zi});
+  F.push({kind:"boss", foe:z.boss, zone:zi});
+  return F;
 }
 
-/* ---------------- STATS DERIVADOS ---------------- */
-function maxHP(a){ return 45 + a.vit*11; }
+function randLoot(zi){
+  const r=Math.random();
+  if(r<0.38) return "relic";
+  if(r<0.62){
+    const wpool=["estileto","arco","lanca","cutelo","cajado","selo","malho"];
+    return "weapon:"+pick(wpool);
+  }
+  if(r<0.85) return "icor:"+(70+zi*50+ri(0,40));
+  return "item:"+pick(Object.keys(ITEMS));
+}
+
+/* ---------------- EVENTOS ---------------- */
+const EVENTS = {
+  altar:{ title:"Altar Lascado", dot:"d-event",
+    text:"Um altar ao Soberano, rachado ao meio. O icor seco no entalhe ainda aceita ofertas — de um jeito ou de outro.",
+    opts:[
+      {k:"Oferecer sangue", d:"Perde 18 de vida. Ganha um Selo.", do(){ G.player.hp=Math.max(1,G.player.hp-18); giveRelic(); } },
+      {k:"Raspar o icor seco", d:"Ganha 60◈. Sina do altar: 25% de chance de VENENO no próximo combate.", do(){ G.icor+=60; if(Math.random()<0.25) G.curse="poison"; toast("+60 ◈"); } },
+      {k:"Seguir em frente", d:"Nada arriscado, nada perdido.", do(){} },
+    ]},
+  cadaver:{ title:"Cadáver Recente", dot:"d-event",
+    text:"Um Vestígio como tu — menos sortudo, ou menos teimoso. A mão fechada segura algo.",
+    opts:[
+      {k:"Abrir a mão", d:"50%: arma ou item. 50%: os dedos reagem. (combate)", do(){
+        if(Math.random()<0.5){ const l=randLoot(G.zone); applyLoot(l); }
+        else { toast("Os dedos agarram teu pulso!"); G._eventFight="enxame"; }
+      }},
+      {k:"Fechar-lhe os olhos", d:"Um gesto. O Claustro nota. +20◈ e cura 15.", do(){ G.icor+=20; G.player.hp=clamp(G.player.hp+15,1,maxHP(G.player.attr)); toast("+20 ◈ · +15 vida"); } },
+      {k:"Passar ao largo", d:"Ele entenderia.", do(){} },
+    ]},
+  poco:{ title:"Poço de Icor Vivo", dot:"d-event",
+    text:"Uma poça de icor que ainda pulsa, morna, convidativa como tudo o que não devia ser.",
+    opts:[
+      {k:"Beber fundo", d:"70%: +1 permanente num atributo aleatório. 30%: VENENO agora.", do(){
+        if(Math.random()<0.7){ const at=pick(ATTRS).k; G.player.attr[at]++; toast("+1 "+ATTRS.find(x=>x.k===at).name); }
+        else { G.player.hp=Math.max(1,G.player.hp-Math.round(maxHP(G.player.attr)*0.15)); toast("O icor recusa-te. Perdes vida."); }
+      }},
+      {k:"Encher um frasco vazio", d:"Se tiveres frasco gasto: recupera 1.", do(){
+        if(G.player.flask<G.player.flaskMax){ G.player.flask++; toast("Frasco recuperado."); } else toast("Frascos já cheios.");
+      }},
+      {k:"Não confiar", d:"Sábio. Provavelmente.", do(){} },
+    ]},
+  espelho:{ title:"Espelho Afogado", dot:"d-event",
+    text:"Um espelho de corpo inteiro, submerso até a metade. O reflexo demora um segundo a mais do que devia.",
+    opts:[
+      {k:"Encarar o reflexo", d:"Troca 15% da vida atual por +40% de acúmulo de SANGUE neste run... não — ganha 1 Selo aleatório, mas perde 15% da vida.", do(){
+        G.player.hp=Math.max(1,Math.round(G.player.hp*0.85)); giveRelic();
+      }},
+      {k:"Quebrar o espelho", d:"+45◈. Sete anos de azar já eram teus.", do(){ G.icor+=45; toast("+45 ◈"); } },
+      {k:"Desviar o olhar", d:"O reflexo agradece.", do(){} },
+    ]},
+};
+const EVENT_IDS=Object.keys(EVENTS);
+
+/* ---------------- ESTADO ---------------- */
+let G=null;
+const $app=document.getElementById("app");
+
+function toast(msg){ const t=document.createElement("div");t.className="toast";t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),1900); }
+function floatText(txt,color){ const el=document.createElement("div");el.className="float";el.textContent=txt;
+  el.style.color=color||"var(--bone)"; el.style.left=(30+Math.random()*40)+"%";el.style.top=(36+Math.random()*10)+"%";
+  document.body.appendChild(el);setTimeout(()=>el.remove(),1000); }
+
+function maxHP(a){ return 45 + a.vit*11 + (hasRelic("coracao")?30:0); }
 function maxAP(a){ return clamp(3 + Math.floor(a.fol/7), 3, 7); }
 function maxPoise(a){ return 30 + a.fol*2 + a.for; }
-function maxFoco(a){ return 4 + Math.floor((a.int+a.fe)/6); }
-function flaskHeal(a){ return Math.round(maxHP(a)*0.42) + a.fe*2; }
+function maxFoco(a){ return 4 + Math.floor((a.int+a.fe)/6) + (hasRelic("ampulheta")?1:0); }
+function flaskHeal(a){ let h=Math.round(maxHP(a)*0.42)+a.fe*2; if(hasRelic("vela")) h=Math.round(h*1.35); return h; }
+function hasRelic(id){ return G && G.player.relics.includes(id); }
 
-function weaponAtk(attr, w){
-  let dmg = w.base, foc=0;
-  for(const s in w.scale){ dmg += SCALE[w.scale[s]] * attr[s] * 0.8; }
-  return Math.round(dmg);
-}
-function skillAtk(attr, w, sk){
-  // base física usa a arma; feitiçaria escala pelo atributo indicado
+function weaponAtk(attr,w){ let d=w.base; const h=w.hits||1;
+  for(const s in w.scale){ d+=SCALE[w.scale[s]]*attr[s]*0.8/h; } return Math.round(d); }
+function skillAtk(attr,w,sk){
   let base;
-  if(sk.kind==="sorcery"){ base = (w.base*0.5) + SCALE["A"]*attr[sk.scale]*0.9; }
-  else { base = weaponAtk(attr,w); }
-  return Math.round(base * (sk.mult||1));
+  if(sk.kind==="sorcery"||sk.kind==="faith"){ base=(w.base*0.5)+SCALE["A"]*attr[sk.scale]*1.15; }
+  else base=weaponAtk(attr,w);
+  return Math.round(base*(sk.mult||1));
 }
 
-/* ---------------- CONSTRUÇÃO DO PERSONAGEM ---------------- */
-function makePlayer(vestige){
-  const attr = {...vestige.base};
-  const p = {
-    name:vestige.name, vestige:vestige.id, attr,
-    weaponId:vestige.weapon, skills:[...vestige.skills],
-    invWeapons:[vestige.weapon],
-    levelsBought:0,
-  };
-  p.hp = maxHP(attr); p.foco = maxFoco(attr);
-  p.flaskMax = vestige.flasks; p.flask = vestige.flasks;
+function makePlayer(v){
+  const attr={...v.base};
+  const p={ name:v.name, vestige:v.id, attr, weaponId:v.weapon, skills:[...v.skills],
+    invWeapons:[v.weapon], relics:[], items:{}, levelsBought:0 };
+  p.hp=45+attr.vit*11; p.foco=4+Math.floor((attr.int+attr.fe)/6);
+  p.flaskMax=v.flasks; p.flask=v.flasks;
   return p;
 }
 
-/* ---------------- MAPA / RUN ---------------- */
-function buildMap(){
-  return [
-    { kind:"wane", name:"Minguante do Umbral", intro:true },
-    { choices:[ {t:"combat",foe:"servo"}, {t:"combat",foe:"larva"} ] },
-    { choices:[ {t:"treasure",loot:"weapon:estileto"}, {t:"combat",foe:"carniceiro"} ] },
-    { kind:"wane", name:"Minguante do Poço", merchant:true },
-    { choices:[ {t:"elite",foe:"coveiro"}, {t:"combat",foe:"sentinela"} ] },
-    { choices:[ {t:"combat",foe:"carniceiro"}, {t:"treasure",loot:"icor:80"} ] },
-    { kind:"boss", foe:"sepulcra", name:"O Trono Encharcado" },
-  ];
+function newRun(v){
+  G={ player:makePlayer(v), zone:0, map:[], floor:0, lastWane:0, icor:0, mancha:null,
+      clearedNodes:{}, kills:0, deaths:0, curse:null, combat:null };
+  G.map=buildZoneFloors(ZONES[0],0);
 }
 
-function newRun(vestige){
-  G = {
-    player: makePlayer(vestige),
-    map: buildMap(),
-    floor: 0,
-    lastWane: 0,
-    icor: 0,
-    mancha: null,          // { floor, amount }
-    clearedNodes: {},      // "floor:idx" -> true
-    kills: 0, deaths: 0,
-    log: [],
-  };
+function giveRelic(forced){
+  const avail=RELIC_POOL.filter(r=>!G.player.relics.includes(r));
+  if(!avail.length){ G.icor+=80; toast("+80 ◈ (Selos completos)"); return null; }
+  const id=forced&&avail.includes(forced)?forced:pick(avail);
+  G.player.relics.push(id);
+  toast("Selo obtido: "+RELICS[id].name);
+  if(id==="coracao") G.player.hp+=30;
+  return id;
+}
+function giveItem(id,n){ G.player.items[id]=(G.player.items[id]||0)+(n||1); }
+function applyLoot(loot){
+  const [t,v]=loot.split(":");
+  if(t==="relic") giveRelic();
+  else if(t==="icor"){ G.icor+=+v; toast("+"+v+" ◈"); }
+  else if(t==="weapon"){ if(!G.player.invWeapons.includes(v)){G.player.invWeapons.push(v);toast("Arma: "+WEAPONS[v].name);} else {G.icor+=60;toast("Arma repetida → +60 ◈");} }
+  else if(t==="item"){ giveItem(v); toast("+1 "+ITEMS[v].name); }
 }
 
-/* ============================================================
-                         TELAS
-   ============================================================ */
-function render(html){ $app.innerHTML = html; $app.scrollTop=0; }
+/* ============================================================ TELAS */
+function render(html){ $app.innerHTML=html; window.scrollTo(0,0); }
 
-/* ---- TÍTULO ---- */
 function screenTitle(){
-  render(`
-   <div class="title-wrap">
-     <div class="candle"></div>
-     <div class="game disp">VESPERGLOAM</div>
-     <div class="sub">O Claustro Afogado</div>
-     <p class="epigraph flavor">
-       O Soberano Pálido foi partido, e o seu sangue esfria em veios de Icor pelo mundo sem sol.
-       Tu, que recusaste a morte, descerás ao Claustro. Não por virtude — ninguém aqui tem essa desculpa.
-     </p>
-     <div style="max-width:360px;margin:0 auto">
-       <button class="btn gold" id="start"><span class="k disp">DESCER AO CLAUSTRO</span>
-         <span class="sub">Escolher um Vestígio e começar</span></button>
-       <button class="btn" id="how"><span class="k disp">O QUE TE ESPERA</span>
-         <span class="sub">Como se joga</span></button>
-     </div>
-   </div>`);
-  document.getElementById("start").onclick = screenSelect;
-  document.getElementById("how").onclick = screenHow;
+  render(`<div class="title-wrap">
+    <div class="candle"></div>
+    <div class="game disp">VESPERGLOAM</div>
+    <div class="sub">A Descida · Três Vigílias</div>
+    <p class="epigraph flavor">O Soberano Pálido foi partido, e o seu sangue esfria em veios de Icor pelo mundo sem sol.
+      Três Vigílias guardam a descida até o trono. Tu, que recusaste a morte, vais incomodá-las uma por uma.</p>
+    <div style="max-width:360px;margin:0 auto">
+      <button class="btn gold" id="start"><span class="k disp">DESCER</span>
+        <span class="sub">Escolher um Vestígio e começar</span></button>
+      <button class="btn" id="how"><span class="k disp">O QUE TE ESPERA</span><span class="sub">Como se joga</span></button>
+    </div></div>`);
+  document.getElementById("start").onclick=screenSelect;
+  document.getElementById("how").onclick=screenHow;
 }
 
 function screenHow(){
-  render(`
-    <h2 class="disp center" style="padding-top:16px">O que te espera</h2>
-    <div class="hr"></div>
-    <div class="flavor" style="max-width:640px;margin:0 auto;color:var(--bone);font-style:normal;line-height:1.65">
-      <p style="margin-bottom:12px"><b class="ichor disp">Combate por turnos.</b> A cada turno gastas <b>Ação (AP)</b> em golpes, artes e defesa. O inimigo <i>telegrafa</i> o próximo ato — lê a intenção e reage.</p>
-      <p style="margin-bottom:12px"><b class="ichor disp">Postura.</b> Golpes pesados drenam a <b>postura</b>. A zero, o alvo fica <b>atordoado</b>: cancela o ataque dele e abre um <b>Golpe Crítico</b>.</p>
-      <p style="margin-bottom:12px"><b class="ichor disp">Atributos e scaling.</b> Cada arma escala por atributos (S&gt;A&gt;B&gt;C&gt;D). Sobe o atributo certo e o dano dispara. Constrói a tua build.</p>
-      <p style="margin-bottom:12px"><b class="ichor disp">Sangue, veneno, geada.</b> Acumulam numa barra; ao encher, cobram caro.</p>
-      <p style="margin-bottom:12px"><b class="ichor disp">Icor.</b> Moeda arrancada dos mortos. Sobe atributos nos <b class="ichor">Minguantes</b>. Ao morreres, largas todo o Icor no chão — volta buscá-lo, ou perde-o na próxima morte.</p>
-      <p><b class="ichor disp">Minguantes.</b> Descansa: cura total, reabastece frascos, sobe nível. Mas os mortos abaixo voltam a levantar-se.</p>
-    </div>
-    <div class="hr"></div>
-    <div style="max-width:320px;margin:0 auto">
-      <button class="btn gold" id="back"><span class="k disp">ENTENDIDO</span></button>
-    </div>`);
-  document.getElementById("back").onclick = screenTitle;
+  render(`<h2 class="disp center" style="padding-top:16px">O que te espera</h2><div class="hr"></div>
+   <div style="max-width:640px;margin:0 auto;line-height:1.65">
+    <p style="margin-bottom:12px"><b class="ichor disp">Distância.</b> Estás <b>PERTO</b> ou <b>LONGE</b>. Avançar/recuar custa 1 AP. Golpes inimigos <b class="mono" style="color:var(--frost)">LENTOS</b> <i>erram se estiveres Longe</i> — e expõem a postura deles. Essa é a tua esquiva. Golpes com <b class="mono" style="color:var(--bleed)">ALCANCE</b> te acertam em qualquer lugar.</p>
+    <p style="margin-bottom:12px"><b class="ichor disp">Postura → Atordoamento → Crítico.</b> Drena a postura para abrir o Golpe Crítico. Armas pesadas esmagam guardas.</p>
+    <p style="margin-bottom:12px"><b class="ichor disp">Builds com verbos.</b> Força trava guerra de postura. Destreza acumula SANGUE e detona com <i>Explodir Feridas</i>. Feitiçaria prefere Longe (+20% de dano). Arcos só atiram bem de longe; adagas só mordem de perto.</p>
+    <p style="margin-bottom:12px"><b class="ichor disp">Selos.</b> Relíquias passivas achadas no run — cada descida monta uma build diferente.</p>
+    <p style="margin-bottom:12px"><b class="ichor disp">Inimigos-enigma.</b> Alguns regeneram (fere com status), devolvem dano na guarda (não soques a muralha), crescem a cada turno (não demores), ou são inofensivos de perto (cola neles). Lê antes de bater.</p>
+    <p><b class="ichor disp">Icor e Minguantes.</b> Morre e largas todo o Icor onde caíste. Ergue-te no último Minguante, desce e recupera — ou perde tudo na próxima morte.</p>
+   </div><div class="hr"></div>
+   <div style="max-width:320px;margin:0 auto"><button class="btn gold" id="back"><span class="k disp">ENTENDIDO</span></button></div>`);
+  document.getElementById("back").onclick=screenTitle;
 }
 
-/* ---- SELEÇÃO DE VESTÍGIO ---- */
 function screenSelect(){
-  const cards = VESTIGES.map(v=>{
-    const w = WEAPONS[v.weapon];
-    const stat = ATTRS.map(a=>`<span>${a.name.slice(0,3)} <b>${v.base[a.k]}</b></span>`).join("");
+  const cards=VESTIGES.map(v=>{
+    const w=WEAPONS[v.weapon];
+    const stat=ATTRS.map(a=>`<span>${a.name.slice(0,3)} <b>${v.base[a.k]}</b></span>`).join("");
     return `<button class="card" data-v="${v.id}">
-      <h3 class="disp">${v.name}</h3>
-      <div class="role">${v.role}</div>
-      <div class="desc">${v.desc}</div>
-      <div class="hr" style="margin:12px 0"></div>
+      <h3 class="disp">${v.name}</h3><div class="role">${v.role}</div>
+      <div class="desc">${v.desc}</div><div class="hr" style="margin:12px 0"></div>
       <div style="font-family:var(--font-mono);font-size:12px;color:var(--frost)">⚔ ${w.name} · ${w.kind}</div>
-      <div class="stats">${stat}</div>
-    </button>`;
+      <div class="stats">${stat}</div></button>`;
   }).join("");
-  render(`
-    <h2 class="disp center" style="padding-top:14px">Escolhe o teu Vestígio</h2>
+  render(`<h2 class="disp center" style="padding-top:14px">Escolhe o teu Vestígio</h2>
     <p class="center flavor" style="margin-top:4px">Cada morte deixou algo para trás. Qual desses restos te serve?</p>
     <div class="cards">${cards}</div>`);
   document.querySelectorAll(".card").forEach(c=>{
-    c.onclick=()=>{ newRun(VESTIGES.find(v=>v.id===c.dataset.v)); screenMap(); };
+    c.onclick=()=>{ newRun(VESTIGES.find(v=>v.id===c.dataset.v)); screenZoneBanner(); };
   });
 }
 
-/* ---- HUD comum ---- */
+function screenZoneBanner(){
+  const z=ZONES[G.zone];
+  render(`<div class="zonebanner">
+    <div class="tag" style="margin-bottom:16px">${z.sub}</div>
+    <div class="zn disp">${z.name}</div>
+    <p class="flavor" style="max-width:460px;margin:18px auto 30px">${z.intro}</p>
+    <div style="max-width:300px;margin:0 auto">
+      <button class="btn gold" id="go"><span class="k disp">ENTRAR</span></button>
+    </div></div>`);
+  document.getElementById("go").onclick=screenMap;
+}
+
+/* ---- HUD ---- */
 function hudTop(){
-  const p=G.player, a=p.attr;
+  const p=G.player,a=p.attr;
+  const relicN=p.relics.length?`<span class="mono" style="color:var(--frost)">◇ ${p.relics.length}</span>`:"";
   return `<div class="hud-top">
-    <div class="who disp">${p.name} <small>· Vestígio</small></div>
+    <div class="who disp">${p.name} <small>· ${ZONES[G.zone].sub}</small></div>
     <div class="res">
       <span class="mono">HP ${p.hp}/${maxHP(a)}</span>
       <span class="flask mono">⚱ ${p.flask}/${p.flaskMax}</span>
-      <span class="icor mono">◈ ${G.icor} Icor</span>
-    </div>
-  </div>`;
+      <span class="icor mono">◈ ${G.icor}</span>${relicN}
+    </div></div>`;
 }
 
 /* ---- MAPA ---- */
-function nodeDesc(t){
-  return ({
-    combat:"Algo se arrasta na escuridão.",
-    elite:"Uma presença maior barra o caminho.",
-    treasure:"Restos que alguém não levou.",
-    boss:"O fim do Claustro. E, talvez, o teu.",
-  })[t]||"";
-}
-function dotClass(t){ return {combat:"d-combat",elite:"d-elite",treasure:"d-treasure",boss:"d-boss"}[t]||"d-combat"; }
-function nodeLabel(t){ return {combat:"Combate",elite:"Elite",treasure:"Tesouro",boss:"Chefe"}[t]||t; }
+function nodeDesc(t){ return ({combat:"Algo se arrasta na escuridão.",elite:"Uma presença maior barra o caminho.",
+  treasure:"Restos que alguém não levou.",event:"Algo fora do lugar. Ou tu és a coisa fora do lugar.",
+  boss:"A Vigília desta profundidade. Não há volta."})[t]||""; }
+function dotClass(t){ return {combat:"d-combat",elite:"d-elite",treasure:"d-treasure",boss:"d-boss",event:"d-event"}[t]||"d-combat"; }
+function nodeLabel(t){ return {combat:"Combate",elite:"Semi-chefe",treasure:"Tesouro",boss:"Vigília",event:"Encontro"}[t]||t; }
 
 function screenMap(){
-  const fl = G.map[G.floor];
-  // Minguante / boss são resolvidos em telas próprias
-  if(fl.kind==="wane"){ return screenWane(); }
-  if(fl.kind==="boss"){ return screenBossIntro(); }
+  const fl=G.map[G.floor];
+  if(!fl){ return victoryScreen(); }
+  if(fl.kind==="wane") return screenWane();
+  if(fl.kind==="boss") return screenBossIntro();
 
-  const manchaHere = G.mancha && G.mancha.floor===G.floor;
-  const nodes = fl.choices.map((c,i)=>{
-    const done = G.clearedNodes[G.floor+":"+i];
-    const cls = "node"+(done?" done":"")+(manchaHere?" mancha":"");
+  const manchaHere=G.mancha&&G.mancha.floor===G.floor&&G.mancha.zone===G.zone;
+  const nodes=fl.choices.map((c,i)=>{
+    const done=G.clearedNodes[G.zone+":"+G.floor+":"+i];
+    const foeName=c.foe?FOES[c.foe].name:"";
+    const cls="node"+(done?" done":"")+(manchaHere?" mancha":"");
+    let nd = c.t==="treasure"?"Restos que alguém não levou.": c.t==="combat"||c.t==="elite"?`${foeName} — ${FOES[c.foe].flavor}` : nodeDesc(c.t);
     return `<button class="${cls}" data-i="${i}" ${done?"disabled":""}>
       <div class="nt disp"><span class="ic-dot ${dotClass(c.t)}"></span>${nodeLabel(c.t)}${done?" · limpo":""}</div>
-      <div class="nd">${c.t==="treasure"&&c.loot?lootLabel(c.loot):nodeDesc(c.t)}</div>
-    </button>`;
+      <div class="nd">${nd}</div></button>`;
   }).join("");
-  const cols = fl.choices.length===3?"three":fl.choices.length===2?"two":"";
+  const cols=fl.choices.length===3?"three":fl.choices.length===2?"two":"";
+  const prog = G.zone*10+G.floor;
 
   render(`${hudTop()}
-    <div style="margin-top:6px" class="fl-lbl">Profundidade ${G.floor} / ${G.map.length-1} · O Claustro Afogado</div>
+    <div style="margin-top:6px" class="fl-lbl">Profundidade ${prog} · ${ZONES[G.zone].name}${fl.label?" · "+fl.label:""}</div>
     ${manchaHere?`<div class="floor" style="border-color:var(--ichor)">
-        <div class="nt disp ichor"><span class="ic-dot d-wane"></span>Mancha de Icor — ${G.mancha.amount} ◈</div>
-        <div class="nd">O sangue que largaste ao morrer. Vence o nó para reavê-lo.</div></div>`:""}
-    <div class="floor">
-      <div class="fl-lbl">Escolhe teu caminho</div>
-      <div class="nodegrid ${cols}">${nodes}</div>
-    </div>
+      <div class="nt disp ichor"><span class="ic-dot d-wane"></span>Mancha de Icor — ${G.mancha.amount} ◈</div>
+      <div class="nd">O sangue que largaste ao morrer. Vence um nó desta profundidade para reavê-lo.</div></div>`:""}
+    <div class="floor"><div class="fl-lbl">Escolhe teu caminho — só um</div>
+      <div class="nodegrid ${cols}">${nodes}</div></div>
     <div style="max-width:340px;margin:14px auto 0">
       <button class="btn" id="abandon"><span class="k disp faint">ABANDONAR O RUN</span>
-        <span class="sub">Voltar ao início. Perdes tudo, claro.</span></button>
-    </div>`);
+        <span class="sub">Voltar ao início. Perdes tudo, claro.</span></button></div>`);
   document.querySelectorAll(".node[data-i]").forEach(n=>{
-    if(n.disabled) return;
-    n.onclick=()=>resolveNode(G.floor, +n.dataset.i);
+    if(n.disabled)return;
+    n.onclick=()=>resolveNode(G.floor,+n.dataset.i);
   });
   document.getElementById("abandon").onclick=screenTitle;
 }
 
-function lootLabel(loot){
-  const [t,v]=loot.split(":");
-  if(t==="weapon") return "Uma arma jaz entre os ossos: "+WEAPONS[v].name+".";
-  if(t==="icor")   return v+" de Icor esquecido no lodo.";
-  return "Restos aproveitáveis.";
+function resolveNode(floor,idx){
+  const node=G.map[floor].choices[idx];
+  G._pendingNode={floor,idx};
+  if(node.t==="treasure") return resolveTreasure(node);
+  if(node.t==="event") return resolveEvent(node);
+  startCombat(node.foe,node.t==="elite");
 }
 
-function resolveNode(floor, idx){
-  const node = G.map[floor].choices[idx];
-  G._pendingNode = {floor, idx};
-  if(node.t==="treasure"){ resolveTreasure(node); return; }
-  startCombat(node.foe, node.t==="elite");
+function markCleared(){ if(G._pendingNode){ G.clearedNodes[G.zone+":"+G._pendingNode.floor+":"+G._pendingNode.idx]=true; } }
+function advanceFloor(){
+  if(G.mancha&&G.mancha.floor===G.floor&&G.mancha.zone===G.zone){
+    G.icor+=G.mancha.amount; toast(`Reavido: ${G.mancha.amount} ◈`); G.mancha=null;
+  }
+  G.floor++;
+  if(G.floor>=G.map.length){
+    // próxima zona
+    G.zone++;
+    if(G.zone>=ZONES.length) return victoryScreen();
+    G.map=buildZoneFloors(ZONES[G.zone],G.zone);
+    G.floor=0; G.lastWane=0; G.clearedNodes={};
+    return screenZoneBanner();
+  }
+  screenMap();
 }
 
 function resolveTreasure(node){
-  const [t,v]=node.loot.split(":");
-  let msg="";
-  if(t==="icor"){ G.icor+= +v; msg=`Recolhes ${v} de Icor. Ainda morno.`; }
-  else if(t==="weapon"){
-    if(!G.player.invWeapons.includes(v)) G.player.invWeapons.push(v);
-    msg=`Empunhas ${WEAPONS[v].name}. «${WEAPONS[v].desc}»`;
-  }
+  applyLoot(node.loot);
   markCleared();
   render(`${hudTop()}
     <div class="floor" style="margin-top:20px">
       <div class="nt disp ichor"><span class="ic-dot d-treasure"></span>Tesouro</div>
-      <p class="flavor" style="margin-top:10px;color:var(--bone);font-style:normal">${msg}</p>
-    </div>
-    ${t==="weapon"?`<p class="center flavor">Podes trocar de arma no próximo Minguante — ou já a seguir, se quiseres.</p>`:""}
+      <p style="margin-top:10px">O Claustro devolve o que os mortos não levaram. Nunca por generosidade.</p></div>
     <div style="max-width:320px;margin:16px auto 0">
-      ${t==="weapon"?`<button class="btn gold" id="equip"><span class="k disp">EMPUNHAR AGORA</span></button>`:""}
-      <button class="btn" id="cont"><span class="k disp">SEGUIR</span></button>
-    </div>`);
-  if(t==="weapon"){
-    document.getElementById("equip").onclick=()=>{ G.player.weaponId=v; toast("Arma empunhada: "+WEAPONS[v].name); advanceFloor(); };
-  }
+      <button class="btn gold" id="cont"><span class="k disp">SEGUIR</span></button></div>`);
   document.getElementById("cont").onclick=advanceFloor;
 }
 
-function markCleared(){
-  if(G._pendingNode){ G.clearedNodes[G._pendingNode.floor+":"+G._pendingNode.idx]=true; }
-}
-function advanceFloor(){
-  // reaver mancha ao vencer o nó onde morreste
-  if(G.mancha && G.mancha.floor===G.floor){
-    G.icor += G.mancha.amount;
-    toast(`Reavido: ${G.mancha.amount} ◈ de Icor`);
-    G.mancha=null;
-  }
-  G.floor++;
-  screenMap();
+function resolveEvent(node){
+  const ev=EVENTS[node.ev];
+  const opts=ev.opts.map((o,i)=>`<button class="btn" data-o="${i}">
+    <span class="k disp">${o.k}</span><span class="sub">${o.d}</span></button>`).join("");
+  render(`${hudTop()}
+    <div class="floor" style="margin-top:16px">
+      <div class="nt disp" style="color:#b49fd0"><span class="ic-dot d-event"></span>${ev.title}</div>
+      <p class="flavor" style="margin-top:10px">${ev.text}</p></div>
+    <div style="max-width:480px;margin:10px auto 0">${opts}</div>`);
+  document.querySelectorAll(".btn[data-o]").forEach(b=>{
+    b.onclick=()=>{
+      ev.opts[+b.dataset.o].do();
+      markCleared();
+      if(G._eventFight){ const f=G._eventFight; G._eventFight=null; return startCombat(f,false); }
+      if(G.player.hp<=0){ G.player.hp=1; }
+      advanceFloor();
+    };
+  });
 }
 
-/* ============================================================
-                        COMBATE
-   ============================================================ */
-function startCombat(foeId, isElite){
-  const base = FOES[foeId];
-  const foe = {
-    id:foeId, name:base.name, hp:base.hp, maxHp:base.hp, def:base.def,
-    poise:base.poise, maxPoise:base.poise, staggered:false, blocking:false,
-    icor:base.icor, moves:base.moves.map(m=>({...m})), boss:base.boss, elite:base.elite,
-    phase2:base.phase2?{...base.phase2, done:false}:null,
-    status:{bleed:0,poison:0,geada:0}, statusMax:{bleed:100,poison:100,geada:100},
-    poisonTurns:0, geadaTurns:0, intent:null,
-  };
-  const p=G.player, a=p.attr;
-  const C = {
-    foe, turn:"player", ap:maxAP(a), over:false,
-    pStatus:{bleed:0,poison:0,geada:0}, pStatusMax:{bleed:100,poison:100,geada:100},
-    pPoise:maxPoise(a), pMaxPoise:maxPoise(a), pStaggered:false,
-    pPoisonTurns:0, pGeadaTurns:0, pGeadaDebuff:false, pFoco:p.foco,
-    log:[], guarding:false,
-  };
+/* ============================================================ COMBATE */
+function startCombat(foeId,isElite){
+  const base=FOES[foeId];
+  const foe={ id:foeId,name:base.name,hp:base.hp,maxHp:base.hp,def:base.def,
+    poise:base.poise,maxPoise:base.poise,staggered:false,blocking:false,
+    icor:base.icor,moves:base.moves.map(m=>({...m})),boss:base.boss,elite:base.elite,final:base.final,
+    regen:base.regen||0, thorns:base.thorns||0, crescendo:base.crescendo||0, cresc:0,
+    fragilePerto:base.fragilePerto||false,
+    phase2:base.phase2?{...base.phase2,done:false}:null,
+    phase3:base.phase3?{...base.phase3,done:false}:null,
+    status:{bleed:0,poison:0,geada:0}, poisonTurns:0, geadaTurns:0, intent:null };
+  const p=G.player,a=p.attr;
+  const C={ foe,turn:"player",ap:maxAP(a),over:false,range:"longe",
+    pStatus:{bleed:0,poison:0,geada:0}, pPoise:maxPoise(a),pMaxPoise:maxPoise(a),
+    pPoisonTurns:0,pGeadaTurns:0,pFoco:p.foco,log:[],guarding:hasRelic("manto"),
+    movedFree:false, advancedThisTurn:false, impetus:false };
   G.combat=C;
-  chooseIntent(foe);
-  clog(C, `<span class="sys">${base.flavor}</span>`);
-  clog(C, `<span class="sys">${foe.name} ergue-se do lodo.</span>`);
+  // maldição de evento
+  if(G.curse==="poison"){ C.pStatus.poison=60; G.curse=null; clog(C,`<span class="proc">A sina do altar te acompanha: veneno acumula em ti.</span>`); }
+  chooseIntent(foe,C);
+  clog(C,`<span class="sys">${base.flavor}</span>`);
+  if(foe.regen) clog(C,`<span class="frost">※ Regenera ${foe.regen}/turno — status ou pressa.</span>`);
+  if(foe.thorns) clog(C,`<span class="frost">※ Devolve ${foe.thorns} de dano quando em guarda.</span>`);
+  if(foe.crescendo) clog(C,`<span class="frost">※ Crescendo: dano +${foe.crescendo} por turno. Atordoa para zerar.</span>`);
+  if(foe.fragilePerto) clog(C,`<span class="frost">※ De PERTO, quase inofensivo. De LONGE, devastador.</span>`);
+  if(hasRelic("manto")) clog(C,`<span class="sys">O Manto do Vigília ergue tua guarda.</span>`);
   renderCombat();
 }
 
-function clog(C,msg,cls){ C.log.push(`<p class="${cls||''}">${msg}</p>`); if(C.log.length>60)C.log.shift(); }
+function clog(C,msg,cls){ C.log.push(`<p class="${cls||''}">${msg}</p>`); if(C.log.length>70)C.log.shift(); }
 
-function chooseIntent(foe){
+function chooseIntent(foe,C){
   if(foe.staggered){ foe.intent={n:"—",tell:"Cambaleia, atordoado.",stagger:true}; return; }
-  // fase 2 do chefe
-  if(foe.phase2 && !foe.phase2.done && foe.hp <= foe.maxHp*foe.phase2.hpAt){
-    foe.phase2.done=true; foe.moves.push(foe.phase2.add);
-    foe._phaseMsg=foe.phase2.msg;
-  }
+  checkPhases(foe,C);
   let pool=foe.moves.slice();
-  // evita repetir bloqueio/recompor seguidamente
-  if(foe._last && (foe._last.block)) pool=pool.filter(m=>!m.block);
+  if(foe._last&&foe._last.block) pool=pool.filter(m=>!m.block);
+  // preferência por distância
+  const r=C?C.range:"longe";
+  const fits=pool.filter(m=>!(m.onlyLonge&&r==="perto")&&!(m.onlyPerto&&r==="longe"));
+  if(fits.length) pool=fits;
   const m=pick(pool);
-  foe._last=m;
-  foe.intent=m;
+  foe._last=m; foe.intent=m;
+}
+
+function checkPhases(foe,C){
+  if(foe.phase2&&!foe.phase2.done&&foe.hp<=foe.maxHp*foe.phase2.hpAt){
+    foe.phase2.done=true; foe.moves.push(foe.phase2.add); foe._phaseMsg=foe.phase2.msg;
+  }
+  if(foe.phase3&&!foe.phase3.done&&foe.hp<=foe.maxHp*foe.phase3.hpAt){
+    foe.phase3.done=true; foe.moves.push(foe.phase3.add); foe._phaseMsg=foe.phase3.msg;
+    if(foe.phase3.regen) foe.regen=Math.max(foe.regen,foe.phase3.regen);
+  }
+}
+
+function intentTags(m,C){
+  let t="";
+  if(m.lento) t+=`<span class="rtag lento">LENTO — recua p/ esquivar</span>`;
+  if(m.ranged) t+=`<span class="rtag alc">ALCANCE</span>`;
+  if(m.block) t+=`<span class="rtag">GUARDA</span>`;
+  return t;
 }
 
 function renderCombat(){
-  const C=G.combat, foe=C.foe, p=G.player, a=p.attr;
-  const w=WEAPONS[p.weaponId];
-
-  const apPips = Array.from({length:maxAP(a)},(_,i)=>
-    `<div class="ap-pip ${i<C.ap?'on':''}"></div>`).join("");
-
-  // barras de status
-  const foeStatus = statusChips(foe.status, foe.poisonTurns, foe.geadaTurns, foe.blocking, foe.staggered);
-  const pStatus = statusChips(C.pStatus, C.pPoisonTurns, C.pGeadaTurns, C.guarding, C.pStaggered);
-
-  // ações
-  const canCrit = foe.staggered;
-  const acts = buildActions(C, p, w, canCrit);
+  const C=G.combat,foe=C.foe,p=G.player,a=p.attr,w=WEAPONS[p.weaponId];
+  const apPips=Array.from({length:maxAP(a)},(_,i)=>`<div class="ap-pip ${i<C.ap?'on':''}"></div>`).join("");
+  const foeChips=statusChips(foe.status,foe.poisonTurns,foe.geadaTurns,foe.blocking,foe.staggered,foe);
+  const pChips=statusChips(C.pStatus,C.pPoisonTurns,C.pGeadaTurns,C.guarding,false,null);
+  const canCrit=foe.staggered;
+  const acts=buildActions(C,p,w,canCrit);
+  const rlabel=C.range==="perto"?"PERTO":"LONGE";
 
   render(`${hudTop()}
-    <div class="fl-lbl" style="margin-top:4px">Combate · ${foe.elite?"Elite":foe.boss?"Chefe":"Profundidade "+G.floor}</div>
+    <div class="fl-lbl" style="margin-top:4px">Combate · ${foe.final?"Vigília Final":foe.boss?"Vigília":foe.elite?"Semi-chefe":ZONES[G.zone].name}</div>
     <div class="arena">
-      <!-- INIMIGO -->
       <div class="combatant foe">
-        <div class="name disp">${foe.name} <small>${foe.hp}/${foe.maxHp} HP</small></div>
+        <div class="name disp">${foe.name} <small>${Math.max(0,foe.hp)}/${foe.maxHp} HP${foe.cresc?` · crescendo +${foe.cresc}`:""}</small></div>
         <div class="barlbl"><span>VIDA</span><span>${Math.max(0,foe.hp)}</span></div>
         <div class="bar hp"><i style="width:${clamp(foe.hp/foe.maxHp*100,0,100)}%"></i></div>
         <div class="barlbl"><span>POSTURA</span><span>${Math.max(0,Math.round(foe.poise))}/${foe.maxPoise}</span></div>
         <div class="bar poise"><i style="width:${clamp(foe.poise/foe.maxPoise*100,0,100)}%"></i></div>
-        ${statusBars(foe.status)}
-        ${foeStatus}
+        ${statusBars(foe.status)}${foeChips}
         <div class="intent ${foe.staggered?'stagger':''}">
-          <b>${foe.staggered?"ATORDOADO":"INTENÇÃO"}</b> — ${foe.intent?foe.intent.tell:""}
+          <b>${foe.staggered?"ATORDOADO":"INTENÇÃO"}</b> — ${foe.intent?foe.intent.tell:""} ${foe.intent?intentTags(foe.intent,C):""}
         </div>
       </div>
-      <!-- JOGADOR -->
+      <div class="rangeline ${C.range}">
+        <span>TU</span><div class="track"></div><span>ELE</span>
+        <b>· ${rlabel}</b>
+      </div>
       <div class="combatant">
         <div class="name disp">${p.name} <small>${w.name}</small></div>
         <div class="barlbl"><span>VIDA</span><span>${p.hp}/${maxHP(a)}</span></div>
@@ -694,533 +895,664 @@ function renderCombat(){
         <div class="bar poise"><i style="width:${clamp(C.pPoise/C.pMaxPoise*100,0,100)}%"></i></div>
         <div class="barlbl"><span>FOCO</span><span>${C.pFoco}/${maxFoco(a)}</span></div>
         <div class="bar focus"><i style="width:${clamp(C.pFoco/maxFoco(a)*100,0,100)}%"></i></div>
-        ${statusBars(C.pStatus)}
-        ${pStatus}
+        ${statusBars(C.pStatus)}${pChips}
       </div>
     </div>
-
-    <div class="barlbl" style="margin-top:12px"><span>AÇÃO</span><span>${C.ap} AP restantes</span></div>
+    <div class="barlbl" style="margin-top:12px"><span>AÇÃO</span><span>${C.ap} AP</span></div>
     <div class="ap-track">${apPips}</div>
     <div class="actions">${acts}</div>
-
     <div class="log" id="clog">${C.log.join("")}</div>`);
-
-  // bind
-  document.querySelectorAll(".act[data-act]").forEach(b=>{
-    if(b.disabled) return;
-    b.onclick=()=>doAction(b.dataset.act);
-  });
-  const lg=document.getElementById("clog"); if(lg) lg.scrollTop=lg.scrollHeight;
+  document.querySelectorAll(".act[data-act]").forEach(b=>{ if(!b.disabled) b.onclick=()=>doAction(b.dataset.act); });
+  const lg=document.getElementById("clog"); if(lg)lg.scrollTop=lg.scrollHeight;
 }
 
 function statusBars(st){
   let h="";
-  if(st.bleed>0)  h+=`<div class="barlbl" style="margin-top:6px"><span style="color:var(--bleed)">SANGUE</span><span>${Math.round(st.bleed)}%</span></div><div class="bar bleed"><i style="width:${st.bleed}%"></i></div>`;
+  if(st.bleed>0) h+=`<div class="barlbl" style="margin-top:6px"><span style="color:var(--bleed)">SANGUE</span><span>${Math.round(st.bleed)}%</span></div><div class="bar bleed"><i style="width:${st.bleed}%"></i></div>`;
   if(st.poison>0) h+=`<div class="barlbl" style="margin-top:6px"><span style="color:var(--poison)">VENENO</span><span>${Math.round(st.poison)}%</span></div><div class="bar poison"><i style="width:${st.poison}%"></i></div>`;
-  if(st.geada>0)  h+=`<div class="barlbl" style="margin-top:6px"><span style="color:var(--geada)">GEADA</span><span>${Math.round(st.geada)}%</span></div><div class="bar geada"><i style="width:${st.geada}%"></i></div>`;
+  if(st.geada>0) h+=`<div class="barlbl" style="margin-top:6px"><span style="color:var(--geada)">GEADA</span><span>${Math.round(st.geada)}%</span></div><div class="bar geada"><i style="width:${st.geada}%"></i></div>`;
   return h;
 }
-function statusChips(st, poisonT, geadaT, blocking, staggered){
+function statusChips(st,poisonT,geadaT,blocking,staggered,foe){
   const c=[];
-  if(poisonT>0) c.push(`<span class="chip poison">envenenado ${poisonT}</span>`);
-  if(geadaT>0)  c.push(`<span class="chip geada">frostbite ${geadaT}</span>`);
-  if(blocking)  c.push(`<span class="chip buff">guarda</span>`);
-  if(staggered) c.push(`<span class="chip buff">atordoado</span>`);
+  if(poisonT>0)c.push(`<span class="chip poison">envenenado ${poisonT}</span>`);
+  if(geadaT>0)c.push(`<span class="chip geada">frostbite ${geadaT}</span>`);
+  if(blocking)c.push(`<span class="chip buff">guarda${foe&&foe.thorns?" · espinhos "+foe.thorns:""}</span>`);
+  if(staggered)c.push(`<span class="chip buff">atordoado</span>`);
+  if(foe&&foe.regen)c.push(`<span class="chip mech">regen ${foe.regen}</span>`);
+  if(foe&&foe.crescendo)c.push(`<span class="chip mech">crescendo</span>`);
+  if(foe&&foe.fragilePerto)c.push(`<span class="chip mech">frágil de perto</span>`);
   return c.length?`<div class="statuschips">${c.join("")}</div>`:"";
 }
 
-function buildActions(C, p, w, canCrit){
-  const a=p.attr;
-  const acts=[];
-  // Golpe crítico (só com alvo atordoado)
+function buildActions(C,p,w,canCrit){
+  const a=p.attr, acts=[];
+  const perto=C.range==="perto";
+  const moveCost=(hasRelic("passo")&&!C.movedFree)?0:1;
+  // mover
+  if(!perto) acts.push(actBtn("adv","Avançar ▸","Fecha a distância."+(hasRelic("impeto")?" (Ímpeto: próximo golpe +30%)":""),moveCost,C.ap>=moveCost,"move"));
+  else acts.push(actBtn("ret","◂ Recuar","Abre distância — esquiva golpes LENTOS.",moveCost,C.ap>=moveCost,"move"));
+  // crítico
   if(canCrit){
-    acts.push(actBtn("crit","Golpe Crítico","Explora o atordoamento — dano massivo.",w.ap, C.ap>=w.ap, "crit"));
+    const critOk = perto || w.ranged || w.reach;
+    acts.push(actBtn("crit","Golpe Crítico","Explora o atordoamento — dano massivo."+(critOk?"":" (aproxima-te)"),w.ap,C.ap>=w.ap&&critOk,"crit"));
   }
-  // Atacar
+  // ataque básico
+  let atkOk=C.ap>=w.ap, atkNote="";
+  if(w.ranged){ atkNote=perto?"À queima-roupa (−25%).":"+15% de longe."; }
+  else if(w.reach){ atkNote=perto?"":"De longe: −30%."; }
+  else { if(!perto){ atkOk=false; atkNote="Precisa estar PERTO."; } }
   acts.push(actBtn("attack",`Atacar · ${w.name}`,
-    `${w.hits>1?w.hits+" golpes. ":""}${Object.entries(w.scale).map(([s,g])=>s.toUpperCase()+" "+g).join(" ")}`,
-    w.ap, C.ap>=w.ap));
-  // Habilidades
-  p.skills.forEach(id=>{
-    const sk=SKILLS[id];
-    // arte de arma só disponível se a arma a suporta OU é skill de classe (feitiçaria/cura)
-    const isArt = (w.art===id);
-    const usable = isArt || sk.kind==="sorcery" || sk.kind==="heal";
-    const catalystNeeded = sk.kind==="sorcery" && !w.catalyst;
-    let ok = C.ap>=sk.ap && C.pFoco>=(sk.foco||0) && usable && !catalystNeeded;
-    let d = sk.desc + (catalystNeeded?" (requer catalisador)":"");
-    acts.push(actBtn("skill:"+id, sk.name, d, sk.ap, ok, null, sk.foco));
+    `${w.hits>1?w.hits+" golpes. ":""}${Object.entries(w.scale).map(([s,g])=>s.toUpperCase()+" "+g).join(" ")}${atkNote?" — "+atkNote:""}`,
+    w.ap,atkOk));
+  // habilidades
+  const skillIds=[...new Set([...p.skills, ...(w.art?[w.art]:[])])];
+  skillIds.forEach(id=>{
+    const sk=SKILLS[id]; if(!sk)return;
+    const isArt=(w.art===id);
+    const isClassSpell=p.skills.includes(id)&&(sk.kind==="sorcery"||sk.kind==="heal"||sk.kind==="faith"||sk.kind==="burst");
+    if(!isArt&&!isClassSpell&&!p.skills.includes(id)) return;
+    const usable=isArt||isClassSpell;
+    const needCat=(sk.kind==="sorcery"&&!w.catalyst)||(sk.kind==="faith"&&!w.catalyst);
+    let rangeBad=(sk.needPerto&&!C.range==="perto")||(sk.needPerto&&C.range!=="perto")||(sk.needLonge&&C.range!=="longe");
+    let ok=C.ap>=sk.ap&&C.pFoco>=(sk.foco||0)&&usable&&!needCat&&!rangeBad;
+    let d=sk.desc;
+    if(needCat)d+=" (requer catalisador)";
+    else if(sk.needPerto&&C.range!=="perto")d+=" (só PERTO)";
+    else if(sk.needLonge&&C.range!=="longe")d+=" (só LONGE)";
+    acts.push(actBtn("skill:"+id,sk.name,d,sk.ap,ok,null,sk.foco));
   });
-  // Defender
-  acts.push(actBtn("guard","Defender","Reduz o dano do próximo golpe e recupera postura.",1, C.ap>=1));
-  // Frasco
-  if(p.flask>0) acts.push(actBtn("flask",`Frasco de Âmago (${p.flask})`,`Cura ${flaskHeal(a)} de vida.`,2, C.ap>=2));
-  // Encerrar turno
+  // consumíveis
+  for(const id in p.items){
+    if(p.items[id]>0){
+      const it=ITEMS[id];
+      acts.push(actBtn("item:"+id,`${it.name} (${p.items[id]})`,it.desc,it.ap,C.ap>=it.ap));
+    }
+  }
+  acts.push(actBtn("guard","Defender","Reduz o dano do próximo golpe e recupera postura.",1,C.ap>=1));
+  if(p.flask>0) acts.push(actBtn("flask",`Frasco de Âmago (${p.flask})`,`Cura ${flaskHeal(a)}.`,2,C.ap>=2));
   acts.push(`<button class="act end" data-act="end"><span class="an disp">Encerrar turno ▸</span></button>`);
   return acts.join("");
 }
 function actBtn(act,name,desc,ap,ok,extra,foco){
   return `<button class="act ${extra||''}" data-act="${act}" ${ok?"":"disabled"}>
-    <div class="an disp">${name}</div>
-    <div class="ad">${desc}</div>
-    <div class="ap">${ap} AP${foco?` · ${foco}⟡`:""}</div>
-  </button>`;
+    <div class="an disp">${name}</div><div class="ad">${desc}</div>
+    <div class="ap">${ap} AP${foco?` · ${foco}⟡`:""}</div></button>`;
 }
 
-/* ---- ações do jogador ---- */
+/* ---- ações ---- */
 function doAction(act){
-  const C=G.combat, foe=C.foe, p=G.player, a=p.attr, w=WEAPONS[p.weaponId];
-  if(C.over || C.turn!=="player") return;
+  const C=G.combat,foe=C.foe,p=G.player,a=p.attr,w=WEAPONS[p.weaponId];
+  if(C.over||C.turn!=="player")return;
 
-  if(act==="end"){ endPlayerTurn(); return; }
+  if(act==="end")return endPlayerTurn();
 
+  if(act==="adv"||act==="ret"){
+    const cost=(hasRelic("passo")&&!C.movedFree)?0:1;
+    C.ap-=cost; C.movedFree=true;
+    if(act==="adv"){ C.range="perto"; C.advancedThisTurn=true; if(hasRelic("impeto"))C.impetus=true;
+      clog(C,`<span class="sys">Avanças sobre ${foe.name}.</span>`); }
+    else { C.range="longe"; clog(C,`<span class="sys">Recuas, abrindo distância.</span>`); }
+    return renderCombat();
+  }
   if(act==="guard"){
-    C.ap-=1; C.guarding=true;
-    C.pPoise=clamp(C.pPoise+18,0,C.pMaxPoise);
+    C.ap-=1;C.guarding=true;C.pPoise=clamp(C.pPoise+18,0,C.pMaxPoise);
     clog(C,`<span class="sys">Ergues a guarda. Postura firmada.</span>`);
-    renderCombat(); return;
+    return renderCombat();
   }
   if(act==="flask"){
-    C.ap-=2; p.flask--;
-    const h=flaskHeal(a); p.hp=clamp(p.hp+h,0,maxHP(a));
+    C.ap-=2;p.flask--;
+    const h=flaskHeal(a);p.hp=clamp(p.hp+h,0,maxHP(a));
     floatText("+"+h,"var(--ichor)");
     clog(C,`<span class="hit">Bebes o Âmago. +${h} de vida.</span>`);
-    renderCombat(); return;
+    return renderCombat();
+  }
+  if(act.startsWith("item:")){
+    const id=act.split(":")[1], it=ITEMS[id];
+    C.ap-=it.ap; p.items[id]--;
+    if(id==="faca"){ hitFoe(C,foe,p,12,4,{bleed:10},false,false,true); }
+    if(id==="bomba"){ hitFoe(C,foe,p,22,14,null,false,true,true); }
+    if(id==="sal"){ applyBuildToFoe(C,foe,{geada:50}); clog(C,`<span class="frost">O sal de geada cobre ${foe.name}.</span>`); }
+    return afterPlayerAct();
   }
   if(act==="attack"){
     C.ap-=w.ap;
-    for(let i=0;i<(w.hits||1);i++) hitFoe(C,foe,p,weaponAtk(a,w),w.poise,w.build,false);
-    afterPlayerAct(); return;
+    let mult=1;
+    if(w.ranged){ mult=C.range==="longe"?1.15:0.75; }
+    else if(w.reach&&C.range==="longe"){ mult=0.7; }
+    for(let i=0;i<(w.hits||1);i++){ if(C.over)break; hitFoe(C,foe,p,Math.round(weaponAtk(a,w)*mult),w.poise,w.build,false); }
+    return afterPlayerAct();
   }
   if(act==="crit"){
     C.ap-=w.ap;
     clog(C,`<span class="crit">GOLPE CRÍTICO!</span>`);
     hitFoe(C,foe,p,weaponAtk(a,w),w.poise,w.build,true);
-    afterPlayerAct(); return;
+    return afterPlayerAct();
   }
   if(act.startsWith("skill:")){
     const sk=SKILLS[act.split(":")[1]];
-    C.ap-=sk.ap; C.pFoco-=(sk.foco||0);
+    C.ap-=sk.ap;C.pFoco-=(sk.foco||0);
+    if(sk.closes){ C.range="perto"; if(hasRelic("impeto"))C.impetus=true; }
     if(sk.kind==="heal"){
       const h=Math.round(maxHP(a)*0.30)+a.fe*3;
       p.hp=clamp(p.hp+h,0,maxHP(a));
       floatText("+"+h,"var(--ichor)");
       clog(C,`<span class="hit">${sk.name}: a chama restaura +${h}.</span>`);
-      afterPlayerAct(); return;
+      return afterPlayerAct();
     }
+    if(sk.kind==="burst"){
+      const amt=Math.round(foe.status.bleed);
+      if(amt<=0){ clog(C,`<span class="sys">Não há sangue acumulado para explodir.</span>`); return afterPlayerAct(); }
+      foe.status.bleed=0;
+      const dmg=Math.round(amt*(1+a.sin*0.015));
+      foe.hp-=dmg; floatText("-"+dmg,"var(--bleed)");
+      clog(C,`<span class="proc">EXPLODIR FERIDAS! ${dmg} de dano do sangue acumulado.</span>`);
+      if(hasRelic("sanguessuga")){ p.hp=clamp(p.hp+8,0,maxHP(a)); clog(C,`<span class="hit">A Sanguessuga te devolve 8.</span>`); }
+      if(foe.hp<=0){foe.hp=0;winCombat();}
+      return afterPlayerAct();
+    }
+    let mult=1;
+    if((sk.kind==="sorcery"||sk.kind==="faith")&&C.range==="longe") mult=1.2;
     const hits=sk.hits||1;
-    for(let i=0;i<hits;i++) hitFoe(C,foe,p,skillAtk(a,w,sk),sk.poise,sk.build,false,sk.kind==="sorcery");
-    afterPlayerAct(); return;
+    for(let i=0;i<hits;i++){ if(C.over)break;
+      hitFoe(C,foe,p,Math.round(skillAtk(a,w,sk)*mult),sk.poise,sk.build,false,sk.kind==="sorcery",false,sk.guardcrush); }
+    return afterPlayerAct();
   }
 }
 
-function hitFoe(C,foe,p,rawAtk,poiseDmg,build,isCrit,ignoreDef){
+function applyBuildToFoe(C,foe,build){
+  const a=G.player.attr;
+  const relicB=(s)=>((s==="bleed"&&hasRelic("dente"))||(s==="poison"&&hasRelic("vespa")))?1.4:1;
+  const mult=1+a.sin*0.03;
+  for(const s in build){
+    foe.status[s]=clamp(foe.status[s]+build[s]*mult*relicB(s),0,100);
+    if(foe.status[s]>=100) procStatus(C,foe,s,true);
+  }
+}
+
+function hitFoe(C,foe,p,rawAtk,poiseDmg,build,isCrit,ignoreDef,flat,guardcrush){
   const a=p.attr;
-  let dmg=Math.round(rawAtk*rnd(.9,1.1));
+  let dmg=flat?rawAtk:Math.round(rawAtk*rnd(.9,1.1));
   const def=ignoreDef?Math.floor(foe.def/2):foe.def;
   dmg=Math.max(1,dmg-def);
-  if(foe.blocking){ dmg=Math.round(dmg*0.4); }
+  if(foe.blocking&&!guardcrush) dmg=Math.round(dmg*0.4);
   if(foe.staggered) dmg=Math.round(dmg*1.75);
-  if(isCrit) dmg=Math.round(dmg*2.6);
+  if(foe.fragilePerto&&C.range==="perto") dmg=Math.round(dmg*1.4);
+  if(foe.geadaTurns>0) dmg=Math.round(dmg*1.15);
+  if(C.impetus){ dmg=Math.round(dmg*1.3); C.impetus=false; clog(C,`<span class="hit">Ímpeto do Naufrágio!</span>`); }
+  if(isCrit) dmg=Math.round(dmg*2.6*(hasRelic("olho")?1.5:1));
   foe.hp-=dmg;
-  floatText("-"+dmg, isCrit?"var(--ichor)":"var(--bone)");
-  clog(C, `<span class="${isCrit?'crit':'hit'}">Acertas ${foe.name} — ${dmg} de dano.${foe.blocking?" (bloqueado)":""}</span>`);
-
+  floatText("-"+dmg,isCrit?"var(--ichor)":"var(--bone)");
+  clog(C,`<span class="${isCrit?'crit':'hit'}">Acertas ${foe.name} — ${dmg} de dano.${foe.blocking?(guardcrush?" (guarda esmagada!)":" (bloqueado)"):""}</span>`);
+  // espinhos
+  if(foe.thorns&&foe.blocking&&C.range==="perto"&&!flat){
+    p.hp-=foe.thorns;
+    floatText("-"+foe.thorns,"var(--blood)");
+    clog(C,`<span class="hurt">Os espinhos devolvem ${foe.thorns}.</span>`);
+    if(p.hp<=0)return loseCombat();
+  }
   // postura
   if(!foe.staggered){
-    foe.poise -= poiseDmg*(1 + (isCrit?0:0));
-    if(foe.poise<=0 && !foe.boss || (foe.boss && foe.poise<=0)){
-      foe.poise=0; foe.staggered=true; foe.blocking=false;
+    let pd=poiseDmg*(hasRelic("bigorna")?1.3:1);
+    if(guardcrush&&foe.blocking)pd*=1.6;
+    foe.poise-=pd;
+    if(foe.poise<=0){
+      foe.poise=0;foe.staggered=true;foe.blocking=false;
+      if(foe.crescendo&&foe.cresc>0){ foe.cresc=0; clog(C,`<span class="frost">O crescendo silencia.</span>`); }
       foe.intent={n:"—",tell:"Cambaleia, atordoado.",stagger:true};
       clog(C,`<span class="crit">${foe.name} perde a postura — ATORDOADO!</span>`);
     }
   }
-  // status buildup
-  if(build){
-    const mult=1 + a.sin*0.03;
-    for(const s in build){
-      foe.status[s]=clamp(foe.status[s]+build[s]*mult,0,100);
-      if(foe.status[s]>=100){ procStatus(C,foe,s,true); }
-    }
-  }
-  if(foe.hp<=0){ foe.hp=0; winCombat(); }
+  if(build) applyBuildToFoe(C,foe,build);
+  if(foe.hp<=0){foe.hp=0;winCombat();}
 }
 
 function procStatus(C,ent,type,isFoe){
   const name=isFoe?ent.name:"Tu";
   if(type==="bleed"){
     const dmg=Math.round((isFoe?ent.maxHp:maxHP(G.player.attr))*0.11)+12;
-    if(isFoe){ ent.hp-=dmg; } else { G.player.hp-=dmg; }
+    if(isFoe){ent.hp-=dmg;}else{G.player.hp-=dmg;}
     ent.status.bleed=0;
     clog(C,`<span class="proc">SANGRAMENTO! ${name} perde ${dmg} de vida.</span>`);
     floatText("-"+dmg,"var(--bleed)");
-    if(isFoe && ent.hp<=0){ ent.hp=0; winCombat(); }
+    if(isFoe&&hasRelic("sanguessuga")){ G.player.hp=clamp(G.player.hp+8,0,maxHP(G.player.attr)); }
+    if(isFoe&&ent.hp<=0){ent.hp=0;winCombat();}
+    if(!isFoe&&G.player.hp<=0){loseCombat();}
   }
   if(type==="poison"){
     ent.status.poison=0;
-    if(isFoe) ent.poisonTurns=3; else C.pPoisonTurns=3;
-    clog(C,`<span class="proc">${name} ${isFoe?"está":"estás"} envenenado.</span>`);
+    if(isFoe)ent.poisonTurns=3;else C.pPoisonTurns=3;
+    clog(C,`<span class="proc">${name} — envenenado.</span>`);
   }
   if(type==="geada"){
     ent.status.geada=0;
-    if(isFoe){ ent.geadaTurns=3; } else { C.pGeadaTurns=3; C.pGeadaDebuff=true; }
-    clog(C,`<span class="proc">GEADA! ${name} ${isFoe?"treme de frio (dano recebido +15%)":"tremes de frio"}.</span>`);
+    if(!isFoe&&hasRelic("brasa")){ clog(C,`<span class="frost">A Brasa Interior derrete a geada.</span>`); return; }
+    if(isFoe){ent.geadaTurns=3;}else{C.pGeadaTurns=3;}
+    clog(C,`<span class="proc">GEADA! ${name} treme de frio (dano recebido +15%${isFoe?"":", −1 AP"}).</span>`);
   }
 }
 
 function afterPlayerAct(){
   const C=G.combat;
-  if(C.over) return;
-  if(C.ap<=0){ endPlayerTurn(); }
+  if(!C||C.over)return;
+  if(C.ap<=0)endPlayerTurn();
   else renderCombat();
 }
-
 function endPlayerTurn(){
-  const C=G.combat;
-  if(C.over) return;
-  C.turn="foe";
-  renderCombat();
-  setTimeout(foeTurn, 620);
+  const C=G.combat;if(!C||C.over)return;
+  C.turn="foe";renderCombat();
+  setTimeout(foeTurn,620);
 }
 
 function foeTurn(){
-  const C=G.combat; if(C.over) return;
-  const foe=C.foe, p=G.player, a=p.attr;
+  const C=G.combat;if(!C||C.over)return;
+  const foe=C.foe,p=G.player,a=p.attr;
+  if(foe._phaseMsg){clog(C,`<span class="crit">${foe._phaseMsg}</span>`);foe._phaseMsg=null;}
 
-  // fase 2 anúncio
-  if(foe._phaseMsg){ clog(C,`<span class="crit">${foe._phaseMsg}</span>`); foe._phaseMsg=null; }
-
-  // ticks de status no inimigo (início do turno dele)
-  if(foe.poisonTurns>0){ const d=Math.round(foe.maxHp*0.05)+3; foe.hp-=d; foe.poisonTurns--;
-    clog(C,`<span class="proc">Veneno corrói ${foe.name}: ${d} de dano.</span>`);
-    if(foe.hp<=0){foe.hp=0;winCombat();return;} }
-  if(foe.geadaTurns>0) foe.geadaTurns--;
+  // regen do inimigo
+  if(foe.regen>0&&foe.poisonTurns<=0&&foe.hp<foe.maxHp){
+    foe.hp=clamp(foe.hp+foe.regen,0,foe.maxHp);
+    clog(C,`<span class="frost">${foe.name} regenera ${foe.regen}.</span>`);
+  }
+  // veneno tica
+  if(foe.poisonTurns>0){
+    const d=Math.round(foe.maxHp*0.05)+3;foe.hp-=d;foe.poisonTurns--;
+    clog(C,`<span class="proc">Veneno corrói ${foe.name}: ${d}.</span>`);
+    if(foe.hp<=0){foe.hp=0;return winCombat();}
+  }
+  if(foe.geadaTurns>0)foe.geadaTurns--;
 
   if(foe.staggered){
     clog(C,`<span class="sys">${foe.name} recompõe-se lentamente.</span>`);
-    foe.staggered=false; foe.poise=Math.round(foe.maxPoise*0.6);
-    chooseIntent(foe);
-    startPlayerTurn(); return;
+    foe.staggered=false;foe.poise=Math.round(foe.maxPoise*0.6);
+    chooseIntent(foe,C);
+    return startPlayerTurn();
   }
 
   const m=foe.intent||{};
   if(m.block){
     foe.blocking=true;
     foe.poise=clamp(foe.poise+20,0,foe.maxPoise);
-    clog(C,`<span class="sys">${foe.name} firma a guarda.</span>`);
+    clog(C,`<span class="sys">${foe.name} firma a guarda.${foe.thorns?" Os espinhos brilham.":""}</span>`);
   } else {
     foe.blocking=false;
-    const hits=m.hits||1;
-    for(let i=0;i<hits;i++) foeHit(C,foe,p,m);
+    // LENTO + jogador LONGE = erra
+    if(m.lento&&C.range==="longe"&&!m.ranged){
+      foe.poise-=18;
+      clog(C,`<span class="frost">${foe.name} usa ${m.n} — e ERRA. O golpe passa longe; a postura fica exposta (−18).</span>`);
+      if(foe.poise<=0){foe.poise=0;foe.staggered=true;
+        foe.intent={n:"—",tell:"Cambaleia, atordoado.",stagger:true};
+        clog(C,`<span class="crit">${foe.name} perde a postura — ATORDOADO!</span>`);
+        if(foe.crescendo&&foe.cresc>0){foe.cresc=0;clog(C,`<span class="frost">O crescendo silencia.</span>`);}
+        return startPlayerTurn();}
+    } else {
+      // golpes corpo-a-corpo fecham a distância
+      if(!m.ranged&&C.range==="longe"){ C.range="perto"; clog(C,`<span class="sys">${foe.name} avança sobre ti.</span>`); }
+      const hits=m.hits||1;
+      for(let i=0;i<hits;i++){ if(C.over)return; foeHit(C,foe,p,m); }
+    }
   }
-  // recupera postura no fim do turno
+  // crescendo
+  if(foe.crescendo){ foe.cresc+=foe.crescendo; }
   foe.poise=clamp(foe.poise+6,0,foe.maxPoise);
-  chooseIntent(foe);
-  if(G.player.hp<=0){ loseCombat(); return; }
+  chooseIntent(foe,C);
+  if(p.hp<=0)return loseCombat();
   startPlayerTurn();
 }
 
 function foeHit(C,foe,p,m){
   const a=p.attr;
-  let dmg=m.dmg||0;
-  // frostbite no jogador aumenta dano recebido
-  if(C.pGeadaTurns>0) dmg=Math.round(dmg*1.15);
-  // defender reduz
-  if(C.guarding){ dmg=Math.round(dmg*0.4); }
-  // postura do jogador absorve? golpes pesados quebram guarda
-  dmg=Math.max(1,dmg - Math.floor(a.fol/6));
+  let dmg=(m.dmg||0)+foe.cresc;
+  if(foe.fragilePerto&&C.range==="perto"&&m.ranged)dmg=Math.round(dmg*0.4);
+  if(C.pGeadaTurns>0)dmg=Math.round(dmg*1.15);
+  if(C.guarding){
+    dmg=Math.round(dmg*0.4);
+    if(hasRelic("espinho")&&C.range==="perto"&&!m.ranged){
+      foe.hp-=6;clog(C,`<span class="hit">O Cilício devolve 6.</span>`);
+      if(foe.hp<=0){foe.hp=0;return winCombat();}
+    }
+  }
+  dmg=Math.max(1,dmg-Math.floor(a.fol/6));
   p.hp-=dmg;
   floatText("-"+dmg,"var(--blood)");
-  clog(C,`<span class="hurt">${foe.name} usa ${m.n}: ${dmg} de dano.${C.guarding?" (defendido)":""}</span>`);
-  // dano de postura ao jogador
+  clog(C,`<span class="hurt">${foe.name} usa ${m.n}: ${dmg}.${C.guarding?" (defendido)":""}</span>`);
   if(!C.guarding){
     C.pPoise-=(m.poise||0);
-    if(C.pPoise<=0){ C.pPoise=Math.round(C.pMaxPoise*0.5);
-      clog(C,`<span class="proc">Cambaleias sob o impacto!</span>`); }
+    if(C.pPoise<=0){C.pPoise=Math.round(C.pMaxPoise*0.5);
+      clog(C,`<span class="proc">Cambaleias sob o impacto!</span>`);}
   }
-  // status do inimigo no jogador
   if(m.build){
     for(const s in m.build){
+      if(s==="geada"&&hasRelic("brasa")){clog(C,`<span class="frost">A Brasa Interior repele a geada.</span>`);continue;}
       C.pStatus[s]=clamp(C.pStatus[s]+m.build[s],0,100);
-      if(C.pStatus[s]>=100){ procStatus(C,{status:C.pStatus},s,false); }
+      if(C.pStatus[s]>=100)procStatus(C,{status:C.pStatus},s,false);
     }
   }
 }
 
 function startPlayerTurn(){
-  const C=G.combat, p=G.player, a=p.attr;
+  const C=G.combat,p=G.player,a=p.attr;
+  if(!C||C.over)return;
   C.turn="player";
   C.ap=maxAP(a);
-  // frostbite: -1 AP enquanto ativo
-  if(C.pGeadaTurns>0){ C.ap=Math.max(2,C.ap-1); }
-  C.guarding=false;
-  // regen de postura e foco
+  if(C.pGeadaTurns>0)C.ap=Math.max(2,C.ap-1);
+  C.guarding=false;C.movedFree=false;C.advancedThisTurn=false;C.impetus=false;
   C.pPoise=clamp(C.pPoise+10,0,C.pMaxPoise);
-  C.pFoco=clamp(C.pFoco+2,0,maxFoco(a));
-  // veneno no jogador tica
-  if(C.pPoisonTurns>0){ const d=Math.round(maxHP(a)*0.04)+2; p.hp-=d; C.pPoisonTurns--;
-    clog(C,`<span class="proc">O veneno arde: ${d} de dano.</span>`);
+  C.pFoco=clamp(C.pFoco+2+(hasRelic("ampulheta")?1:0),0,maxFoco(a));
+  if(C.pPoisonTurns>0){
+    const d=Math.round(maxHP(a)*0.04)+2;p.hp-=d;C.pPoisonTurns--;
+    clog(C,`<span class="proc">O veneno arde: ${d}.</span>`);
     floatText("-"+d,"var(--poison)");
-    if(p.hp<=0){ loseCombat(); return; } }
+    if(p.hp<=0)return loseCombat();
+  }
   renderCombat();
 }
 
 /* ---- fim de combate ---- */
 function winCombat(){
-  const C=G.combat; if(C.over) return; C.over=true;
+  const C=G.combat;if(!C||C.over)return;C.over=true;
   const foe=C.foe;
   G.kills++;
-  G.icor += foe.icor;
+  let gain=Math.round(foe.icor*(hasRelic("moeda")?1.25:1));
+  G.icor+=gain;
   markCleared();
-  const p=G.player, a=p.attr;
-  p.foco=maxFoco(a); // restaura foco entre combates
+  const p=G.player,a=p.attr;
+  p.foco=maxFoco(a);
 
-  if(foe.boss){ return victoryScreen(); }
+  if(foe.boss)return bossRewardScreen(foe);
+
+  // drop de elite: escolha de selo
+  if(foe.elite)return eliteRewardScreen(foe,gain);
 
   render(`${hudTop()}
     <div class="floor" style="margin-top:22px;border-color:var(--ichor-deep)">
       <div class="nt disp ichor">Vitória</div>
-      <p class="flavor" style="margin-top:8px;color:var(--bone);font-style:normal">
-        ${foe.name} volta ao lodo de onde veio. Recolhes <b class="ichor">${foe.icor} de Icor</b>, ainda tépido.</p>
-    </div>
+      <p style="margin-top:8px">${foe.name} volta ao lodo de onde veio. Recolhes <b class="ichor">${gain} de Icor</b>, ainda tépido.</p></div>
     <div style="max-width:320px;margin:16px auto 0">
-      <button class="btn gold" id="cont"><span class="k disp">SEGUIR</span></button>
-    </div>`);
+      <button class="btn gold" id="cont"><span class="k disp">SEGUIR</span></button></div>`);
   document.getElementById("cont").onclick=advanceFloor;
 }
 
+function relicChoiceHtml(opts){
+  return opts.map(id=>`<button class="node" data-relic="${id}">
+    <div class="nt disp"><span class="ic-dot d-treasure"></span>${RELICS[id].name}</div>
+    <div class="nd">${RELICS[id].desc}</div></button>`).join("");
+}
+function twoRelicOptions(){
+  const avail=RELIC_POOL.filter(r=>!G.player.relics.includes(r));
+  if(avail.length===0)return [];
+  if(avail.length===1)return [avail[0]];
+  return pick2(avail);
+}
+
+function eliteRewardScreen(foe,gain){
+  const opts=twoRelicOptions();
+  render(`${hudTop()}
+    <div class="floor" style="margin-top:20px;border-color:var(--bleed)">
+      <div class="nt disp" style="color:var(--bleed)">Semi-chefe abatido</div>
+      <p style="margin-top:8px">${foe.name} cai. Recolhes <b class="ichor">${gain} ◈</b> — e algo mais pessoal.</p></div>
+    ${opts.length?`<div class="fl-lbl" style="margin-top:14px">Escolhe um Selo</div>
+    <div class="nodegrid two">${relicChoiceHtml(opts)}</div>`:""}
+    <div style="max-width:320px;margin:16px auto 0">
+      <button class="btn" id="skip"><span class="k disp faint">${opts.length?"RECUSAR E SEGUIR":"SEGUIR"}</span></button></div>`);
+  document.querySelectorAll(".node[data-relic]").forEach(b=>{
+    b.onclick=()=>{giveRelic(b.dataset.relic);advanceFloor();};
+  });
+  document.getElementById("skip").onclick=advanceFloor;
+}
+
+function bossRewardScreen(foe){
+  if(foe.final)return victoryScreen();
+  const opts=twoRelicOptions();
+  render(`
+    <div class="epitaph" style="padding-top:7vh">
+      <div class="candle"></div>
+      <div class="word win disp" style="font-size:clamp(30px,8vw,60px)">VIGÍLIA<br>QUEBRADA</div>
+      <p class="line flavor">${foe.name} cai, e por um instante a profundidade fica em silêncio. O caminho abaixo se abre — mais escuro, claro.</p>
+      ${opts.length?`<div class="fl-lbl">Espólio da Vigília — escolhe um Selo</div>
+      <div class="nodegrid two" style="max-width:640px;margin:0 auto;text-align:left">${relicChoiceHtml(opts)}</div>`:""}
+      <div style="max-width:320px;margin:18px auto 0">
+        <button class="btn gold" id="desc"><span class="k disp">${opts.length?"RECUSAR E DESCER":"DESCER"}</span></button></div>
+    </div>`);
+  document.querySelectorAll(".node[data-relic]").forEach(b=>{
+    b.onclick=()=>{giveRelic(b.dataset.relic);advanceFloor();};
+  });
+  document.getElementById("desc").onclick=advanceFloor;
+}
+
 function loseCombat(){
-  const C=G.combat; if(C.over) return; C.over=true;
+  const C=G.combat;if(!C||C.over)return;C.over=true;
   screenDeath();
 }
 
-/* ---- MORTE ---- */
+const DEATHS=[
+  "A morte, como sempre, chegou pontual.",
+  "Vespergloam mal notou. Já viu tantos.",
+  "O Icor esfria. Alguém virá recolhê-lo. Não serás tu — por ora.",
+  "Não foi bravura. Foi teimosia. A diferença raramente sobrevive.",
+  "O Claustro afoga mais um nome. Não guardava os anteriores.",
+  "As Vigílias nem se dão ao trabalho de comentar.",
+];
 function screenDeath(){
   G.deaths++;
-  // largar Icor no chão (na profundidade atual)
-  if(G.icor>0){ G.mancha={ floor:G.floor, amount:G.icor }; }
+  if(G.icor>0)G.mancha={floor:G.floor,zone:G.zone,amount:G.icor};
   G.icor=0;
-  const line=pick(DEATHS);
-  render(`
-    <div class="epitaph">
-      <div class="word disp">FENECESTE</div>
-      <p class="line flavor">${line}</p>
-      ${G.mancha?`<p class="center mono" style="color:var(--ichor);font-size:14px">Largaste ${G.mancha.amount} ◈ de Icor na profundidade ${G.mancha.floor}.</p>`:""}
-      <div style="max-width:340px;margin:26px auto 0">
-        <button class="btn gold" id="revive"><span class="k disp">ERGUER-SE NO MINGUANTE</span>
-          <span class="sub">Voltas ao último Minguante. Os mortos abaixo também.</span></button>
-        <button class="btn danger" id="quit"><span class="k disp faint">DEIXAR O CLAUSTRO</span>
-          <span class="sub">Encerrar o run</span></button>
-      </div>
-    </div>`);
+  render(`<div class="epitaph">
+    <div class="word disp">FENECESTE</div>
+    <p class="line flavor">${pick(DEATHS)}</p>
+    ${G.mancha?`<p class="center mono" style="color:var(--ichor);font-size:14px">Largaste ${G.mancha.amount} ◈ na profundidade ${G.zone*10+G.mancha.floor}.</p>`:""}
+    <div style="max-width:340px;margin:26px auto 0">
+      <button class="btn gold" id="revive"><span class="k disp">ERGUER-SE NO MINGUANTE</span>
+        <span class="sub">Voltas ao último Minguante. Os mortos abaixo também.</span></button>
+      <button class="btn danger" id="quit"><span class="k disp faint">DEIXAR O CLAUSTRO</span>
+        <span class="sub">Encerrar o run</span></button></div></div>`);
   document.getElementById("revive").onclick=revive;
   document.getElementById("quit").onclick=()=>screenSummary(false);
 }
-
 function revive(){
-  const p=G.player, a=p.attr;
-  p.hp=maxHP(a); p.flask=p.flaskMax; p.foco=maxFoco(a);
-  // limpar nós abaixo do último Minguante (inimigos voltam)
+  const p=G.player,a=p.attr;
+  p.hp=maxHP(a);p.flask=p.flaskMax;p.foco=maxFoco(a);
   for(const key in G.clearedNodes){
-    const f=+key.split(":")[0];
-    if(f>G.lastWane) delete G.clearedNodes[key];
+    const parts=key.split(":");
+    if(+parts[0]===G.zone&&+parts[1]>G.lastWane)delete G.clearedNodes[key];
   }
-  G.floor=G.lastWane;
-  G.combat=null;
+  G.floor=G.lastWane;G.combat=null;
   toast("Ergues-te no Minguante.");
   screenMap();
 }
 
-/* ============================================================
-                        MINGUANTE (grace)
-   ============================================================ */
+/* ============================================================ MINGUANTE */
+const WANE_LINES=[
+  "A vela range, indecisa entre arder e ceder. Como tu.",
+  "Aqui os mortos param para lembrar que estão mortos. É reconfortante.",
+  "O Minguante não promete salvação. Só uma pausa antes da próxima.",
+  "Descansa. O trono não vai a lugar nenhum — está preso, como o resto de nós.",
+  "A chama conhece teu nome. Não pergunta como foste parar aqui.",
+];
 function screenWane(){
   const fl=G.map[G.floor];
-  const p=G.player, a=p.attr;
-  // registrar como último minguante e restaurar mundo
+  const p=G.player,a=p.attr;
   G.lastWane=G.floor;
-  p.hp=maxHP(a); p.flask=p.flaskMax; p.foco=maxFoco(a);
-  // inimigos abaixo voltam (descanso reacende o Claustro)
+  p.hp=maxHP(a);p.flask=p.flaskMax;p.foco=maxFoco(a);
   if(!fl._rested){
     for(const key in G.clearedNodes){
-      const f=+key.split(":")[0];
-      if(f>G.floor) delete G.clearedNodes[key];
+      const parts=key.split(":");
+      if(+parts[0]===G.zone&&+parts[1]>G.floor)delete G.clearedNodes[key];
     }
   }
   fl._rested=true;
-
-  // reaver mancha se calhar aqui
-  if(G.mancha && G.mancha.floor===G.floor){
-    G.icor+=G.mancha.amount; toast(`Reavido: ${G.mancha.amount} ◈`); G.mancha=null;
+  if(G.mancha&&G.mancha.floor===G.floor&&G.mancha.zone===G.zone){
+    G.icor+=G.mancha.amount;toast(`Reavido: ${G.mancha.amount} ◈`);G.mancha=null;
   }
-
   renderWane();
 }
 
+function levelCost(){return Math.round(60*Math.pow(1.11,G.player.levelsBought));}
+function derivedHint(k){
+  const a=G.player.attr;
+  if(k==="vit")return `HP ${maxHP(a)}`;
+  if(k==="fol")return `AP ${maxAP(a)} · postura ${maxPoise(a)}`;
+  if(k==="fe")return `frasco cura ${flaskHeal(a)} · foco ${maxFoco(a)}`;
+  if(k==="int")return `foco ${maxFoco(a)}`;
+  const w=WEAPONS[G.player.weaponId];
+  if(w.scale[k])return `arma escala ${k.toUpperCase()} ${w.scale[k]}`;
+  return "";
+}
+
 function renderWane(){
-  const p=G.player, a=p.attr;
-  const line=pick(WANE_LINES);
+  const p=G.player,a=p.attr;
+  const fl=G.map[G.floor];
   const attrRows=ATTRS.map(at=>{
-    const cost=levelCost();
-    const can=G.icor>=cost;
-    return `<div class="attr-row">
-      <div>
-        <div class="an disp">${at.name}</div>
-        <div class="eff">${at.eff} · ${derivedHint(at.k)}</div>
-      </div>
+    const cost=levelCost(),can=G.icor>=cost;
+    return `<div class="attr-row"><div>
+      <div class="an disp">${at.name}</div>
+      <div class="eff">${at.eff} · ${derivedHint(at.k)}</div></div>
       <div style="display:flex;align-items:center;gap:12px">
         <span class="av mono">${a[at.k]}</span>
         <button class="plus mono" data-at="${at.k}" ${can?"":"disabled"}>+1 · ${cost}◈</button>
-      </div>
-    </div>`;
+      </div></div>`;
   }).join("");
+  const relicList=p.relics.length?`<div class="fl-lbl" style="margin-top:14px">Selos</div>
+    <div style="font-size:14px;color:var(--bone-dim)">${p.relics.map(r=>`<div style="padding:4px 0;border-bottom:1px solid var(--edge-soft)"><b class="ichor disp" style="font-size:13px">${RELICS[r].name}</b> — ${RELICS[r].desc}</div>`).join("")}</div>`:"";
 
-  const fl=G.map[G.floor];
   render(`${hudTop()}
     <div class="wane-hero">
       <div class="candle" style="height:36px"></div>
       <h2 class="disp ichor">${fl.name||"Minguante"}</h2>
-      <p class="flavor" style="max-width:460px;margin:8px auto 0">${line}</p>
-    </div>
+      <p class="flavor" style="max-width:460px;margin:8px auto 0">${pick(WANE_LINES)}</p></div>
     <div class="hr"></div>
-    <div class="fl-lbl">Subir atributos · <span class="ichor mono">${G.icor} ◈ Icor</span> · próximo nível: ${levelCost()}◈</div>
+    <div class="fl-lbl">Subir atributos · <span class="ichor mono">${G.icor} ◈</span> · próximo nível: ${levelCost()}◈</div>
     ${attrRows}
     ${fl.merchant?merchantBlock():""}
+    ${relicList}
     <div class="hr"></div>
-    <div style="max-width:340px;margin:0 auto">
+    <div style="max-width:380px;margin:0 auto">
       ${swapWeaponBlock()}
       <button class="btn gold" id="descend"><span class="k disp">CONTINUAR A DESCIDA</span>
-        <span class="sub">Adiante. Sempre adiante.</span></button>
-    </div>`);
-
-  document.querySelectorAll(".plus[data-at]").forEach(b=>{
-    if(b.disabled) return;
-    b.onclick=()=>levelUp(b.dataset.at);
-  });
-  bindMerchant();
-  bindSwap();
-  document.getElementById("descend").onclick=()=>{ G.floor++; screenMap(); };
-}
-
-function levelCost(){ return Math.round(70*Math.pow(1.13,G.player.levelsBought)); }
-function derivedHint(k){
-  const a=G.player.attr;
-  if(k==="vit") return `HP ${maxHP(a)}`;
-  if(k==="fol") return `AP ${maxAP(a)} · postura ${maxPoise(a)}`;
-  if(k==="fe")  return `frasco cura ${flaskHeal(a)}`;
-  if(k==="int"||k==="fe") return `foco ${maxFoco(a)}`;
-  const w=WEAPONS[G.player.weaponId];
-  if(w.scale[k]) return `arma escala ${k.toUpperCase()} ${w.scale[k]}`;
-  return "";
+        <span class="sub">Adiante. Sempre adiante.</span></button></div>`);
+  document.querySelectorAll(".plus[data-at]").forEach(b=>{if(!b.disabled)b.onclick=()=>levelUp(b.dataset.at);});
+  bindMerchant();bindSwap();
+  document.getElementById("descend").onclick=()=>{G.floor++;screenMap();};
 }
 function levelUp(k){
   const cost=levelCost();
-  if(G.icor<cost) return;
-  G.icor-=cost; G.player.attr[k]++; G.player.levelsBought++;
-  const p=G.player; p.hp=Math.min(p.hp,maxHP(p.attr)); if(k==="vit")p.hp=maxHP(p.attr);
+  if(G.icor<cost)return;
+  G.icor-=cost;G.player.attr[k]++;G.player.levelsBought++;
+  const p=G.player;
+  if(k==="vit")p.hp=maxHP(p.attr);else p.hp=Math.min(p.hp,maxHP(p.attr));
   p.foco=maxFoco(p.attr);
   renderWane();
 }
 
 function merchantBlock(){
+  const z=G.zone;
+  const wShop=["malho","arco","lanca","cutelo","cajado","selo"].filter(w=>!G.player.invWeapons.includes(w)).slice(0,2);
+  const wHtml=wShop.map(id=>{
+    const w=WEAPONS[id],price=110+z*40;
+    return `<button class="node" data-buy="weapon:${id}:${price}" ${G.icor<price?"disabled":""}>
+      <div class="nt disp"><span class="ic-dot d-merchant"></span>${w.name}</div>
+      <div class="nd">${w.kind} · ${Object.entries(w.scale).map(([s,g])=>s.toUpperCase()+" "+g).join(" ")} · ${price}◈</div></button>`;
+  }).join("");
+  const itemsHtml=Object.entries(ITEMS).map(([id,it])=>{
+    const price=it.price+z*10;
+    return `<button class="node" data-buy="item:${id}:${price}" ${G.icor<price?"disabled":""}>
+      <div class="nt disp"><span class="ic-dot d-merchant"></span>${it.name}</div>
+      <div class="nd">${it.desc} · ${price}◈</div></button>`;
+  }).join("");
+  const flaskPrice=90+z*35;
+  const relicPrice=150+z*50;
   return `<div class="hr"></div>
     <div class="fl-lbl">A Mão Trêmula · mercador</div>
     <p class="flavor" style="font-size:14px;margin-bottom:8px">Uma mão sai da parede. Não perguntes de quem.</p>
     <div class="nodegrid two">
-      <button class="node" data-buy="flask" ${G.icor<90||G.player.flaskMax>=5?"disabled":""}>
+      <button class="node" data-buy="flask::${flaskPrice}" ${G.icor<flaskPrice||G.player.flaskMax>=6?"disabled":""}>
         <div class="nt disp"><span class="ic-dot d-merchant"></span>Carga de Frasco +1</div>
-        <div class="nd">Aumenta o máximo do Frasco de Âmago. · 90◈</div></button>
-      <button class="node" data-buy="weapon:malho" ${G.icor<110||G.player.invWeapons.includes("malho")?"disabled":""}>
-        <div class="nt disp"><span class="ic-dot d-merchant"></span>Malho do Ossuário</div>
-        <div class="nd">Maça brutal, escala FOR A. · 110◈</div></button>
+        <div class="nd">Aumenta o máximo do Frasco. · ${flaskPrice}◈</div></button>
+      <button class="node" data-buy="relic::${relicPrice}" ${G.icor<relicPrice?"disabled":""}>
+        <div class="nt disp"><span class="ic-dot d-merchant"></span>Selo Embrulhado</div>
+        <div class="nd">Um Selo aleatório. A Mão não aceita devoluções. · ${relicPrice}◈</div></button>
+      ${wHtml}${itemsHtml}
     </div>`;
 }
 function bindMerchant(){
   document.querySelectorAll(".node[data-buy]").forEach(b=>{
-    if(b.disabled) return;
+    if(b.disabled)return;
     b.onclick=()=>{
-      const what=b.dataset.buy;
-      if(what==="flask"){ G.icor-=90; G.player.flaskMax++; G.player.flask++; toast("Frasco aprimorado."); }
-      else if(what.startsWith("weapon:")){ const id=what.split(":")[1]; G.icor-=110; G.player.invWeapons.push(id); toast("Adquirido: "+WEAPONS[id].name); }
+      const [what,id,priceS]=b.dataset.buy.split(":");
+      const price=+priceS;
+      if(G.icor<price)return;
+      G.icor-=price;
+      if(what==="flask"){G.player.flaskMax++;G.player.flask++;toast("Frasco aprimorado.");}
+      if(what==="relic")giveRelic();
+      if(what==="weapon"){G.player.invWeapons.push(id);toast("Adquirido: "+WEAPONS[id].name);}
+      if(what==="item"){giveItem(id);toast("+1 "+ITEMS[id].name);}
       renderWane();
     };
   });
 }
 
 function swapWeaponBlock(){
-  if(G.player.invWeapons.length<=1) return "";
+  if(G.player.invWeapons.length<=1)return "";
   const opts=G.player.invWeapons.map(id=>{
-    const w=WEAPONS[id], eq=id===G.player.weaponId;
+    const w=WEAPONS[id],eq=id===G.player.weaponId;
     return `<button class="node ${eq?'done':''}" data-swap="${id}" ${eq?"disabled":""} style="margin-bottom:6px">
-      <div class="nt disp">${eq?"⚔ ":""}${w.name} <span class="dim" style="font-size:12px">· ${w.kind}</span></div>
-      <div class="nd">${Object.entries(w.scale).map(([s,g])=>s.toUpperCase()+" "+g).join(" · ")} — ${w.desc}</div>
-    </button>`;
+      <div class="nt disp">${eq?"⚔ ":""}${w.name} <span class="dim" style="font-size:12px">· ${w.kind}${w.ranged?" · dist.":""}${w.reach?" · alcance":""}</span></div>
+      <div class="nd">${Object.entries(w.scale).map(([s,g])=>s.toUpperCase()+" "+g).join(" · ")} — ${w.desc}</div></button>`;
   }).join("");
   return `<div class="fl-lbl">Arsenal</div>${opts}`;
 }
 function bindSwap(){
   document.querySelectorAll(".node[data-swap]").forEach(b=>{
-    if(b.disabled) return;
-    b.onclick=()=>{ G.player.weaponId=b.dataset.swap; toast("Empunhas "+WEAPONS[b.dataset.swap].name); renderWane(); };
+    if(b.disabled)return;
+    b.onclick=()=>{G.player.weaponId=b.dataset.swap;toast("Empunhas "+WEAPONS[b.dataset.swap].name);renderWane();};
   });
 }
 
-/* ============================================================
-                        CHEFE
-   ============================================================ */
+/* ============================================================ CHEFE / FIM */
 function screenBossIntro(){
   const fl=G.map[G.floor];
   const foe=FOES[fl.foe];
-  render(`
-    <div class="epitaph" style="padding-top:8vh">
-      <div class="tag" style="margin-bottom:18px">Vigília do Claustro</div>
-      <h1 class="disp" style="font-size:clamp(26px,6vw,44px);color:var(--bone)">${foe.name}</h1>
-      <p class="line flavor" style="max-width:480px">${foe.flavor}</p>
-      <div style="max-width:320px;margin:20px auto 0">
-        <button class="btn danger gold" id="fight"><span class="k disp">ENFRENTAR</span>
-          <span class="sub">Não há como recuar. Nunca houve.</span></button>
-      </div>
-    </div>`);
+  render(`<div class="epitaph" style="padding-top:8vh">
+    <div class="tag" style="margin-bottom:18px">${foe.final?"A Última Vigília":"Vigília do "+ZONES[G.zone].name.split(" ").pop()}</div>
+    <h1 class="disp" style="font-size:clamp(26px,6vw,44px);color:var(--bone)">${foe.name}</h1>
+    <p class="line flavor" style="max-width:480px">${foe.flavor}</p>
+    <div style="max-width:320px;margin:20px auto 0">
+      <button class="btn danger gold" id="fight"><span class="k disp">ENFRENTAR</span>
+        <span class="sub">Não há como recuar. Nunca houve.</span></button></div></div>`);
   document.getElementById("fight").onclick=()=>startCombat(fl.foe,false);
 }
 
 function victoryScreen(){
-  render(`
-    <div class="epitaph">
-      <div class="candle"></div>
-      <div class="word win disp" style="font-size:clamp(38px,10vw,80px)">VIGÍLIA<br>QUEBRADA</div>
-      <p class="line flavor">
-        Sepulcra cai, e por um instante o Claustro fica em silêncio — o primeiro em eras.
-        O trono encharcado continua vazio. Ele espera, paciente, que subas o resto do caminho.
-      </p>
-      <p class="center flavor" style="color:var(--ichor)">Fim do vertical slice. O que vem depois — o Soberano, o trono, a escolha — é o jogo por construir.</p>
-      <div style="max-width:320px;margin:24px auto 0">
-        <button class="btn gold" id="sum"><span class="k disp">VER O RUN</span></button>
-      </div>
-    </div>`);
+  render(`<div class="epitaph">
+    <div class="candle"></div>
+    <div class="word win disp" style="font-size:clamp(34px,9vw,72px)">A MÃO<br>SOLTA O TRONO</div>
+    <p class="line flavor">Vaskarion se desfaz em icor dourado, dedo por dedo. O trono do Soberano Pálido está,
+      pela primeira vez em eras, ao alcance de alguém. O problema de estar ao alcance é que agora a escolha é tua.</p>
+    <p class="center flavor" style="color:var(--ichor)">Fim da Descida. Sentar, devorar ou apagar a última vela — isso é o próximo capítulo por construir.</p>
+    <div style="max-width:320px;margin:24px auto 0">
+      <button class="btn gold" id="sum"><span class="k disp">VER O RUN</span></button></div></div>`);
   document.getElementById("sum").onclick=()=>screenSummary(true);
 }
 
 function screenSummary(won){
   const p=G.player;
   const rows=[
-    ["Desfecho", won?"Vigília quebrada":"Run encerrado"],
-    ["Vestígio", p.name],
-    ["Arma final", WEAPONS[p.weaponId].name],
-    ["Abates", G.kills],
-    ["Mortes", G.deaths],
-    ["Níveis comprados", p.levelsBought],
-    ["Icor não gasto", G.icor+" ◈"],
+    ["Desfecho",won?"A Mão soltou o trono":"Run encerrado"],
+    ["Vestígio",p.name],
+    ["Zona alcançada",ZONES[Math.min(G.zone,2)].sub],
+    ["Arma final",WEAPONS[p.weaponId].name],
+    ["Selos",p.relics.length],
+    ["Abates",G.kills],
+    ["Mortes",G.deaths],
+    ["Níveis comprados",p.levelsBought],
+    ["Icor não gasto",G.icor+" ◈"],
   ].map(([k,v])=>`<div><span>${k}</span><b class="ichor">${v}</b></div>`).join("");
-  render(`
-    <div class="epitaph" style="padding-top:8vh">
-      <h2 class="disp ${won?'ichor':''}">${won?"A descida, por hoje, chega ao fim.":"O Claustro fica com o resto."}</h2>
-      <div class="runrec">${rows}</div>
-      <div style="max-width:320px;margin:20px auto 0">
-        <button class="btn gold" id="again"><span class="k disp">NOVO VESTÍGIO</span></button>
-        <button class="btn" id="title"><span class="k disp faint">TÍTULO</span></button>
-      </div>
-    </div>`);
+  render(`<div class="epitaph" style="padding-top:7vh">
+    <h2 class="disp ${won?'ichor':''}">${won?"A descida, por hoje, chega ao fim.":"O Claustro fica com o resto."}</h2>
+    <div class="runrec">${rows}</div>
+    <div style="max-width:320px;margin:20px auto 0">
+      <button class="btn gold" id="again"><span class="k disp">NOVO VESTÍGIO</span></button>
+      <button class="btn" id="title"><span class="k disp faint">TÍTULO</span></button></div></div>`);
   document.getElementById("again").onclick=screenSelect;
   document.getElementById("title").onclick=screenTitle;
 }
