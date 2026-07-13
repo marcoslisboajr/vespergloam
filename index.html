@@ -183,6 +183,9 @@ button:focus-visible{outline:2px solid var(--ichor);outline-offset:2px}
 .runrec{font-family:var(--font-mono);font-size:13px;color:var(--bone-dim);margin:18px auto;max-width:340px}
 .runrec div{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--edge-soft)}
 
+#mutebtn{position:fixed;top:12px;right:12px;z-index:70;width:38px;height:38px;border:1px solid var(--edge);border-radius:2px;background:var(--stone-2);color:var(--bone-dim);font-size:16px;transition:.15s}
+#mutebtn:hover{border-color:var(--ichor-deep);color:var(--ichor)}
+#mutebtn.off{opacity:.45;text-decoration:line-through}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--stone-2);
   border:1px solid var(--ichor-deep);padding:10px 20px;border-radius:2px;font-family:var(--font-disp);
   font-size:14px;letter-spacing:.04em;color:var(--ichor);box-shadow:0 8px 30px -10px #000;animation:fade .3s;z-index:60}
@@ -192,6 +195,7 @@ button:focus-visible{outline:2px solid var(--ichor);outline-offset:2px}
 </head>
 <body>
 <div id="app"></div>
+<button id="mutebtn" title="som">♪</button>
 <script>
 "use strict";
 /* ============================================================
@@ -318,6 +322,122 @@ const ITEMS = {
   sal:{ name:"Sal de Geada", ap:1, desc:"Aplica 50 de GEADA no alvo.", price:45 },
 };
 
+/* ---------------- ÁUDIO (WebAudio sintetizado — zero arquivos) ---------------- */
+const SFX={
+  ctx:null, on:true,
+  unlock(){ if(this.ctx)return; try{ const AC=window.AudioContext||window.webkitAudioContext; if(AC)this.ctx=new AC(); }catch(e){} },
+  t(){ return this.ctx?this.ctx.currentTime:0; },
+  env(g,t,a,d,peak){ g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(peak,t+a); g.gain.exponentialRampToValueAtTime(0.0001,t+a+d); },
+  tone(freq,dur,type,peak,slide,delay){ if(!this.ctx||!this.on)return;
+    const t=this.t()+(delay||0),o=this.ctx.createOscillator(),g=this.ctx.createGain();
+    o.type=type||"sine"; o.frequency.setValueAtTime(freq,t);
+    if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(20,slide),t+dur);
+    this.env(g,t,0.006,dur,(peak||0.2)*0.6);
+    o.connect(g); g.connect(this.ctx.destination); o.start(t); o.stop(t+dur+0.08); },
+  noise(dur,peak,freq,delay){ if(!this.ctx||!this.on)return;
+    const t=this.t()+(delay||0),n=this.ctx.createBufferSource(),g=this.ctx.createGain(),f=this.ctx.createBiquadFilter();
+    const len=Math.max(1,Math.floor(this.ctx.sampleRate*dur)),buf=this.ctx.createBuffer(1,len,this.ctx.sampleRate);
+    const d=buf.getChannelData(0); for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+    n.buffer=buf; f.type="bandpass"; f.frequency.value=freq||900; f.Q.value=0.9;
+    this.env(g,t,0.004,dur,(peak||0.25)*0.6);
+    n.connect(f); f.connect(g); g.connect(this.ctx.destination); n.start(t); },
+  hit(){ this.noise(0.09,0.5,480); this.tone(150,0.11,"triangle",0.4,60); },
+  crit(){ this.noise(0.16,0.6,1500); this.tone(880,0.2,"square",0.2,200); this.tone(392,0.34,"sine",0.35,80); },
+  stagger(){ this.tone(196,0.7,"sine",0.45,50); this.noise(0.35,0.3,280); this.tone(392,0.5,"sine",0.2,98,0.05); },
+  hurt(){ this.noise(0.12,0.5,240); this.tone(85,0.18,"sawtooth",0.35,42); },
+  whiff(){ this.noise(0.16,0.3,2400,0); this.noise(0.1,0.18,1200,0.06); },
+  guard(){ this.tone(300,0.09,"square",0.22,280); this.noise(0.06,0.22,2000); },
+  bleed(){ this.noise(0.22,0.5,650); this.tone(560,0.14,"sawtooth",0.2,140); },
+  poison(){ this.tone(280,0.35,"sine",0.2,120); this.noise(0.3,0.18,380); },
+  geada(){ this.tone(1700,0.28,"sine",0.16,2600); this.tone(2200,0.2,"sine",0.1,3200,0,0.06); },
+  heal(){ this.tone(523,0.22,"sine",0.2,700); this.tone(659,0.3,"sine",0.15,880,0.08); },
+  step(){ this.noise(0.05,0.14,650); },
+  ui(){ this.tone(680,0.045,"square",0.06,620); },
+  buy(){ this.tone(980,0.08,"square",0.14,1150); this.tone(1318,0.12,"square",0.11,1500,0,0.07); },
+  relic(){ this.tone(523,0.16,"sine",0.18); this.tone(784,0.2,"sine",0.16,0,0,0.1); this.tone(1046,0.32,"sine",0.13,0,0,0.2); },
+  die(){ this.tone(180,1.2,"sawtooth",0.32,36); this.noise(0.9,0.28,180); },
+  win(){ this.tone(392,0.28,"sine",0.2); this.tone(523,0.32,"sine",0.2,0,0,0.14); this.tone(659,0.52,"sine",0.22,0,0,0.3); },
+  boss(){ this.tone(98,1.0,"sawtooth",0.3,70); this.tone(49,1.4,"sine",0.32,44); this.noise(0.7,0.2,200); },
+  scripture(){ this.noise(0.35,0.2,950); this.tone(247,0.5,"sine",0.16,196); },
+};
+if(typeof document!=="undefined"&&document.addEventListener){
+  document.addEventListener("pointerdown",e=>{ SFX.unlock();
+    if(e.target&&e.target.closest&&e.target.closest("button"))SFX.ui(); },true);
+}
+
+/* ---------------- ESCRITURAS AFOGADAS ---------------- */
+const VERSES=[
+ "«E o Soberano olhou o mundo que não morria, e não viu paz. Viu um quarto onde ninguém consegue apagar a luz.»",
+ "«O Icor corria em veios, e chamavam-lhe dádiva. As feridas fechavam. Os anos não pesavam. Nada acabava. Repara na última frase.»",
+ "«Não há colheita sem foice, não há manhã sem noite. O Soberano abolira ambas. Por amor, dizem os hinos. Os hinos dizem muita coisa.»",
+ "«A corte chorou o decreto. Não o entendeu. Chorar é mais fácil do que soltar.»",
+ "«Então o Soberano fez o que um deus da ordem não devia poder: partiu-se. Deixem-me acabar, disse, para que possais.»",
+ "«E cada cortesão agarrou um caco. Para guardar o seu pedaço do eterno. E o caco, agradecido, agarrou de volta.»",
+ "«O primeiro filho trouxe fogo, e disseram-lhe: guarda-o. E o mundo continuou a afogar-se, educadamente.»",
+ "«Sepulcra guarda o Sono. A Mãe embala o Ventre. O General segura o Muro. Repara: nenhum verbo aqui é 'viver'.»",
+ "«A lâmina que nunca perdeu implora, em silêncio, por alguém melhor. A perfeição é a única prisão sem porta.»",
+ "«Os que não pegaram caco algum erguem-se mesmo assim: memórias teimosas de gente. Um deles lê este verso agora.»",
+ "«A Mão do Soberano não solta o trono. Mãos são assim — a última parte a aceitar qualquer coisa.»",
+ "«Perguntas quem partiu o Soberano. Ninguém partiu. Ele partiu-se, e vós passastes eras a remendá-lo contra a vontade dele. O vilão da história, leitor, é o amor. Sempre foi.»",
+];
+const SCRIPT_CLASSES={
+ bencao:{ name:"Escritura da Bênção", tint:"var(--ichor)", rolls:[6,7,7,8,8,9,9,10,10,11,12,2] },
+ apocrifo:{ name:"Apócrifo Cinzento", tint:"var(--bone-dim)", rolls:[1,2,3,4,5,6,7,8,9,10,11,12] },
+ blasfemia:{ name:"Blasfêmia Rubra", tint:"var(--bleed)", rolls:[1,1,2,3,4,5,5,7,10,11,12,12] },
+};
+function collectVerse(){
+  META.versos=META.versos||[];
+  if(META.versos.length>=VERSES.length)return null;
+  const v=VERSES[META.versos.length];
+  META.versos.push(META.versos.length);saveMeta();
+  return v;
+}
+function readScripture(cls){
+  const p=G.player,a=p.attr;
+  const roll=pick(SCRIPT_CLASSES[cls].rolls);
+  const strong=cls==="blasfemia";
+  let txt="";
+  switch(roll){
+    case 1:{ const d=Math.max(1,Math.round(p.hp*(strong?0.25:0.15))); p.hp=Math.max(1,p.hp-d);
+      txt=`O verso morde. Perdes ${d} de vida.`; break; }
+    case 2: G.curse="poison"; txt="Uma praga agarra-se às páginas. O próximo combate começa com veneno em ti."; break;
+    case 3:{ const d=strong?70:40; G.icor=Math.max(0,G.icor-d); txt=`As moedas escorrem entre os dedos: −${d} ◈.`; break; }
+    case 4:{ const at=pick(ATTRS.filter(x=>a[x.k]>2)); a[at.k]--; G.debts=G.debts||[]; G.debts.push(at.k);
+      p.hp=Math.min(p.hp,maxHP(a));
+      txt=`O verso cobra: −1 ${at.name} até o próximo Minguante.`; break; }
+    case 5:{ G._eventFight=pick(ZONES[G.zone].hard.concat(ZONES[G.zone].pool));
+      txt="As páginas gritam. Algo ouviu."; break; }
+    case 6: txt="As páginas estão em branco. Isso também é uma resposta."; break;
+    case 7: p.hp=maxHP(a); txt="A leitura acalma o Icor em ti. Vida restaurada por completo."; break;
+    case 8: G.runBuild=(G.runBuild||1)+0.3; txt="Os teus ferimentos aprendem a doer mais: acúmulo de status +30% neste run."; break;
+    case 9:{ const g=strong?80:50; G.icor+=g; txt=`Entre as páginas, icor seco: +${g} ◈.`; break; }
+    case 10: giveRelic(); txt="Do interior da capa, um Selo cai na tua mão."; break;
+    case 11:{ const at=pick(ATTRS); a[at.k]++; if(at.k==="vit")p.hp=Math.min(p.hp+11,maxHP(a));
+      txt=`O verso fica contigo: +1 ${at.name}, permanente.`; break; }
+    case 12: p.flask=p.flaskMax; p.hp=clamp(p.hp+Math.round(maxHP(a)*0.3),1,maxHP(a));
+      txt="A escritura devolve o que a descida tirou: frascos cheios e fôlego novo."; break;
+  }
+  SFX.scripture();
+  return { txt, verse:collectVerse(), cls };
+}
+function screenVerse(res){
+  const sc=SCRIPT_CLASSES[res.cls];
+  render(`${hudTop()}
+    <div class="floor" style="margin-top:22px;border-color:${sc.tint}">
+      <div class="nt disp" style="color:${sc.tint}"><span class="ic-dot d-event"></span>${sc.name}</div>
+      <p style="margin-top:10px">${res.txt}</p>
+      ${res.verse?`<div class="hr"></div><p class="flavor">${res.verse}</p>
+        <p class="mono faint" style="font-size:11px;margin-top:6px">VERSO ${(META.versos||[]).length}/${VERSES.length} — registado no Vestíbulo</p>`
+        :`<p class="mono faint" style="font-size:11px;margin-top:8px">Já guardas todos os Versos. As páginas repetem-se.</p>`}
+    </div>
+    <div style="max-width:320px;margin:16px auto 0">
+      <button class="btn gold" id="cont"><span class="k disp">SEGUIR</span></button></div>`);
+  document.getElementById("cont").onclick=()=>{
+    if(G._eventFight){ const f=G._eventFight; G._eventFight=null; return startCombat(f,false); }
+    advanceFloor();
+  };
+}
+
 /* ---------------- INIMIGOS ---------------- */
 /* flags: lento (erra se Longe), ranged (acerta em qualquer distância),
    onlyLonge/onlyPerto (seleção de intent), block, wind (aviso dramático)
@@ -401,7 +521,7 @@ const FOES = {
    {n:"arco raso", tell:"A foice sussurra rente ao chão.", dmg:16, poise:10, build:{bleed:20}},
    {n:"flor de cortes", tell:"Gira a lâmina numa flor.", dmg:9, poise:6, hits:2, build:{bleed:14}},
    {n:"colheita", tell:"Firma a foice para o corte definitivo. Lento.", dmg:30, poise:20, lento:true},
-  ], flavor:"Aprendiz de Sepulcra. O talento é inegável; a vocação, questionável." },
+  ], flavor:"Colhe para Sepulcra. O talento é inegável; a vocação, questionável." },
 
  /* ===== ELITES (semi-chefes) ===== */
  coveiro:{ name:"O Coveiro", hp:150, def:5, poise:52, icor:150, elite:true, zone:1,
@@ -410,31 +530,31 @@ const FOES = {
    {n:"terra nos olhos", tell:"Junta um punhado de terra fria.", dmg:8, poise:5, build:{geada:24}, ranged:true},
    {n:"cava fundo", tell:"Prepara um golpe descendente — devastador e lento.", dmg:36, poise:26, lento:true, wind:true},
    {n:"apoiar na pá", tell:"Descansa o peso na pá, recompondo-se.", block:true},
-  ], flavor:"Cava covas há eras. A tua já está pronta; ele só espera educadamente." },
+  ], flavor:"Servo de Sepulcra. Cava covas há eras — a tua já está pronta; ele só espera educadamente." },
  viuva:{ name:"A Viúva do Poço", hp:170, def:4, poise:44, icor:180, elite:true, zone:2, regen:10,
   moves:[
    {n:"lamento afiado", tell:"O choro dela corta o ar.", dmg:14, poise:8, ranged:true},
    {n:"abraço de luto", tell:"Abre os braços encharcados. Lento.", dmg:26, poise:16, lento:true},
    {n:"lágrimas pretas", tell:"As lágrimas escorrem, tóxicas.", dmg:10, poise:5, build:{poison:30}, ranged:true},
-  ], flavor:"Chora o marido no fundo do poço. A água sempre a devolve inteira — só veneno ou sangue apagam o luto." },
+  ], flavor:"Um casulo de Nerith, a Mãe-Berço, que despertou cedo demais. Chora um marido que talvez nunca existiu. Só veneno ou sangue apagam o luto." },
  sino:{ name:"O Sino Ambulante", hp:160, def:6, poise:48, icor:185, elite:true, zone:2, fragilePerto:true,
   moves:[
    {n:"REPIQUE", tell:"O badalo recua — de longe, o som é devastador.", dmg:30, poise:18, ranged:true, onlyLonge:true},
    {n:"dobre fúnebre", tell:"Um toque grave rola pelo salão.", dmg:18, poise:10, ranged:true, onlyLonge:true},
    {n:"balanço torto", tell:"De perto, só consegue balançar o corpo de bronze.", dmg:9, poise:8, onlyPerto:true},
-  ], flavor:"Um sino que anda. De longe, um massacre; de perto, quase constrangedor. Cola nele." },
+  ], flavor:"A voz-mestra do Coro Descarnado, exilada por desafinar. De longe, um massacre; de perto, quase constrangedor. Cola nele." },
  cavaleiro:{ name:"Cavaleiro Naufragado", hp:190, def:8, poise:70, icor:210, elite:true, zone:3, thorns:10,
   moves:[
    {n:"montante enferrujado", tell:"A espada range ao subir. Lento.", dmg:28, poise:20, lento:true},
    {n:"pontapé de placa", tell:"A bota de ferro busca teu joelho.", dmg:13, poise:14},
    {n:"âncora e aço", tell:"Crava a espada e fecha-se na armadura — devolve cada golpe.", block:true},
-  ], flavor:"Afundou com o navio, o cavalo e a honra. Recuperou duas. Bater na guarda dele é doar sangue." },
+  ], flavor:"Afundou com o Baluarte de Ostraga, o cavalo e a honra. Recuperou duas. Bater na guarda dele é doar sangue." },
  gemeas:{ name:"As Gêmeas da Foice", hp:175, def:5, poise:50, icor:220, elite:true, zone:3,
   moves:[
    {n:"tesoura", tell:"As duas foices se cruzam à altura do teu pescoço.", dmg:14, poise:9, hits:2, build:{bleed:16}},
    {n:"valsa rubra", tell:"Giram uma ao redor da outra, cada vez mais rápido.", dmg:9, poise:6, hits:3, build:{bleed:12}},
    {n:"ceifa dupla", tell:"Erguem as foices em espelho. Lento e fatal.", dmg:34, poise:22, lento:true, wind:true},
-  ], flavor:"Nasceram juntas, morreram juntas, e não veem motivo para mudar de método." },
+  ], flavor:"Aprendizas de Ysolde, a Lâmina Impecável. Nasceram juntas, morreram juntas — a mestra ainda não as dispensou." },
 
  /* ===== CHEFES ===== */
  sepulcra:{ name:"Sepulcra, a Primeira Vigília", hp:230, def:6, poise:60, icor:260, boss:true, zone:1,
@@ -446,7 +566,7 @@ const FOES = {
   ],
   phase2:{ hpAt:.5, msg:"Sepulcra despe o manto. O frio da Maré Baixa preenche a sala.",
    add:{n:"lamento gélido", tell:"O ar congela ao redor — geada iminente.", dmg:16, poise:10, build:{geada:38}, ranged:true} },
-  flavor:"A primeira a morrer defendendo o Minguante. A última a aceitar que falhou." },
+  caco:"o Sono", flavor:"Empunha o caco do Sono — o fragmento que finge que o Soberano apenas descansa. Cavou covas a vida inteira; a ironia é que a sua não fecha." },
  coro:{ name:"O Coro Descarnado", hp:300, def:5, poise:75, icor:380, boss:true, zone:2, crescendo:4,
   moves:[
    {n:"uníssono", tell:"Cem mandíbulas abrem ao mesmo tempo.", dmg:14, poise:9, ranged:true},
@@ -455,7 +575,7 @@ const FOES = {
   ],
   phase2:{ hpAt:.5, msg:"Metade do coro cala — a outra metade canta com o dobro da fúria.",
    add:{n:"réquiem", tell:"Uma única nota, sustentada, insuportável.", dmg:22, poise:14, ranged:true} },
-  flavor:"Todos os que morreram cantando, cantando ainda. O volume só sobe — quebra a postura para calar o crescendo." },
+  caco:"a Cantiga de Ninar", flavor:"Deviam cantar o Soberano até o sono final. Quando ele se partiu no meio da canção, a canção não parou. O volume só sobe — quebra a postura para calar o crescendo." },
  vaskarion:{ name:"Vaskarion, Mão do Soberano", hp:400, def:7, poise:85, icor:0, boss:true, final:true, zone:3,
   moves:[
    {n:"punho selado", tell:"A mão imensa se fecha sobre ti.", dmg:20, poise:14},
@@ -467,7 +587,7 @@ const FOES = {
    add:{n:"lágrima do trono", tell:"Uma gota de icor puro cai — e congela tudo.", dmg:18, poise:12, build:{geada:40}, ranged:true} },
   phase3:{ hpAt:.33, msg:"A Mão se abre por inteiro. Dentro dela, um fragmento do trono ainda pulsa.", regen:8,
    add:{n:"éco do soberano", tell:"A voz que não devia existir mais pronuncia teu nome. Lento.", dmg:38, poise:26, lento:true, wind:true} },
-  flavor:"Quando partiram o Soberano, a mão direita recusou-se a soltar o trono. Ainda não soltou." },
+  caco:"o próprio Trono", flavor:"Quando o Soberano se partiu, a mão direita recusou-se a soltar o trono. Lealdade além da razão, além da morte, além do sentido. Ainda não soltou." },
 };
 
 /* ---------------- ZONAS E MAPA ---------------- */
@@ -520,7 +640,8 @@ function randLoot(zi){
     const wpool=["estileto","arco","lanca","cutelo","cajado","selo","malho"];
     return "weapon:"+pick(wpool);
   }
-  if(r<0.85) return "icor:"+(70+zi*50+ri(0,40));
+  if(r<0.72) return "icor:"+(70+zi*50+ri(0,40));
+  if(r<0.88) return "scripture:"+pick(["bencao","apocrifo","blasfemia"]);
   return "item:"+pick(Object.keys(ITEMS));
 }
 
@@ -563,6 +684,13 @@ const EVENTS = {
       }},
       {k:"Quebrar o espelho", d:"+45◈. Sete anos de azar já eram teus.", do(){ G.icor+=45; toast("+45 ◈"); } },
       {k:"Desviar o olhar", d:"O reflexo agradece.", do(){} },
+    ]},
+  biblioteca:{ title:"Estante Afogada", dot:"d-event",
+    text:"Três escrituras sobrevivem na estante podre. Ler é um ato de fé — o efeito só se revela na última linha. Cada leitura entrega um Verso da verdade.",
+    opts:[
+      {k:"Escritura da Bênção", d:"Dourada. Quase sempre abençoa. Quase.", do(){ G._scriptureRes=readScripture("bencao"); } },
+      {k:"Apócrifo Cinzento", d:"Cinza. A sorte rola limpa: bênção ou maldição, meio a meio.", do(){ G._scriptureRes=readScripture("apocrifo"); } },
+      {k:"Blasfêmia Rubra", d:"Rubra. Quase sempre morde — mas paga mais forte, e guarda o melhor da verdade.", do(){ G._scriptureRes=readScripture("blasfemia"); } },
     ]},
 };
 const EVENT_IDS=Object.keys(EVENTS);
@@ -648,7 +776,7 @@ function maxHP(a){ return 45 + a.vit*11 + (hasRelic("coracao")?30:0) + metaLv("v
 function maxAP(a){ return clamp(3 + Math.floor(a.fol/7), 3, 7); }
 function maxPoise(a){ return 30 + a.fol*2 + a.for; }
 function maxFoco(a){ return 4 + Math.floor((a.int+a.fe)/6) + (hasRelic("ampulheta")?1:0) + metaLv("foco"); }
-function flaskHeal(a){ let h=Math.round(maxHP(a)*0.42)+a.fe*2; if(hasRelic("vela")) h=Math.round(h*1.35); return h; }
+function flaskHeal(a){ let h=Math.round(maxHP(a)*0.36)+a.fe*2; if(hasRelic("vela")) h=Math.round(h*1.35); return h; }
 function hasRelic(id){ return G && G.player.relics.includes(id); }
 
 function weaponAtk(attr,w){ let d=w.base; const h=w.hits||1;
@@ -683,6 +811,7 @@ function giveRelic(forced){
   if(!avail.length){ G.icor+=80; toast("+80 ◈ (Selos completos)"); return null; }
   const id=forced&&avail.includes(forced)?forced:pick(avail);
   G.player.relics.push(id);
+  SFX.relic();
   toast("Selo obtido: "+RELICS[id].name);
   if(id==="coracao") G.player.hp+=30;
   return id;
@@ -774,6 +903,11 @@ function screenVestibulo(){
     <div class="fl-lbl">Juramentos permanentes · <span class="mono" style="color:var(--frost)">✦ ${META.frag}</span> fragmentos de véspera</div>
     ${rows}
     <p class="flavor center" style="font-size:14px;margin-top:10px">Fragmentos são bancados a cada abate — a morte não os leva.${Store.ok?"":" <span class='faint'>(sem armazenamento aqui: valem só nesta sessão)</span>"}</p>
+    <div class="hr"></div>
+    <div class="fl-lbl">Versos da Escritura · ${(META.versos||[]).length}/${VERSES.length}</div>
+    ${(META.versos||[]).length?`<div style="font-size:14px;color:var(--bone-dim);max-height:180px;overflow-y:auto">${(META.versos||[]).map(i=>`<p class="flavor" style="padding:5px 0;border-bottom:1px solid var(--edge-soft)"><span class="mono faint" style="font-size:10px">VERSO ${i+1}</span><br>${VERSES[i]}</p>`).join("")}</div>`
+      :`<p class="flavor" style="font-size:14px">Nenhum verso ainda. As Escrituras Afogadas esperam na descida — ler é fé e risco na mesma página.</p>`}
+    ${(META.versos||[]).length>=VERSES.length?`<div class="floor" style="border-color:var(--frost);margin-top:10px"><div class="nt disp" style="color:var(--frost)">A Chave de Sal toma forma</div><div class="nd">Reuniste a verdade inteira. Abaixo do trono, algo destranca — O AVESSO. (Próxima expansão.)</div></div>`:""}
     <div style="max-width:340px;margin:16px auto 0">
       <button class="btn gold" id="godesc"><span class="k disp">DESCER</span></button>
       <button class="btn" id="back"><span class="k disp faint">TÍTULO</span></button></div>`);
@@ -783,6 +917,7 @@ function screenVestibulo(){
       const u=META_UPGRADES.find(x=>x.id===b.dataset.up);
       const cost=u.cost(metaLv(u.id));
       if(META.frag<cost)return;
+      SFX.buy();
       META.frag-=cost; META.upgrades[u.id]=metaLv(u.id)+1; saveMeta();
       toast(u.name+" — juramento selado.");
       screenVestibulo();
@@ -888,6 +1023,21 @@ function advanceFloor(){
 }
 
 function resolveTreasure(node){
+  const [lt,lv]=node.loot.split(":");
+  if(lt==="scripture"){
+    markCleared();
+    const sc=SCRIPT_CLASSES[lv];
+    render(`${hudTop()}
+      <div class="floor" style="margin-top:20px;border-color:${sc.tint}">
+        <div class="nt disp" style="color:${sc.tint}"><span class="ic-dot d-event"></span>${sc.name}</div>
+        <p class="flavor" style="margin-top:10px">Encharcada, mas legível. O efeito só se revela na última linha — e cada leitura entrega um Verso.</p></div>
+      <div style="max-width:420px;margin:14px auto 0">
+        <button class="btn gold" id="read"><span class="k disp">LER</span><span class="sub">Fé e risco, na mesma página.</span></button>
+        <button class="btn" id="leave"><span class="k disp faint">DEIXAR</span><span class="sub">Há livros que ficam melhor fechados.</span></button></div>`);
+    document.getElementById("read").onclick=()=>screenVerse(readScripture(lv));
+    document.getElementById("leave").onclick=advanceFloor;
+    return;
+  }
   applyLoot(node.loot);
   markCleared();
   render(`${hudTop()}
@@ -912,6 +1062,7 @@ function resolveEvent(node){
     b.onclick=()=>{
       ev.opts[+b.dataset.o].do();
       markCleared();
+      if(G._scriptureRes){ const r=G._scriptureRes; G._scriptureRes=null; return screenVerse(r); }
       if(G._eventFight){ const f=G._eventFight; G._eventFight=null; return startCombat(f,false); }
       if(G.player.hp<=0){ G.player.hp=1; }
       advanceFloor();
@@ -922,13 +1073,14 @@ function resolveEvent(node){
 /* ============================================================ COMBATE */
 function startCombat(foeId,isElite){
   const base=FOES[foeId];
-  const foe={ id:foeId,name:base.name,hp:base.hp,maxHp:base.hp,def:base.def,
+  const HPB=base.boss?1.4:base.elite?1.32:1.22, DMGB=base.boss?1.25:1.2;
+  const foe={ id:foeId,name:base.name,hp:Math.round(base.hp*HPB),maxHp:Math.round(base.hp*HPB),def:base.def,
     poise:base.poise,maxPoise:base.poise,staggered:false,blocking:false,
-    icor:base.icor,moves:base.moves.map(m=>({...m})),boss:base.boss,elite:base.elite,final:base.final,
+    icor:base.icor,moves:base.moves.map(m=>({...m,dmg:m.dmg?Math.round(m.dmg*DMGB):m.dmg})),boss:base.boss,elite:base.elite,final:base.final,
     regen:base.regen||0, thorns:base.thorns||0, crescendo:base.crescendo||0, cresc:0,
-    fragilePerto:base.fragilePerto||false,
-    phase2:base.phase2?{...base.phase2,done:false}:null,
-    phase3:base.phase3?{...base.phase3,done:false}:null,
+    fragilePerto:base.fragilePerto||false, wary:0,
+    phase2:base.phase2?{...base.phase2,add:{...base.phase2.add,dmg:Math.round(base.phase2.add.dmg*DMGB)},done:false}:null,
+    phase3:base.phase3?{...base.phase3,add:{...base.phase3.add,dmg:Math.round(base.phase3.add.dmg*DMGB)},done:false}:null,
     status:{bleed:0,poison:0,geada:0}, poisonTurns:0, geadaTurns:0, intent:null };
   const p=G.player,a=p.attr;
   const C={ foe,turn:"player",ap:maxAP(a),over:false,range:"longe",
@@ -955,6 +1107,8 @@ function chooseIntent(foe,C){
   checkPhases(foe,C);
   let pool=foe.moves.slice();
   if(foe._last&&foe._last.block) pool=pool.filter(m=>!m.block);
+  // aprendeu: depois de errar um golpe lento, evita repeti-lo
+  if(foe.wary>0){ const np=pool.filter(m=>!m.lento); if(np.length)pool=np; foe.wary--; }
   // preferência por distância
   const r=C?C.range:"longe";
   const fits=pool.filter(m=>!(m.onlyLonge&&r==="perto")&&!(m.onlyPerto&&r==="longe"));
@@ -1111,12 +1265,14 @@ function doAction(act){
   if(act==="adv"||act==="ret"){
     const cost=(hasRelic("passo")&&!C.movedFree)?0:1;
     C.ap-=cost; C.movedFree=true;
+    SFX.step();
     if(act==="adv"){ C.range="perto"; C.advancedThisTurn=true; if(hasRelic("impeto"))C.impetus=true;
       clog(C,`<span class="sys">Avanças sobre ${foe.name}.</span>`); }
     else { C.range="longe"; clog(C,`<span class="sys">Recuas, abrindo distância.</span>`); }
     return renderCombat();
   }
   if(act==="guard"){
+    SFX.guard();
     C.ap-=1;C.guarding=true;C.pPoise=clamp(C.pPoise+18,0,C.pMaxPoise);
     clog(C,`<span class="sys">Ergues a guarda. Postura firmada.</span>`);
     return renderCombat();
@@ -1124,6 +1280,7 @@ function doAction(act){
   if(act==="flask"){
     C.ap-=2;p.flask--;
     const h=flaskHeal(a);p.hp=clamp(p.hp+h,0,maxHP(a));
+    SFX.heal();
     floatText("+"+h,"var(--ichor)");
     clog(C,`<span class="hit">Bebes o Âmago. +${h} de vida.</span>`);
     return renderCombat();
@@ -1157,6 +1314,7 @@ function doAction(act){
     if(sk.kind==="heal"){
       const h=Math.round(maxHP(a)*0.30)+a.fe*3;
       p.hp=clamp(p.hp+h,0,maxHP(a));
+      SFX.heal();
       floatText("+"+h,"var(--ichor)");
       clog(C,`<span class="hit">${sk.name}: a chama restaura +${h}.</span>`);
       return afterPlayerAct();
@@ -1184,7 +1342,7 @@ function doAction(act){
 function applyBuildToFoe(C,foe,build){
   const a=G.player.attr;
   const relicB=(s)=>((s==="bleed"&&hasRelic("dente"))||(s==="poison"&&hasRelic("vespa")))?1.4:1;
-  const mult=1+a.sin*0.03;
+  const mult=(1+a.sin*0.03)*(G.runBuild||1);
   for(const s in build){
     foe.status[s]=clamp(foe.status[s]+build[s]*mult*relicB(s),0,100);
     if(foe.status[s]>=100) procStatus(C,foe,s,true);
@@ -1201,9 +1359,10 @@ function hitFoe(C,foe,p,rawAtk,poiseDmg,build,isCrit,ignoreDef,flat,guardcrush){
   if(foe.fragilePerto&&C.range==="perto") dmg=Math.round(dmg*1.4);
   if(foe.geadaTurns>0) dmg=Math.round(dmg*1.15);
   if(C.impetus){ dmg=Math.round(dmg*1.3); C.impetus=false; clog(C,`<span class="hit">Ímpeto do Naufrágio!</span>`); }
-  if(isCrit) dmg=Math.round(dmg*2.6*(hasRelic("olho")?1.5:1));
+  if(isCrit) dmg=Math.round(dmg*2.3*(hasRelic("olho")?1.5:1));
   foe.hp-=dmg;
   floatText("-"+dmg,isCrit?"var(--ichor)":"var(--bone)");
+  if(isCrit)SFX.crit();else SFX.hit();
   clog(C,`<span class="${isCrit?'crit':'hit'}">Acertas ${foe.name} — ${dmg} de dano.${foe.blocking?(guardcrush?" (guarda esmagada!)":" (bloqueado)"):""}</span>`);
   // espinhos
   if(foe.thorns&&foe.blocking&&C.range==="perto"&&!flat){
@@ -1221,7 +1380,7 @@ function hitFoe(C,foe,p,rawAtk,poiseDmg,build,isCrit,ignoreDef,flat,guardcrush){
       foe.poise=0;foe.staggered=true;foe.blocking=false;
       if(foe.crescendo&&foe.cresc>0){ foe.cresc=0; clog(C,`<span class="frost">O crescendo silencia.</span>`); }
       foe.intent={n:"—",tell:"Cambaleia, atordoado.",stagger:true};
-      clog(C,`<span class="crit">${foe.name} perde a postura — ATORDOADO!</span>`);
+      SFX.stagger();clog(C,`<span class="crit">${foe.name} perde a postura — ATORDOADO!</span>`);
     }
   }
   if(build) applyBuildToFoe(C,foe,build);
@@ -1231,6 +1390,7 @@ function hitFoe(C,foe,p,rawAtk,poiseDmg,build,isCrit,ignoreDef,flat,guardcrush){
 function procStatus(C,ent,type,isFoe){
   const name=isFoe?ent.name:"Tu";
   if(type==="bleed"){
+    SFX.bleed();
     const dmg=Math.round((isFoe?ent.maxHp:maxHP(G.player.attr))*0.11)+12;
     if(isFoe){ent.hp-=dmg;}else{G.player.hp-=dmg;}
     ent.status.bleed=0;
@@ -1241,11 +1401,13 @@ function procStatus(C,ent,type,isFoe){
     if(!isFoe&&G.player.hp<=0){loseCombat();}
   }
   if(type==="poison"){
+    SFX.poison();
     ent.status.poison=0;
     if(isFoe)ent.poisonTurns=3;else C.pPoisonTurns=3;
     clog(C,`<span class="proc">${name} — envenenado.</span>`);
   }
   if(type==="geada"){
+    SFX.geada();
     ent.status.geada=0;
     if(!isFoe&&hasRelic("brasa")){ clog(C,`<span class="frost">A Brasa Interior derrete a geada.</span>`); return; }
     if(isFoe){ent.geadaTurns=3;}else{C.pGeadaTurns=3;}
@@ -1285,7 +1447,7 @@ function foeTurn(){
 
   if(foe.staggered){
     clog(C,`<span class="sys">${foe.name} recompõe-se lentamente.</span>`);
-    foe.staggered=false;foe.poise=Math.round(foe.maxPoise*0.6);
+    foe.staggered=false;foe.poise=Math.round(foe.maxPoise*0.75);
     chooseIntent(foe,C);
     return startPlayerTurn();
   }
@@ -1299,11 +1461,11 @@ function foeTurn(){
     foe.blocking=false;
     // LENTO + jogador LONGE = erra
     if(m.lento&&C.range==="longe"&&!m.ranged){
-      foe.poise-=18;
-      clog(C,`<span class="frost">${foe.name} usa ${m.n} — e ERRA. O golpe passa longe; a postura fica exposta (−18).</span>`);
+      foe.poise-=12; foe.wary=2; SFX.whiff();
+      clog(C,`<span class="frost">${foe.name} usa ${m.n} — e ERRA. O golpe passa longe; a postura fica exposta (−12). Ele aprende.</span>`);
       if(foe.poise<=0){foe.poise=0;foe.staggered=true;
         foe.intent={n:"—",tell:"Cambaleia, atordoado.",stagger:true};
-        clog(C,`<span class="crit">${foe.name} perde a postura — ATORDOADO!</span>`);
+        SFX.stagger();clog(C,`<span class="crit">${foe.name} perde a postura — ATORDOADO!</span>`);
         if(foe.crescendo&&foe.cresc>0){foe.cresc=0;clog(C,`<span class="frost">O crescendo silencia.</span>`);}
         return startPlayerTurn();}
     } else {
@@ -1315,7 +1477,7 @@ function foeTurn(){
   }
   // crescendo
   if(foe.crescendo){ foe.cresc+=foe.crescendo; }
-  foe.poise=clamp(foe.poise+6,0,foe.maxPoise);
+  foe.poise=clamp(foe.poise+8,0,foe.maxPoise);
   chooseIntent(foe,C);
   if(p.hp<=0)return loseCombat();
   startPlayerTurn();
@@ -1335,6 +1497,7 @@ function foeHit(C,foe,p,m){
   }
   dmg=Math.max(1,dmg-Math.floor(a.fol/6));
   p.hp-=dmg;
+  if(C.guarding)SFX.guard();else SFX.hurt();
   floatText("-"+dmg,"var(--blood)");
   clog(C,`<span class="hurt">${foe.name} usa ${m.n}: ${dmg}.${C.guarding?" (defendido)":""}</span>`);
   if(!C.guarding){
@@ -1373,6 +1536,7 @@ function startPlayerTurn(){
 function winCombat(){
   const C=G.combat;if(!C||C.over)return;C.over=true;
   const foe=C.foe;
+  SFX.win();
   G.kills++;
   const fr=foe.final?40:foe.boss?20:foe.elite?6:1;
   META.frag+=fr; G.fragEarned+=fr; saveMeta();
@@ -1457,6 +1621,7 @@ const DEATHS=[
   "As Vigílias nem se dão ao trabalho de comentar.",
 ];
 function screenDeath(){
+  SFX.die();
   G.deaths++;
   if(G.icor>0)G.mancha={floor:G.floor,zone:G.zone,amount:G.icor};
   G.icor=0;
@@ -1496,6 +1661,7 @@ function screenWane(){
   const fl=G.map[G.floor];
   const p=G.player,a=p.attr;
   G.lastWane=G.floor;
+  while(G.debts&&G.debts.length){ a[G.debts.pop()]++; toast("O verso devolve o que cobrou."); }
   p.hp=maxHP(a);p.flask=p.flaskMax;p.foco=maxFoco(a);
   if(!fl._rested){
     for(const key in G.clearedNodes){
@@ -1568,6 +1734,7 @@ function renderWane(){
 function levelUp(k){
   const cost=levelCost();
   if(G.icor<cost)return;
+  SFX.buy();
   G.icor-=cost;G.player.attr[k]++;G.player.levelsBought++;
   const p=G.player;
   if(k==="vit")p.hp=maxHP(p.attr);else p.hp=Math.min(p.hp,maxHP(p.attr));
@@ -1612,6 +1779,7 @@ function bindMerchant(){
       const [what,id,priceS]=b.dataset.buy.split(":");
       const price=+priceS;
       if(G.icor<price)return;
+      SFX.buy();
       G.icor-=price;
       if(what==="flask"){G.player.flaskMax++;G.player.flask++;toast("Frasco aprimorado.");}
       if(what==="relic")giveRelic();
@@ -1650,24 +1818,48 @@ function screenBossIntro(){
   render(`<div class="epitaph" style="padding-top:8vh">
     <div class="tag" style="margin-bottom:18px">${foe.final?"A Última Vigília":"Vigília do "+ZONES[G.zone].name.split(" ").pop()}</div>
     <h1 class="disp" style="font-size:clamp(26px,6vw,44px);color:var(--bone)">${foe.name}</h1>
+    ${foe.caco?`<div class="tag" style="margin:6px 0 4px;color:var(--ichor);border-color:var(--ichor-deep)">Caco: ${foe.caco}</div>`:""}
     <p class="line flavor" style="max-width:480px">${foe.flavor}</p>
     ${line?`<p class="line" style="max-width:480px;color:var(--bone);font-style:italic;margin-top:-8px">${line}</p>`:""}
     <div style="max-width:320px;margin:20px auto 0">
       <button class="btn danger gold" id="fight"><span class="k disp">ENFRENTAR</span>
         <span class="sub">Não há como recuar. Nunca houve.</span></button></div></div>`);
-  document.getElementById("fight").onclick=()=>startCombat(fl.foe,false);
+  document.getElementById("fight").onclick=()=>{SFX.boss();startCombat(fl.foe,false);};
 }
 
+const ENDINGS={
+ sentar:{t:"A ORDEM PERPÉTUA",txt:"Sentas. O trono aceita-te como aceitou o anterior: completamente, e para sempre. A ordem volta, o crepúsculo estabiliza, nada mais morre — nem tu. Um dia perceberás o que o Soberano percebeu. Há tempo. Há apenas tempo."},
+ devorar:{t:"A BOCA SEM FUNDO",txt:"Comes. O caco desce como uma promessa. A fome que chega logo depois é maior que o trono, maior que o mundo — e o mundo, prestativo, cabe todo na boca."},
+ apagar:{t:"O ÚLTIMO MINGUANTE",txt:"Voltas ao Vestíbulo e apagas Sétima com dois dedos. Ela agradece — sempre soube. A morte, enfim liberta, percorre Vespergloam como uma maré mansa apagando nomes. Tudo pode acabar. Portanto, tudo pode começar."},
+};
 function victoryScreen(){
   render(`<div class="epitaph">
     <div class="candle"></div>
     <div class="word win disp" style="font-size:clamp(34px,9vw,72px)">A MÃO<br>SOLTA O TRONO</div>
     <p class="line flavor">Vaskarion se desfaz em icor dourado, dedo por dedo. O trono do Soberano Pálido está,
       pela primeira vez em eras, ao alcance de alguém. O problema de estar ao alcance é que agora a escolha é tua.</p>
-    <p class="center flavor" style="color:var(--ichor)">Fim da Descida. Sentar, devorar ou apagar a última vela — isso é o próximo capítulo por construir.</p>
-    <div style="max-width:320px;margin:24px auto 0">
-      <button class="btn gold" id="sum"><span class="k disp">VER O RUN</span></button></div></div>`);
-  document.getElementById("sum").onclick=()=>screenSummary(true);
+    <div class="fl-lbl">A Escolha do Trono</div>
+    <div class="nodegrid three" style="max-width:760px;margin:0 auto;text-align:left">
+      <button class="node" data-end="sentar"><div class="nt disp"><span class="ic-dot d-wane"></span>Sentar no trono</div>
+        <div class="nd">Tornar-te o novo Soberano. A ordem, de novo. O erro, de novo — mas teu.</div></button>
+      <button class="node" data-end="devorar"><div class="nt disp"><span class="ic-dot d-elite"></span>Devorar o caco</div>
+        <div class="nd">Engolir o que resta do deus. Que a fome decida o resto.</div></button>
+      <button class="node" data-end="apagar"><div class="nt disp"><span class="ic-dot d-boss"></span>Apagar a última vela</div>
+        <div class="nd">Terminar o que o Soberano começou. Deixar tudo — enfim — acabar.</div></button>
+    </div></div>`);
+  document.querySelectorAll(".node[data-end]").forEach(b=>{
+    b.onclick=()=>{
+      const e=ENDINGS[b.dataset.end];
+      META.endings=META.endings||{}; META.endings[b.dataset.end]=true; saveMeta();
+      render(`<div class="epitaph">
+        <div class="candle"></div>
+        <div class="word win disp" style="font-size:clamp(26px,7vw,52px)">${e.t}</div>
+        <p class="line flavor">${e.txt}</p>
+        <div style="max-width:320px;margin:24px auto 0">
+          <button class="btn gold" id="sum"><span class="k disp">VER O RUN</span></button></div></div>`);
+      document.getElementById("sum").onclick=()=>screenSummary(true);
+    };
+  });
 }
 
 function screenSummary(won){
@@ -1699,6 +1891,8 @@ function screenSummary(won){
 }
 
 /* ---------------- BOOT ---------------- */
+const _mb=document.getElementById("mutebtn");
+if(_mb)_mb.onclick=()=>{ SFX.unlock(); SFX.on=!SFX.on; _mb.classList.toggle("off",!SFX.on); if(SFX.on)SFX.ui(); };
 screenTitle();
 </script>
 </body>
