@@ -255,6 +255,25 @@ const WEAPONS = {
   selo:{ name:"Selo Cinéreo", kind:"Selo Sacro", base:6, poise:5, ap:2, hits:1, catalyst:true, sacred:true,
     scale:{fe:"B"}, build:{}, art:"ira",
     desc:"Um sinete do Soberano. Ainda sela promessas — e cobra as quebradas." },
+  // --- novas ---
+  foicena:{ name:"Foice da Ceifa", kind:"Foice", base:11, poise:14, ap:3, hits:1, reach:true,
+    scale:{des:"B",for:"C"}, build:{bleed:10}, art:"colheita", momentum:true,
+    desc:"Curva como uma pergunta. Ganha fio a cada passo que dás para trás — recua, e ela agradece." },
+  martelo:{ name:"Martelo do Dilúvio", kind:"Martelo", base:20, poise:34, ap:4, hits:1,
+    scale:{for:"A"}, build:{}, art:"maremoto", overload:true,
+    desc:"Cabeça de âncora, cabo de mastro. Lento como maré cheia — e igual de inevitável." },
+  garras:{ name:"Garras do Enxame", kind:"Garras", base:5, poise:4, ap:2, hits:3,
+    scale:{des:"B",sin:"B"}, build:{poison:12}, art:"dilacerar", frenzy:true,
+    desc:"Três lâminas por mão, curtas e famintas. Quanto mais golpeias, mais rápido cortam." },
+  espadaicor:{ name:"Espada de Icor", kind:"Espada Sacra", base:13, poise:16, ap:3, hits:1, catalyst:true,
+    scale:{for:"C",fe:"B"}, build:{}, art:"julgamento", channel:true,
+    desc:"Lâmina que arde do próprio Icor. Golpeia com aço, ou queima o Foco para julgar de longe." },
+  chicote:{ name:"Chicote de Espinhos", kind:"Chicote", base:9, poise:8, ap:2, hits:1, reach:true, ranged:true,
+    scale:{des:"B",sin:"C"}, build:{bleed:14}, art:"laceracao", pull:true,
+    desc:"Vértebras enfiadas em couro. Alcança de longe, sangra de perto, e puxa quem tenta fugir." },
+  cetro:{ name:"Cetro da Praga", kind:"Cetro", base:8, poise:6, ap:2, hits:1, catalyst:true,
+    scale:{int:"C",sin:"B"}, build:{poison:20}, art:"miasma", plague:true,
+    desc:"Osso oco cheio de moscas douradas. Não fere: adoece. O veneno é a arma, o resto é entrega." },
 };
 
 /* ---------------- HABILIDADES ---------------- */
@@ -285,6 +304,18 @@ const SKILLS = {
     desc:"Cara: dano ×2.2. Coroa: sangras tu (10% da vida). A Sina decide — e a Sina te conhece." },
   sangria:{ name:"Explodir Feridas", ap:2, foco:2, kind:"burst", needPerto:true,
     desc:"Detona o sangue acumulado no alvo: dano = acúmulo de SANGUE ×1." },
+  colheita:{ name:"Colheita", ap:3, foco:2, kind:"phys", mult:1.3, poise:20, build:{bleed:20}, reachOk:true,
+    desc:"Um arco largo que sangra. Mais forte se vieres recuando." },
+  maremoto:{ name:"Maremoto", ap:4, foco:3, kind:"phys", mult:1.15, poise:60, needPerto:true, guardcrush:true, aoePoise:true,
+    desc:"Ergue o martelo e deixa a gravidade fazer o resto. Esmaga qualquer guarda e postura." },
+  dilacerar:{ name:"Dilacerar", ap:3, foco:2, kind:"phys", hits:5, mult:.42, poise:4, build:{poison:10,bleed:6}, needPerto:true,
+    desc:"Cinco cortes num fôlego. Sangue e veneno de uma vez." },
+  julgamento:{ name:"Julgamento", ap:3, foco:3, kind:"faith", mult:1.75, poise:16, scale:"fe",
+    desc:"Descarrega o Icor da lâmina num raio dourado. Fere a qualquer distância." },
+  laceracao:{ name:"Laceração", ap:2, foco:2, kind:"phys", mult:.9, poise:8, build:{bleed:26}, pull:true,
+    desc:"O chicote enrola e rasga ao voltar — e traz o alvo consigo." },
+  miasma:{ name:"Miasma", ap:3, foco:3, kind:"sorcery", mult:.5, poise:6, build:{poison:60}, scale:"int",
+    desc:"Uma nuvem de esporos dourados. Pouco impacto, muito apodrecimento." },
 };
 
 /* ---------------- FICHA DE MESA ---------------- */
@@ -663,19 +694,79 @@ const FOES = {
    {n:"A DANÇA", tell:"Ela inclina a lâmina. O que vem a seguir tem nome próprio — e acompanha-te. FINTA.", dmg:11, poise:8, hits:4, lento:true, feint:true, wind:true, build:{bleed:10}},
   ], flavor:"O caco da Perfeição: nunca perdeu um duelo. É a maldição, não a bênção — cura ao ferir, e a Dança dela tem nome próprio. Luta implorando, sem palavras, que sejas melhor. E renasce uma vez, só para ter certeza." },
 
- vontade:{ name:"A Vontade Pálida", hp:480, def:6, poise:95, icor:0, boss:true, final:true, zone:5,
-  focoDrain:1, reorderEvery:4, buildResist:0.55, procResist:0.6, regen:2, pursue:true, caco:"nenhum — é o que resta da vontade dele",
+ vontade:{ name:"A Vontade Pálida", hp:600, def:9, poise:125, icor:0, boss:true, final:true, zone:5,
+  focoDrain:1, buildResist:0.5, procResist:0.6, regen:3, pursue:true, comboChance:0.6, guardPierce:0.5,
+  caco:"a lâmina que ele ergueu contra si mesmo",
   moves:[
-   {n:"decreto de ferro", tell:"A ordem toma forma e desce como lei.", dmg:23, poise:16},
-   {n:"correção", tell:"O mundo ajusta-se contra ti.", dmg:16, poise:10, ranged:true},
-   {n:"peso da ordem", tell:"Ergue o que resta de uma vontade divina. Lento.", dmg:44, poise:28, lento:true, wind:true},
-   {n:"revisão", tell:"A ordem ergue-se — e emenda-se a meio, porque já leu o teu passo. FINTA.", dmg:30, poise:20, lento:true, feint:true, wind:true},
-   {n:"cláusula", tell:"Um parágrafo do decreto agarra-te e puxa.", dmg:15, poise:10, pull:true, ranged:true, drainFoco:1},
+   {n:"revés de aço", tell:"A grande lâmina desce num arco curto.", dmg:24, poise:18},
+   {n:"estocada da ordem", tell:"Perfura à distância — a lei alcança longe.", dmg:20, poise:14, ranged:true},
+   {n:"peso da coroa", tell:"Ergue a lâmina colossal acima da cabeça. LENTO — recua.", dmg:46, poise:30, lento:true, wind:true},
+   {n:"golpe emendado", tell:"Ergue a lâmina — e emenda a meio, seguindo teu passo. FINTA.", dmg:32, poise:22, lento:true, feint:true, wind:true},
+   {n:"decreto que arrasta", tell:"Crava a lâmina e puxa o chão — e a ti com ele.", dmg:16, poise:10, pull:true, ranged:true},
   ],
-  phase2:{ hpAt:.6, msg:"A Vontade profere o Decreto. A ordem para de fingir gentileza — e as feridas dela fecham mais rápido.", regen:5, add:{n:"O ÚLTIMO DECRETO", tell:"A ordem inteira concentra-se num só golpe, repetido cinco vezes. Ler ou morrer. Lento.", dmg:13, poise:8, hits:5, lento:true, wind:true, ranged:true} },
-  phase3:{ hpAt:.3, msg:"A Vontade revela o rosto. É o teu. Sempre foi.", regen:8, invertPerm:true,
-   add:{n:"éco do teu nome", tell:"Pronuncia teu nome com a tua voz. Lento e final.", dmg:54, poise:34, lento:true, wind:true} },
-  flavor:"Não é o Soberano. É o que restou da vontade dele — a ordem teimosa que ainda impede a morte de funcionar, traindo sozinha o último desejo do próprio deus. Reordena o que fazes. Cura-se do que te tira. Vieste desfazer uma boa intenção, e ela não vai deixar." },
+  combos:[
+   {name:"a Tríade de Ferro", steps:[
+     {n:"tríade: primeiro corte", tell:"Passo à frente, lâmina baixa. O primeiro de três.", dmg:20, poise:14},
+     {n:"tríade: segundo corte", tell:"Gira e devolve o aço pelo outro lado. Rápido.", dmg:24, poise:16, quick:true},
+     {n:"tríade: golpe final", tell:"Ergue para o alto e DESCE com todo o peso. LENTO — recua ou morre.", dmg:52, poise:34, lento:true, wind:true, guardPierce:0.5} ]},
+   {name:"a Dança do Decreto", steps:[
+     {n:"dança: avanço", tell:"Fecha a distância num passo impossível para o tamanho dele.", dmg:14, poise:10, pull:true},
+     {n:"dança: corte cruzado", tell:"Dois cortes em X, rápidos.", dmg:12, poise:8, hits:2},
+     {n:"dança: arremate", tell:"Finta o terceiro — e persegue se recuares. FINTA.", dmg:30, poise:20, lento:true, feint:true, wind:true} ]},
+  ],
+  phase2:{ hpAt:.62, msg:"A lâmina parte-se ao meio e as duas metades flutuam, guiadas pela ordem. Agora ela luta com o dobro do aço.", regen:5,
+   comboChance:0.72, addCombo:{name:"o Voo do Aço Partido", steps:[
+     {n:"aço partido: ascensão", tell:"As duas metades sobem em espiral à tua volta. O que vem tem nome. Guarda o Foco.", dmg:10, poise:8, ranged:true},
+     {n:"aço partido: primeira leva", tell:"Chuva de cortes de PERTO — recua para ralear. LENTO.", dmg:12, poise:7, hits:4, lento:true, wind:true},
+     {n:"aço partido: segunda leva", tell:"De longe agora, com ALCANCE — recuar não salva, DEFENDE.", dmg:9, poise:6, hits:4, ranged:true, wind:true, guardPierce:0.35},
+     {n:"aço partido: dilúvio final", tell:"As metades convergem num só ponto: TU. Recua E que os deuses te valham.", dmg:13, poise:9, hits:3, lento:true, wind:true} ]},
+   add:{n:"gravidade da ordem", tell:"Arranca as duas metades do chão num puxão brutal. PUXÃO.", dmg:22, poise:16, pull:true, ranged:true} },
+  phase3:{ hpAt:.3, msg:"O aço reencontra o punho e a Vontade revela o rosto sobre a lâmina reunida. É o teu. Sempre foi.", regen:9, invertPerm:true, comboChance:0.85,
+   add:{n:"éco do teu nome", tell:"Ergue a lâmina reunida e pronuncia teu nome com a tua voz. LENTO e final.", dmg:58, poise:38, lento:true, wind:true} },
+  flavor:"Não é o Soberano. É a lâmina que ele ergueu contra si mesmo, e a vontade que a guiou — o gesto de um deus a pedir a própria morte, preso para sempre a meio do golpe. Colossal, metódica, imparável. Luta como quem cumpre uma sentença: a sua. Vieste terminar o que ela começou, e ela vai receber-te com todo o aço que resta." },
+ afilhada:{ name:"A Afilhada Pálida", hp:52, def:2, poise:16, icor:40, zone:0,
+   flavor:"Uma criança que o Claustro não deixou crescer nem partir. Ainda segura uma boneca de algas.",
+   moves:[{n:"puxar a manga", tell:"Puxa-te a manga, pedindo colo. De perto, morde.", dmg:11, poise:8},
+     {n:"chamar a mãe", tell:"Grita por alguém que não vem. O grito corta. LENTO.", dmg:20, poise:14, lento:true, wind:true},
+     {n:"esconder-se", tell:"Recolhe-se atrás da boneca, refazendo a guarda.", block:true}] },
+ acolito:{ name:"Acólito Encharcado", hp:70, def:5, poise:26, icor:58, zone:0,
+   flavor:"Rezava quando a água entrou. Continua a rezar. A oração já não tem palavras, só bolhas.",
+   moves:[{n:"aspersão", tell:"Sacode água benta e podre em ti.", dmg:13, poise:9, ranged:true},
+     {n:"finta do turíbulo", tell:"Ergue o turíbulo alto — mas segue teus pés. FINTA.", dmg:18, poise:12, lento:true, feint:true, wind:true},
+     {n:"litania", tell:"Murmura, e a murmuração fecha-lhe as feridas.", block:true, selfHeal:16}] },
+ corista:{ name:"Corista Rachada", hp:104, def:5, poise:34, icor:88, zone:1,
+   flavor:"Uma só voz do coro, destacada e ainda pior sozinha. A garganta é um cano de órgão.",
+   moves:[{n:"nota sustenida", tell:"Segura uma nota que faz sangrar os ouvidos.", dmg:16, poise:11, build:{bleed:12}},
+     {n:"agudo partido", tell:"Sobe a voz até o impossível. LENTO — recua.", dmg:26, poise:18, lento:true, wind:true},
+     {n:"eco", tell:"A voz volta multiplicada. Persegue.", dmg:14, poise:10, ranged:true, pull:true}] },
+ sepultureiro:{ name:"Sepultureiro de Ofício", hp:150, def:7, poise:44, icor:120, zone:1,
+   flavor:"Enterrou meia cidade e não parou por ela ter morrido. Ainda mede covas com o olhar.",
+   moves:[{n:"pá de terra", tell:"Golpeia com a pá plana. Pesado.", dmg:22, poise:20},
+     {n:"cova rasa", tell:"Ergue a pá para o alto — mas já viu para onde corres. FINTA.", dmg:30, poise:24, lento:true, feint:true, wind:true},
+     {n:"soterrar", tell:"Atira terra que atrasa e cega.", dmg:12, poise:8, ranged:true, drainFoco:2},
+     {n:"medir-te", tell:"Recosta-se na pá, calculando. Refaz a guarda.", block:true}] },
+ dama:{ name:"Dama de Companhia", hp:120, def:6, poise:38, icor:108, zone:2,
+   flavor:"Serviu a corte na vida e serve na morte. O leque é de lâminas, e ela sabe usá-lo.",
+   moves:[{n:"corte de leque", tell:"Abre o leque num arco cortante.", dmg:18, poise:14, build:{bleed:14}},
+     {n:"vénia falsa", tell:"Curva-se em vénia — e a vénia vira estocada. FINTA.", dmg:26, poise:18, lento:true, feint:true, wind:true},
+     {n:"perfume", tell:"Solta um pó dourado que apodrece.", dmg:10, poise:6, ranged:true, build:{poison:30}}] },
+ nadador:{ name:"Nadador das Profundas", hp:135, def:6, poise:36, icor:115, zone:3,
+   flavor:"Mergulhou para consertar a muralha por dentro e nunca voltou à superfície. Já não precisa.",
+   moves:[{n:"puxão de fundo", tell:"Agarra-te e arrasta para a água. PUXÃO.", dmg:16, poise:12, pull:true},
+     {n:"redemoinho", tell:"Gira as águas num funil. LENTO.", dmg:28, poise:22, lento:true, wind:true},
+     {n:"maré de fundo", tell:"Atira uma onda escura de longe.", dmg:15, poise:10, ranged:true}] },
+ timoneiro:{ name:"Timoneiro Afogado", hp:175, def:8, poise:50, icor:150, zone:3,
+   flavor:"Segurou o leme até o fim, e o fim segurou-o de volta. O leme é parte do braço agora.",
+   moves:[{n:"golpe de leme", tell:"Gira o leme-braço num arco largo.", dmg:24, poise:22},
+     {n:"rumo falso", tell:"Aponta a proa para um lado e vira para ti. FINTA.", dmg:32, poise:26, lento:true, feint:true, wind:true},
+     {n:"âncora", tell:"Lança a âncora presa a corrente. PUXÃO de longe.", dmg:18, poise:14, ranged:true, pull:true},
+     {n:"aprumar", tell:"Firma o leme e refaz a postura.", block:true, selfHeal:20}] },
+ arauto:{ name:"Arauto do Decreto", hp:200, def:8, poise:58, icor:190, zone:4,
+   flavor:"Lê em voz alta o decreto que ninguém quis ouvir. A voz dele é a ordem, e a ordem dói.",
+   moves:[{n:"proclamar", tell:"Declama uma linha do decreto. As palavras cortam.", dmg:26, poise:20, ranged:true},
+     {n:"emenda", tell:"Ergue o pergaminho — e emenda a meio, seguindo-te. FINTA.", dmg:36, poise:28, lento:true, feint:true, wind:true},
+     {n:"selo lacrado", tell:"Sela o ar. Drena o teu Foco.", dmg:14, poise:10, ranged:true, drainFoco:3},
+     {n:"rubricar", tell:"Assina o decreto e a assinatura fecha-lhe as feridas.", block:true, selfHeal:28}] },
  remador:{ name:"Remador Cego", hp:98, def:4, poise:30, icor:92, zone:4,
   moves:[
    {n:"remo largo", tell:"O remo assobia à altura das tuas costelas.", dmg:16, poise:12},
@@ -755,6 +846,46 @@ const GRAFT_POOL=[
  {n:"tesoura gêmea", tell:"Duas mãos que não eram dele se cruzam.", dmg:10, poise:7, hits:2, build:{bleed:14}},
 ];
 
+/* ---------------- O MESTRE: aparência das criaturas ---------------- */
+const VISUAIS={
+ servo:"Foi alguém. Ainda tem a túnica do ofício, colada à carne inchada como papel molhado. Move-se em solavancos, e a cada passo sai-lhe água pela boca — devagar, sem pressa, sem fim.",
+ larva:"Do tamanho de um cão, sem pele, translúcida. Vês o icor a circular-lhe por dentro em espiral, dourado e apressado. Onde toca o chão, o chão fuma.",
+ afogadela:"Não é uma coisa: são dezenas. Corpos pequenos e escuros que fervem à superfície da água, todos virados para ti ao mesmo tempo, todos com olhos a mais.",
+ carniceiro:"Dois metros de avental que já foi branco. A cabeça pende de lado — o pescoço cedeu há muito e ninguém o endireitou. O cutelo é maior que o teu antebraço e está gasto até ao osso do fio.",
+ sentinela:"Armadura de cinza compactada, sem rosto sob o elmo — só um vazio que respira geada. O escudo tem o brasão do Soberano, riscado por outra mão.",
+ salmista:"Um esqueleto de pé, com a mandíbula presa por arames para não cair enquanto canta. Onde deviam estar os olhos, duas velas apagadas. O som sai do peito, não da boca.",
+ carregador:"Uma montanha curvada sob uma torre de ossos atada às costas com correias de pele. Não vês a cara dele. Talvez não haja.",
+ enxame:"Mãos. Só mãos — centenas — entrelaçadas num corpo que se refaz a cada passo. Algumas ainda usam anéis. Uma delas acena.",
+ penitente:"Está costurado a si mesmo com arame farpado, ponto por ponto, do tornozelo à testa. Sorri. O arame puxa-lhe os lábios e faz o sorriso por ele.",
+ cortesa:"Vestido de baile, encharcado, pesado de lodo. A pele inchou até rebentar as joias. Move-se em passo de valsa — três tempos, sempre — e a água acompanha-lhe a saia.",
+ guarda:"Alabarda cravada no chão, escudo de porta. A armadura tem cracas na junta e algas na viseira. Não se mexeu em eras. Vai mexer-se agora.",
+ lampejo:"Não tem corpo: é uma coluna de icor a arder de dentro para fora, com a forma vaga de um homem que se lembra de ter sido um. Dói olhar. Olhas na mesma.",
+ ceifeiro:"Alto, magro, encapuzado, com a foice descansada ao ombro como quem espera o autocarro. Do capuz sai fumo em vez de respiração.",
+ ungido:"A boca dele transborda ouro e o ouro escorre e endurece pelo queixo abaixo, formando uma barba de icor. Reza sem parar. As mãos ardem devagar.",
+afilhada:"Uma menina de vestido de algas, descalça na água fria. Segura uma boneca feita de coisas que boiaram. Olha para ti com a paciência terrível de quem tem todo o tempo do mundo.",
+ acolito:"Ajoelhado, de mãos postas, com a batina a escorrer. Reza em bolhas — a boca abre e fecha e o que sai é água, não palavra. O turíbulo baloiça-lhe da mão, fumegando debaixo de água.",
+ corista:"Uma figura magra de garganta inchada, aberta como um cano de órgão. Quando inspira, ouves o ar entrar pela ferida. O som que ela faz não devia caber num corpo.",
+ sepultureiro:"Largo de ombros, coberto de terra fresca que não devia existir aqui em baixo. A pá que arrasta tem o fio gasto de tanto uso. Mede-te com o olhar, do alto à base, como quem calcula uma cova.",
+ dama:"Vestido de corte, ainda elegante sob o lodo. Move-se com etiqueta perfeita, o leque fechado na mão. Depois abre o leque — e não é seda entre as varetas, são lâminas.",
+ nadador:"Sai da água só até o peito, o resto submerso e visível pela transparência doente. A pele tem a cor do fundo. Não respira, e por isso não tem pressa nenhuma.",
+ timoneiro:"Um homem fundido a um leme de nau: a madeira entra-lhe pelo braço e sai pelo ombro, como se tivesse crescido ali. Firma-se contra uma corrente que já não existe. Os olhos seguem um horizonte afogado.",
+ arauto:"Ereto, formal, com um pergaminho aberto que nunca acaba de desenrolar. Lê em voz alta, e a voz não é alta — é inevitável. Cada palavra do decreto pesa mais que a anterior.",
+ remador:"Sentado num banco de nau que já não existe, remando o ar. Os olhos foram cosidos — não arrancados, cosidos. O remo bate no seco em compasso perfeito.",
+ coveiro:"Ombros de quem cavou a vida inteira. A pá que segura tem terra fresca. Olha para ti e depois para o chão, calculando o comprimento. Volta a olhar para ti. Assente.",
+ viuva:"Sai do poço aos poucos, cabelo primeiro. O vestido de luto pesa tanta água que devia afundá-la — não afunda. Chora sem parar, e as lágrimas são pretas e fumegam.",
+ sino:"Um sino de bronze da altura de um homem, com pernas de ossos humanos soldadas à base. Anda torto. O badalo lá dentro é uma criança sem rosto, ainda amarrada.",
+ cavaleiro:"Armadura completa, encrostada de sal e conchas, com algas a pender das juntas como estandartes. Dentro do elmo, escuro e água. Range a cada movimento — mas não pára.",
+ gemeas:"Duas raparigas idênticas, de mãos dadas, cada uma com uma foice na mão livre. Movem-se em espelho perfeito. Quando uma sorri, a outra sorri — meio segundo depois.",
+ anselm:"Um homem feito de outras pessoas. Um braço grosso demais, uma perna curta demais, três mãos, tudo cosido com fio de tendão. Os olhos são os únicos que ainda parecem dele, e estão cansados.",
+ ysolde:"Está de pé, imóvel, perfeita. Armadura sem um arranhão, lâmina sem uma mossa. Depois vês: sob a placa, a carne floresce — o icor apodrecido brota em botões dourados e cai, e volta a brotar. Ela não olha para baixo. Nunca olhou.",
+ sepulcra:"Manto de coveira até ao chão, foice mais alta que ela. Sob o capuz, o rosto de uma mulher que morreu a meio de uma frase. Está à porta há eras. Não se senta.",
+ coro:"Uma parede de crânios encaixados uns nos outros, do chão ao teto, todos com a mandíbula presa por arames. Cem bocas. Uma nota. A parede inspira.",
+ nerith:"De costas para ti, a embalar. Dos ombros dela pendem casulos de icor do tamanho de crianças, dezenas, presos por cordões de pele. Canta baixinho. Não se vira. Ainda.",
+ ostraga:"Um gigante encrostado de cracas, de costas para ti, com os dois braços contra uma parede de água que não devia estar de pé. Os tendões do pescoço são cordas. Conta em voz baixa. Perdeu a conta há eras e continua na mesma.",
+ vaskarion:"Uma mão. Só uma mão — do tamanho de uma casa, dourada, com veios de icor a pulsar sob a pele. Os dedos fecham-se sobre um trono vazio. Não solta. Nunca soltou.",
+ vontade:"Ergue-se do trono uma figura de armadura colossal, alta como três homens, com uma espada do tamanho de uma quilha de navio cravada no chão à sua frente. Não tem rosto sob o elmo — só a ordem, densa como chumbo. Arranca a lâmina do chão sem esforço. Vieste terminar um duelo que começou há eras, entre um deus e ele próprio.",
+};
+
 /* ---------------- O MESTRE: descrição de cena ---------------- */
 const CENAS=[
  [ "A água chega-te aos tornozelos e está fria demais para ser só água. Em algum lugar à frente, algo se arrasta e pára — arrasta e pára — como se contasse os teus passos.",
@@ -789,23 +920,31 @@ const CENAS=[
  ],
 ];
 
+const CENAS_CURTAS=[
+ ["Mais claustro. Mais água.","Outro corredor afogado, igual aos anteriores.","A água sobe-te aos tornozelos. Já conheces o frio.","Arcos, lodo, silêncio."],
+ ["O canto continua. Habituaste-te, o que é pior.","Mais osso sob os pés. Range na mesma nota.","O ossuário repete-se, como a cantiga.","Colunas de mortos, empilhadas com cuidado."],
+ ["A corte dança. Ninguém te vê passar.","Mais salão, mais lodo, mais etiqueta.","Lustres acesos debaixo de água. Já não te espanta.","O banquete continua posto."],
+ ["Sal, cracas e o zumbido do esforço alheio.","Mais muralha. Alguém ainda a segura.","A água recua ao teu passo, disciplinada.","Restos de nau na parede, tripulação a postos."],
+ ["Degraus de icor seco. Rostos lá dentro, a meio de uma frase.","Mais escada. A luz no alto não cresce.","Cada degrau range um nome que não é o teu.","Aqui só há a memória da água."],
+];
+
 /* ---------------- ZONAS E MAPA ---------------- */
 const ZONES = [
  { name:"O Claustro Afogado", sub:"Zona I",
    intro:"Aqui a água sobe devagar, para que ninguém possa dizer que não foi avisado.",
-   pool:["servo","larva","afogadela","sentinela"], hard:["carniceiro"], elites:["coveiro"], boss:"sepulcra" },
+   pool:["servo","larva","afogadela","sentinela","afilhada","acolito"], hard:["carniceiro","sepultureiro"], elites:["coveiro"], boss:"sepulcra" },
  { name:"O Ossuário Cantante", sub:"Zona II",
    intro:"Os ossos daqui nunca aprenderam a ficar em silêncio. Alguns afinaram.",
-   pool:["salmista","enxame","penitente","sentinela"], hard:["carregador"], elites:["viuva","sino"], boss:"coro" },
+   pool:["salmista","enxame","penitente","sentinela","corista","acolito"], hard:["carregador","sepultureiro"], elites:["viuva","sino"], boss:"coro" },
  { name:"A Corte da Maré Baixa", sub:"Zona III",
    intro:"O salão do trono, afogado com etiqueta. A corte insiste que a festa continua.",
-   pool:["cortesa","lampejo","ceifeiro","enxame"], hard:["guarda"], elites:["anselm","gemeas"], boss:"nerith" },
+   pool:["cortesa","lampejo","ceifeiro","enxame","dama","corista"], hard:["guarda","nadador"], elites:["anselm","gemeas"], boss:"nerith" },
  { name:"O Baluarte da Maré", sub:"Zona IV",
    intro:"A muralha que o mar não venceu — porque um homem não deixou. Ele ainda está lá. É esse o problema.",
-   pool:["guarda","remador","ungido","enxame"], hard:["carregador"], elites:["cavaleiro","gemeas"], boss:"ostraga" },
+   pool:["guarda","remador","ungido","enxame","nadador","dama"], hard:["carregador","timoneiro"], elites:["cavaleiro","gemeas"], boss:"ostraga" },
  { name:"A Escada de Icor", sub:"Zona V", compact:true,
    intro:"Degraus de sangue divino, secos há eras. Cada passo range como um nome que ninguém pronuncia mais.",
-   pool:["ceifeiro","guarda","lampejo","ungido"], hard:["carregador"], elites:["ysolde","cavaleiro"], boss:"vaskarion" },
+   pool:["ceifeiro","guarda","lampejo","ungido","arauto","timoneiro"], hard:["carregador","arauto"], elites:["ysolde","cavaleiro"], boss:"vaskarion" },
 ];
 
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -864,7 +1003,7 @@ function randLoot(zi){
   const r=Math.random();
   if(r<0.38) return "relic";
   if(r<0.62){
-    const wpool=["estileto","arco","lanca","cutelo","cajado","selo","malho"];
+    const wpool=["estileto","arco","lanca","cutelo","cajado","selo","malho","foicena","martelo","garras","espadaicor","chicote","cetro"];
     return "weapon:"+pick(wpool);
   }
   if(r<0.72) return "icor:"+(70+zi*50+ri(0,40));
@@ -1165,17 +1304,32 @@ function screenTitle(){
 }
 
 function screenHow(){
-  render(`<h2 class="disp center" style="padding-top:16px">O que te espera</h2><div class="hr"></div>
-   <div style="max-width:640px;margin:0 auto;line-height:1.65">
-    <p style="margin-bottom:12px"><b class="ichor disp">Distância.</b> Estás <b>PERTO</b> ou <b>LONGE</b>. Avançar/recuar custa 1 AP. Golpes inimigos <b class="mono" style="color:var(--frost)">LENTOS</b> <i>erram se estiveres Longe</i> — e expõem a postura deles. Essa é a tua esquiva. Golpes com <b class="mono" style="color:var(--bleed)">ALCANCE</b> te acertam em qualquer lugar.</p>
-    <p style="margin-bottom:12px"><b class="ichor disp">Postura → Atordoamento → Crítico.</b> Drena a postura para abrir o Golpe Crítico. Armas pesadas esmagam guardas.</p>
-    <p style="margin-bottom:12px"><b class="ichor disp">Builds com verbos.</b> Força trava guerra de postura. Destreza acumula SANGUE e detona com <i>Explodir Feridas</i>. Feitiçaria prefere Longe (+20% de dano). Arcos só atiram bem de longe; adagas só mordem de perto.</p>
-    <p style="margin-bottom:12px"><b class="ichor disp">Selos.</b> Relíquias passivas achadas no run — cada descida monta uma build diferente.</p>
-    <p style="margin-bottom:12px"><b class="ichor disp">Inimigos-enigma.</b> Alguns regeneram (fere com status), devolvem dano na guarda (não soques a muralha), crescem a cada turno (não demores), ou são inofensivos de perto (cola neles). Lê antes de bater.</p>
-    <p><b class="ichor disp">Icor e Minguantes.</b> Morre e largas todo o Icor onde caíste. Ergue-te no último Minguante, desce e recupera — ou perde tudo na próxima morte.</p>
+  render(`<h2 class="disp center" style="padding-top:16px">O que te espera</h2>
+   <p class="center flavor" style="max-width:600px;margin:2px auto 0">Vespergloam é lento e cruel de propósito. Ler o inimigo vale mais que bater. Aqui está o que precisas de saber antes de descer.</p>
+   <div class="hr"></div>
+   <div style="max-width:660px;margin:0 auto;line-height:1.65">
+
+    <div class="fl-lbl" style="color:var(--bleed)">A REGRA QUE MAIS TE MATA</div>
+    <p style="margin-bottom:14px"><b class="ichor disp">Distância, e a esquiva.</b> Estás <b>PERTO</b> ou <b>LONGE</b>; avançar ou recuar custa 1 AP. Um golpe <b class="mono" style="color:var(--frost)">LENTO</b> <i>erra se estiveres LONGE</i> — recuar é a tua esquiva, e ainda expõe a postura dele. <b>Mas cuidado:</b> um golpe marcado <b class="mono" style="color:var(--bleed)">FINTA</b> finge ser lento e persegue-te — <i>recuar não salva, tens de defender</i>. E <b class="mono" style="color:var(--bleed)">ALCANCE</b> acerta a qualquer distância. Lê a marca antes de decidir.</p>
+
+    <p style="margin-bottom:14px"><b class="ichor disp">Postura → Atordoamento → Crítico.</b> Cada golpe teu drena a postura do inimigo. Zerada, ele cambaleia e abres o <b>Golpe Crítico</b> — a tua maior janela de dano. Mas chefes <i>endurecem</i>: cada atordoamento aumenta a postura máxima deles. Não contes atordoar duas vezes de graça.</p>
+
+    <p style="margin-bottom:14px"><b class="ichor disp">Inimigos-enigma.</b> Alguns regeneram (fere-os com status), devolvem dano se socares a guarda deles, crescem a cada turno (não demores), arrastam-te com <b class="mono" style="color:var(--frost)">PUXÃO</b>, ou perseguem-te. Cada criatura tem uma resposta certa — e as <b>Notas do Mestre</b> guardam o que aprendeste sobre cada uma.</p>
+
+    <div class="fl-lbl" style="color:var(--bleed);margin-top:18px">A MORTE CUSTA</div>
+    <p style="margin-bottom:14px"><b class="ichor disp">A Mácula.</b> Morrer não é de graça. Cada morte deixa uma marca <i>permanente na descida</i>: menos vida máxima, inimigos mais fortes, um frasco a menos. Elas acumulam — e a <b>quarta morte encerra o run</b>. Podes insistir, mas cada queda te deixa pior, não igual. Faz cada luta contar.</p>
+    <p style="margin-bottom:14px"><b class="ichor disp">Icor e Minguantes.</b> O Icor sobe atributos. Morre e largas todo o Icor onde caíste — recupera-o descendo de novo, ou perde-o na próxima morte. Os <b>Minguantes</b> (velas) são os teus pontos de descanso: curam e guardam a descida.</p>
+
+    <div class="fl-lbl" style="color:var(--frost);margin-top:18px">BUILDS</div>
+    <p style="margin-bottom:14px"><b class="ichor disp">Cada Vestígio joga diferente.</b> Força trava a guerra de postura. Destreza acumula <b style="color:var(--bleed)">SANGUE</b> e detona com <i>Explodir Feridas</i>. A Sina espalha <b style="color:#7fb069">VENENO</b> e joga com o acaso. Feitiçaria e fé preferem LONGE (+20%). Lanças alcançam; adagas só mordem de perto. Os <b>Selos</b> — relíquias passivas achadas na descida — reforçam a tua identidade a cada run.</p>
+
+    <div class="fl-lbl" style="color:var(--ichor);margin-top:18px">A MESA</div>
+    <p style="margin-bottom:14px"><b class="ichor disp">O mestre narra, os dados rolam.</b> Antes de descer, preenches a <b>ficha</b> do teu Vestígio — inclusive como morreste; o mestre vai lembrar-se. Nas descidas, ele descreve as salas e as criaturas. As <b>rolagens</b> aparecem abertas (<span class="mono" style="font-size:12px">34 + 1d12</span>) — podes ocultá-las no Vestíbulo. E eventos e Escrituras pedem <b>testes de atributo</b> (d20 + atributo): 20 é crítico, 1 é desastre. É aqui que Fé, Sina e Vitalidade importam fora do combate.</p>
+
+    <p class="flavor" style="margin-top:8px">Vais morrer. É o plano. Cada morte escreve uma linha nas Notas e ensina-te a próxima descida. <b>Deixem-me acabar</b>, pediu o Soberano, <b>para que possais.</b></p>
    </div><div class="hr"></div>
    <div style="max-width:320px;margin:0 auto"><button class="btn gold" id="back"><span class="k disp">ENTENDIDO</span></button></div>`);
-  document.getElementById("back").onclick=screenTitle;
+  document.getElementById("back").onclick=()=>screenTitle();
 }
 
 function screenSelect(){
@@ -1381,6 +1535,14 @@ function nodeDesc(t){ return ({combat:"Algo se arrasta na escuridão.",elite:"Um
 function dotClass(t){ return {combat:"d-combat",elite:"d-elite",treasure:"d-treasure",boss:"d-boss",event:"d-event"}[t]||"d-combat"; }
 function nodeLabel(t){ return {combat:"Combate",elite:"Semi-chefe",treasure:"Tesouro",boss:"Vigília",event:"Encontro"}[t]||t; }
 
+function cenaPara(z){
+  const zi=Math.min(z,CENAS.length-1);
+  META.cenas=META.cenas||{};
+  const vistas=META.cenas[zi]=META.cenas[zi]||[];
+  const novas=CENAS[zi].filter(c=>!vistas.includes(c));
+  if(novas.length){ const c=pick(novas); vistas.push(c); saveMeta(); return c; }
+  return pick(CENAS_CURTAS[zi]);
+}
 function screenMap(){
   saveRun();
   const fl=G.map[G.floor];
@@ -1406,7 +1568,7 @@ function screenMap(){
     ${manchaHere?`<div class="floor" style="border-color:var(--ichor)">
       <div class="nt disp ichor"><span class="ic-dot d-wane"></span>Mancha de Icor — ${G.mancha.amount} ◈</div>
       <div class="nd">O sangue que largaste ao morrer. Vence um nó desta profundidade para reavê-lo.</div></div>`:""}
-    <div class="mestre">${fl._cena||(fl._cena=pick(CENAS[Math.min(G.zone,CENAS.length-1)]))}</div>
+    <div class="mestre">${fl._cena||(fl._cena=cenaPara(G.zone))}</div>
     <div class="floor"><div class="fl-lbl">Escolhe teu caminho — só um</div>
       <div class="nodegrid ${cols}">${nodes}</div></div>
     <div style="max-width:340px;margin:14px auto 0">
@@ -1424,7 +1586,10 @@ function resolveNode(floor,idx){
   G._pendingNode={floor,idx};
   if(node.t==="treasure") return resolveTreasure(node);
   if(node.t==="event") return resolveEvent(node);
-  startCombat(node.foe,node.t==="elite");
+  const ir=()=>startCombat(node.foe,node.t==="elite");
+  G.vistos=G.vistos||{};
+  if(!G.vistos[node.foe]){ G.vistos[node.foe]=true; return screenEncontro(node.foe,ir); }
+  ir();
 }
 
 function markCleared(){ if(G._pendingNode){ G.clearedNodes[G.zone+":"+G._pendingNode.floor+":"+G._pendingNode.idx]=true; } }
@@ -1498,6 +1663,26 @@ function resolveEvent(node){
 }
 
 /* ============================================================ COMBATE */
+/* O mestre descreve a criatura — só na primeira vez que a vês nesta descida. */
+function screenEncontro(foeId,depois){
+  const f=FOES[foeId];
+  const vis=VISUAIS[foeId]||f.flavor;
+  const b=META.bestiario&&META.bestiario[foeId];
+  const jaViu=b&&b.enc>0;
+  SFX.step();
+  render(`${hudTop()}
+    <div class="fl-lbl" style="margin-top:6px">${f.boss?"Uma Vigília ergue-se":f.super||f.elite?"Algo maior barra o caminho":"Encontro"}</div>
+    <div class="mestre" style="border-left-color:${f.boss?"var(--ichor)":f.elite||f.super?"var(--bleed)":"var(--edge)"}">
+      <b>O mestre descreve:</b><br>${vis}</div>
+    <h2 class="disp center" style="margin-top:10px">${f.name}</h2>
+    ${f.caco?`<p class="center"><span class="tag" style="color:var(--ichor);border-color:var(--ichor-deep)">Caco: ${f.caco}</span></p>`:""}
+    <p class="flavor center" style="max-width:520px;margin:8px auto 0">${f.flavor}</p>
+    ${jaViu?`<p class="center mono faint" style="font-size:11px;margin-top:8px">Já a enfrentaste ${b.enc}× · abateste ${b.kills}× · matou-te ${b.deaths}×</p>`:
+      `<p class="center mono" style="font-size:11px;margin-top:8px;color:var(--frost)">Criatura nova — o mestre vai anotá-la.</p>`}
+    <div style="max-width:320px;margin:16px auto 0">
+      <button class="btn gold danger" id="lutar"><span class="k disp">ENFRENTAR</span></button></div>`);
+  document.getElementById("lutar").onclick=()=>depois();
+}
 function startCombat(foeId,isElite){
   const base=FOES[foeId];
   const zf=1+G.zone*0.06, zfd=1+G.zone*0.05;
@@ -1514,6 +1699,8 @@ function startCombat(foeId,isElite){
     tideOnStagger:base.tideOnStagger||false, tideRate:base.tideOnStagger?1:0, buildResist:base.buildResist||1,
     healOnHit:base.healOnHit||0, focoDrain:base.focoDrain||0, reorderEvery:base.reorderEvery||0, invertPerm:false, procResist:base.procResist||1,
     pursue:base.pursue||false, staggers:0,
+    combos:base.combos?base.combos.map(c=>({name:c.name,steps:c.steps.map(s=>({...s}))})):null,
+    comboChance:base.comboChance||0, _combo:null,
     cocoons:base.cocoons?Math.round(base.cocoons*HPB):0, cocoonsMax:base.cocoons?Math.round(base.cocoons*HPB):0,
     phaseMoves:(base.phaseMoves||[]).map(m=>({...m,dmg:m.dmg?Math.round(m.dmg*DMGB):m.dmg})),
     caco:base.caco,
@@ -1525,13 +1712,14 @@ function startCombat(foeId,isElite){
     pStatus:{bleed:0,poison:0,geada:0}, pPoise:maxPoise(a),pMaxPoise:maxPoise(a),
     playerGuarded:false, playerFlasked:false, playerRetreats:0,
     pPoisonTurns:0,pGeadaTurns:0,pFoco:p.foco,log:[],guarding:hasRelic("manto"),
-    movedFree:false, advancedThisTurn:false, impetus:false };
+    movedFree:false, advancedThisTurn:false, impetus:false, retreatedThisTurn:false, frenzyStacks:0, overloadReady:false };
   G.combat=C;
   // maldição de evento
   if(G.curse==="poison"){ C.pStatus.poison=60; G.curse=null; clog(C,`<span class="proc">A sina do altar te acompanha: veneno acumula em ti.</span>`); }
   bstEncounter(foeId);
   chooseIntent(foe,C);
-  clog(C,`<span class="sys">${base.flavor}</span>`);
+  const _b=META.bestiario&&META.bestiario[foeId];
+  clog(C,`<span class="sys">${(_b&&_b.kills>0)?base.name+" outra vez.":base.flavor}</span>`);
   if(foe.regen) clog(C,`<span class="frost">※ Regenera ${foe.regen}/turno — status ou pressa.</span>`);
   if(foe.thorns) clog(C,`<span class="frost">※ Devolve ${foe.thorns} de dano quando em guarda.</span>`);
   if(foe.crescendo) clog(C,`<span class="frost">※ Crescendo: dano +${foe.crescendo} por turno. Atordoa para zerar.</span>`);
@@ -1545,8 +1733,28 @@ function startCombat(foeId,isElite){
 function clog(C,msg,cls){ C.log.push(`<p class="${cls||''}">${msg}</p>`); if(C.log.length>70)C.log.shift(); }
 
 function chooseIntent(foe,C){
-  if(foe.staggered){ foe.intent={n:"—",tell:"Cambaleia, atordoado.",stagger:true}; return; }
+  if(foe.staggered){ foe.intent={n:"—",tell:"Cambaleia, atordoado.",stagger:true}; foe._combo=null; return; }
   checkPhases(foe,C);
+  // --- combo scriptado em andamento: continua a sequência ---
+  if(foe._combo&&foe._combo.length){
+    const step=foe._combo.shift();
+    foe.intent=step; foe._last=step;
+    if(step._comboStart) clog(C,`<span class="proc">${foe.name} inicia ${step._comboName}...</span>`);
+    return;
+  }
+  // --- talvez iniciar um combo (bosses com sequências) ---
+  if(foe.combos&&foe.combos.length&&!foe.staggered){
+    const chance=(foe.comboChance||0.4);
+    if(Math.random()<chance){
+      const seq=pick(foe.combos);
+      const steps=seq.steps.map((m,i)=>({...m, _comboName:seq.name, _comboStart:i===0, _comboStep:i+1, _comboLen:seq.steps.length}));
+      const first=steps.shift();
+      foe._combo=steps;
+      foe.intent=first; foe._last=first;
+      clog(C,`<span class="proc">${foe.name} inicia ${seq.name}...</span>`);
+      return;
+    }
+  }
   if(foe.reorderEvery&&foe._t>0&&foe._t%foe.reorderEvery===0){
     foe.intent={n:"REORDENAR",reorder:true,tell:"A ordem recompõe-se — vai fechar as próprias feridas e reescrever teu passo. Quebra-lhe a postura AGORA para impedir!",wind:true};
     foe._last=foe.intent; return;
@@ -1610,16 +1818,21 @@ function checkPhases(foe,C){
       if(C&&foe.tideOnStagger&&!C.tideStarted){ C.tideStarted=true;C.tide=0; } }
     if(foe.phase2.healOnHit) foe.healOnHit=foe.phase2.healOnHit;
     if(foe.phase2.regen) foe.regen=Math.max(foe.regen,foe.phase2.regen);
+    if(foe.phase2.comboChance) foe.comboChance=foe.phase2.comboChance;
+    if(foe.phase2.addCombo){ foe.combos=(foe.combos||[]).concat([foe.phase2.addCombo]); }
   }
   if(foe.phase3&&!foe.phase3.done&&foe.hp<=foe.maxHp*foe.phase3.hpAt){
     foe.phase3.done=true; foe.moves.push(foe.phase3.add); foe._phaseMsg=foe.phase3.msg;
     if(foe.phase3.regen) foe.regen=Math.max(foe.regen,foe.phase3.regen);
+    if(foe.phase3.comboChance) foe.comboChance=foe.phase3.comboChance;
+    if(foe.phase3.addCombo){ foe.combos=(foe.combos||[]).concat([foe.phase3.addCombo]); }
     if(foe.phase3.invertPerm){ foe.invertPerm=true; if(C)C.invertControls=999; }
   }
 }
 
 function intentTags(m,C){
   let t="";
+  if(m._comboName) t+=`<span class="rtag" style="border-color:var(--ichor);color:var(--ichor)">SEQUÊNCIA ${m._comboStep}/${m._comboLen}</span>`;
   if(m.feint) t+=`<span class="rtag alc">FINTA — recuar NÃO salva</span>`;
   else if(m.lento) t+=`<span class="rtag lento">LENTO — recua p/ esquivar</span>`;
   if(m.pull) t+=`<span class="rtag alc">PUXÃO — arrasta-te</span>`;
@@ -1768,7 +1981,7 @@ function doAction(act){
       clog(C,`<span class="frost">A ordem inverte teu passo.</span>`); }
     if(realAct==="adv"){ C.range="perto"; C.advancedThisTurn=true; if(hasRelic("impeto"))C.impetus=true;
       clog(C,`<span class="sys">${realAct!==act?"Tentas recuar, mas avanças sobre":"Avanças sobre"} ${foe.name}.</span>`); }
-    else { C.range="longe"; C.playerRetreats++; clog(C,`<span class="sys">${realAct!==act?"Tentas avançar, mas recuas.":"Recuas, abrindo distância."}</span>`); }
+    else { C.range="longe"; C.playerRetreats++; C.retreatedThisTurn=true; clog(C,`<span class="sys">${realAct!==act?"Tentas avançar, mas recuas.":"Recuas, abrindo distância."}</span>`); }
     return renderCombat();
   }
   if(act==="guard"){
@@ -1917,6 +2130,10 @@ function hitFoe(C,foe,p,rawAtk,poiseDmg,build,isCrit,ignoreDef,flat,guardcrush){
   if(foe.fragilePerto&&C.range==="perto") dmg=Math.round(dmg*1.4);
   if(foe.geadaTurns>0) dmg=Math.round(dmg*1.15);
   if(C.impetus){ dmg=Math.round(dmg*1.3); C.impetus=false; clog(C,`<span class="hit">Ímpeto do Naufrágio!</span>`); }
+  const _w=WEAPONS[p.weaponId];
+  if(_w&&_w.momentum&&(C.retreatedThisTurn||C.range==="longe")){ dmg=Math.round(dmg*1.35); clog(C,`<span class="hit">A Foice colhe o recuo (+35%).</span>`); }
+  if(_w&&_w.frenzy){ const st=Math.min(6,C.frenzyStacks||0); if(st>0)dmg=Math.round(dmg*(1+st*0.08)); C.frenzyStacks=Math.min(6,(C.frenzyStacks||0)+2); }
+  if(_w&&_w.plague&&foe.poisonTurns>0){ dmg=Math.round(dmg*1.3); }
   if(hasRelic("agulha")&&p.hp<maxHP(p.attr)*0.35) dmg=Math.round(dmg*1.15);
   if(C.whet){ dmg=Math.round(dmg*1.5); C.whet=false; clog(C,`<span class="hit">O fio amolado canta.</span>`); }
   if(isCrit) dmg=Math.round(dmg*2.0*(hasRelic("olho")?1.5:1));
@@ -1939,6 +2156,7 @@ function hitFoe(C,foe,p,rawAtk,poiseDmg,build,isCrit,ignoreDef,flat,guardcrush){
     foe.poise-=pd;
     if(foe.poise<=0){
       foe.poise=0;foe.staggered=true;foe.blocking=false;
+      foe._combo=null;
       foe.staggers=(foe.staggers||0)+1;
       if(foe.boss||foe.elite||foe.super){
         foe.maxPoise=Math.round(foe.maxPoise*1.3);
@@ -2106,7 +2324,10 @@ function foeHit(C,foe,p,m){
   if(foe.fragilePerto&&C.range==="perto"&&m.ranged)dmg=Math.round(dmg*0.4);
   if(C.pGeadaTurns>0)dmg=Math.round(dmg*1.15);
   if(C.guarding){
-    dmg=Math.round(dmg*0.4);
+    let gm=(foe.guardPierce&&m.wind)?(0.4+(m.guardPierce||foe.guardPierce)):0.4;
+    if(m.guardBreak) gm=1;
+    if(gm>0.4) clog(C,`<span class="frost">O golpe é pesado demais — a guarda cede em parte.</span>`);
+    dmg=Math.round(dmg*Math.min(1,gm));
     if(hasRelic("espinho")&&C.range==="perto"&&!m.ranged){
       foe.hp-=6;clog(C,`<span class="hit">O Cilício devolve 6.</span>`);
       if(foe.hp<=0){foe.hp=0;return winCombat();}
@@ -2146,7 +2367,8 @@ function startPlayerTurn(){
   C.turn="player";
   C.ap=maxAP(a);
   if(C.pGeadaTurns>0)C.ap=Math.max(2,C.ap-1);
-  C.guarding=false;C.movedFree=false;C.advancedThisTurn=false;C.impetus=false;C.oil=false;
+  C.guarding=false;C.movedFree=false;C.advancedThisTurn=false;C.impetus=false;C.oil=false;C.retreatedThisTurn=false;
+  if(C.frenzyStacks>0)C.frenzyStacks=Math.max(0,C.frenzyStacks-1);
   C.playerGuarded=false;C.playerFlasked=false;
   C.pPoise=clamp(C.pPoise+10,0,C.pMaxPoise);
   C.pFoco=clamp(C.pFoco+2+(hasRelic("ampulheta")?1:0),0,maxFoco(a));
