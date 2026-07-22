@@ -239,7 +239,7 @@ const WEAPONS = {
     desc:"Não corta. Reorganiza. A diferença importa pouco para o alvo." },
   estileto:{ name:"Estilete Séptico", kind:"Adaga", base:6, poise:5, ap:2, hits:1,
     scale:{des:"C",sin:"B"}, build:{poison:28}, art:"punctura",
-    desc:"A ferrugem aqui é intencional. Corte raso; deixe o veneno terminar." },
+    desc:"A ferrugem aqui é intencional. Corta raso; deixa o veneno terminar." },
   arco:{ name:"Arco do Luto", kind:"Arco", base:10, poise:7, ap:2, hits:1, ranged:true,
     scale:{des:"B",sin:"D"}, build:{bleed:8}, art:"chuva",
     desc:"As flechas assobiam um lamento. Ninguém fica para o refrão." },
@@ -279,7 +279,7 @@ const WEAPONS = {
 /* ---------------- HABILIDADES ---------------- */
 const SKILLS = {
   investida:{ name:"Investida Sepulcral", ap:3, foco:2, kind:"phys", mult:1.35, poise:36, closes:true,
-    desc:"Avanço que quebra guarda e postura. Aproxima e derruba." },
+    desc:"Avanço que quebra guarda e postura. Aproxima-te e derruba." },
   retalho:{ name:"Dança do Retalho", ap:3, foco:2, kind:"phys", hits:3, mult:.6, poise:5, build:{bleed:15}, needPerto:true,
     desc:"Três cortes rasos. O sangramento cobra o resto." },
   fragmento:{ name:"Fragmento Estelar", ap:3, foco:3, kind:"sorcery", mult:1.7, poise:10, scale:"int",
@@ -384,7 +384,7 @@ const RELICS = {
   sanguessuga:{ name:"Sanguessuga Devota", desc:"Procs de SANGUE te curam 8." },
   algema:{ name:"Algema Partida", desc:"+1 de AP máximo." },
   lagrima:{ name:"Lágrima do Soberano", desc:"Uma vez por run, sobrevives a um golpe fatal com 1 de vida." },
-  badalo:{ name:"Badalo Mudo", desc:"Inimigos atordoados sofrem +35% a mais de dano teu." },
+  badalo:{ name:"Badalo Mudo", desc:"Inimigos atordoados sofrem mais 35% do teu dano." },
   ferrolho:{ name:"Ferrolho Enferrujado", desc:"Todo dano recebido −2." },
   corvo:{ name:"Corvo de Ossos", desc:"A cada Minguante, ele te traz um consumível aleatório." },
   agulha:{ name:"Agulha no Coração", desc:"+15% de dano quando estás abaixo de 35% da vida." },
@@ -440,8 +440,213 @@ const SFX={
   boss(){ this.tone(98,1.0,"sawtooth",0.3,70); this.tone(49,1.4,"sine",0.32,44); this.noise(0.7,0.2,200); },
   scripture(){ this.noise(0.35,0.2,950); this.tone(247,0.5,"sine",0.16,196); },
 };
+/* ============================================================ MÚSICA
+   Sequenciador WebAudio com lookahead. Faixas definidas por dados:
+   16 passos, camadas drone/baixo/melodia/sino/percussão. Zero arquivos. */
+const MUS={
+  on:true, cur:null, timer:null, step:0, nextT:0, master:null, layers:null,
+  BPM:{}, // por faixa
+  ctx(){ return SFX.ctx; },
+  ensure(){ if(!this.ctx()||this.master)return; 
+    this.master=this.ctx().createGain(); this.master.gain.value=0.16;
+    this.master.connect(this.ctx().destination); },
+  stop(fade){ const c=this.ctx();
+    if(this.timer){ clearInterval(this.timer); this.timer=null; }
+    if(this.master&&c){ const t=c.currentTime;
+      this.master.gain.cancelScheduledValues(t);
+      this.master.gain.setValueAtTime(this.master.gain.value,t);
+      this.master.gain.linearRampToValueAtTime(0.0001,t+(fade||0.8));
+      const old=this.master; setTimeout(()=>{ try{old.disconnect();}catch(e){} },(fade||0.8)*1000+120);
+      this.master=null; }
+    this.cur=null; },
+  play(id){ if(this.cur===id)return; 
+    const trk=TRACKS[id]; if(!trk)return;
+    SFX.unlock(); const c=this.ctx(); if(!c)return;
+    this.stop(0.5); this.ensure(); if(!this.master)return;
+    this.master.gain.setValueAtTime(0.0001,c.currentTime);
+    this.master.gain.linearRampToValueAtTime(trk.vol||0.16,c.currentTime+1.2);
+    this.cur=id; this.step=0; this.nextT=c.currentTime+0.05;
+    const spb=60/(trk.bpm||60)/2; // passo = colcheia
+    this.timer=setInterval(()=>{ if(!this.on||!this.master)return;
+      const now=c.currentTime;
+      while(this.nextT<now+0.25){ this.sched(trk,this.step%16,this.nextT,spb); this.step++; this.nextT+=spb; }
+    },90); },
+  osc(freq,t,dur,type,peak,dest,slide){ const c=this.ctx(); if(!c||peak<=0)return;
+    const o=c.createOscillator(),g=c.createGain();
+    o.type=type; o.frequency.setValueAtTime(freq,t);
+    if(slide)o.frequency.linearRampToValueAtTime(slide,t+dur);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(peak,t+Math.min(0.05,dur*0.25));
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(dest); o.start(t); o.stop(t+dur+0.05); },
+  nz(t,dur,peak,freq,dest){ const c=this.ctx(); if(!c||peak<=0)return;
+    const n=c.createBufferSource(),g=c.createGain(),f=c.createBiquadFilter();
+    const len=Math.max(1,Math.floor(c.sampleRate*dur)),buf=c.createBuffer(1,len,c.sampleRate);
+    const d=buf.getChannelData(0); for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+    n.buffer=buf; f.type="bandpass"; f.frequency.value=freq; f.Q.value=1.1;
+    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(peak,t+0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    n.connect(f); f.connect(g); g.connect(dest); n.start(t); },
+  sched(trk,i,t,spb){ const M=this.master; if(!M)return;
+    const bar=Math.floor(this.step/16)%(trk.prog.length);
+    const root=trk.root*Math.pow(2,trk.prog[bar]/12);
+    const nt=x=>root*Math.pow(2,trk.scale[((x%trk.scale.length)+trk.scale.length)%trk.scale.length]/12)*Math.pow(2,Math.floor(x/trk.scale.length));
+    // drone: renova a cada compasso
+    if(i===0&&trk.drone) this.osc(root/2,t,spb*17,trk.droneW||"sine",trk.drone,M);
+    if(i===0&&trk.drone5) this.osc(root/2*1.5,t,spb*17,"sine",trk.drone5,M);
+    // baixo
+    if(trk.bass&&trk.bass[i]!==null&&trk.bass[i]!==undefined) this.osc(nt(trk.bass[i])/2,t,spb*0.95,trk.bassW||"triangle",trk.bassV||0.14,M);
+    // melodia
+    if(trk.mel&&trk.mel[i]!==null&&trk.mel[i]!==undefined) this.osc(nt(trk.mel[i]),t,spb*(trk.melLen||1.8),trk.melW||"sine",trk.melV||0.09,M);
+    // contracanto
+    if(trk.mel2&&trk.mel2[i]!==null&&trk.mel2[i]!==undefined) this.osc(nt(trk.mel2[i]),t,spb*(trk.mel2Len||1.6),trk.mel2W||"sawtooth",trk.mel2V||0.05,M);
+    // coro: drone desafinado em terças (só se choir)
+    if(i===0&&trk.choir){ this.osc(root*1.007,t,spb*17,"sawtooth",trk.choir,M);
+      this.osc(root*Math.pow(2,3/12)*0.995,t,spb*17,"sawtooth",trk.choir*0.7,M); }
+    // sino (oitava acima, decay longo)
+    if(trk.bell&&trk.bell[i]!==null&&trk.bell[i]!==undefined){ this.osc(nt(trk.bell[i])*2,t,spb*6,"sine",trk.bellV||0.05,M);
+      this.osc(nt(trk.bell[i])*2*2.76,t,spb*2.4,"sine",(trk.bellV||0.05)*0.3,M); }
+    // percussão: k=bumbo n=ruído h=chimbal
+    if(trk.perc){ const p=trk.perc[i];
+      if(p==="k") this.osc(64,t,spb*0.9,"sine",0.5,M,38);
+      else if(p==="n") this.nz(t,spb*0.7,0.22,850,M);
+      else if(p==="h") this.nz(t,spb*0.25,0.08,4200,M); }
+  },
+};
+const _=null;
+const TRACKS={
+ /* ZONA I — Claustro Afogado: frígio lento, gotejante, drone fundo */
+ zona0:{ bpm:44, root:98, scale:[0,1,3,5,7,8,10], prog:[0,0,-2,0], vol:0.14,
+  drone:0.10, drone5:0.03, droneW:"sine",
+  bass:[0,_,_,_,_,_,_,_,-3,_,_,_,_,_,_,_], bassW:"sine", bassV:0.11,
+  mel:[_,_,_,_,7,_,_,_,_,_,5,_,_,_,3,_], melW:"sine", melV:0.055, melLen:3,
+  bell:[_,_,_,_,_,_,_,_,_,_,_,_,0,_,_,_], bellV:0.035 },
+ /* ZONA II — Ossuário Cantante: coral, quintas ocas, vozes */
+ zona1:{ bpm:50, root:110, scale:[0,2,3,5,7,8,10], prog:[0,-4,-2,-5], vol:0.15,
+  drone:0.09, drone5:0.05, droneW:"triangle",
+  bass:[0,_,_,_,0,_,_,_,0,_,_,_,0,_,_,_], bassW:"sine", bassV:0.09,
+  mel:[4,_,_,_,3,_,_,_,2,_,_,_,0,_,_,_], melW:"triangle", melV:0.07, melLen:3.6,
+  bell:[_,_,_,_,_,_,_,_,7,_,_,_,_,_,_,_], bellV:0.04 },
+ /* ZONA III — Corte da Maré Baixa: valsa afogada em 3 contra 4, dorian */
+ zona2:{ bpm:58, root:123.47, scale:[0,2,3,5,7,9,10], prog:[0,3,-2,0], vol:0.14,
+  drone:0.07, drone5:0.04,
+  bass:[0,_,_,4,_,_,0,_,_,4,_,_,0,_,_,_], bassW:"triangle", bassV:0.10,
+  mel:[_,_,9,_,_,7,_,_,5,_,_,4,_,_,2,_], melW:"sine", melV:0.065, melLen:2.2,
+  bell:[2,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_], bellV:0.03 },
+ /* ZONA IV — Baluarte da Maré: marcha contida, pulso de tambor ao longe */
+ zona3:{ bpm:64, root:87.31, scale:[0,2,3,5,7,8,11], prog:[0,0,-4,-2], vol:0.15,
+  drone:0.08, droneW:"sawtooth", drone5:0.03,
+  bass:[0,_,0,_,_,_,0,_,0,_,_,_,-3,_,_,_], bassW:"triangle", bassV:0.13,
+  mel:[_,_,_,_,_,_,_,_,4,_,3,_,2,_,_,_], melW:"triangle", melV:0.05, melLen:2,
+  perc:["k",_,_,_,"n",_,_,_,"k",_,"k",_,"n",_,_,_],
+  bell:[_,_,_,_,_,_,_,_,_,_,_,_,_,_,7,_], bellV:0.03 },
+ /* ZONA V — Escada de Icor: suspenso, cintilante, quase sem chão */
+ zona4:{ bpm:40, root:130.81, scale:[0,2,4,6,7,11], prog:[0,0,1,0], vol:0.13,
+  drone:0.09, drone5:0.05,
+  bass:[0,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_], bassW:"sine", bassV:0.08,
+  mel:[_,7,_,11,_,_,12,_,_,_,7,_,_,4,_,_], melW:"sine", melV:0.05, melLen:4,
+  bell:[0,_,_,_,_,_,_,_,4,_,_,_,_,_,_,_], bellV:0.05 },
+ /* SEMI-CHEFE — ameaça crescente, ostinato tenso */
+ elite:{ bpm:96, root:82.41, scale:[0,1,3,5,6,8,10], prog:[0,0,-2,-1], vol:0.17,
+  drone:0.06, droneW:"sawtooth",
+  bass:[0,_,0,0,_,0,_,3,0,_,0,0,_,-2,_,_], bassW:"sawtooth", bassV:0.13,
+  mel:[_,_,_,_,6,_,_,_,_,_,_,_,5,_,3,_], melW:"square", melV:0.045, melLen:1.4,
+  perc:["k",_,"h",_,"n",_,"h",_,"k",_,"h","k","n",_,"h",_],
+  bell:[_,_,_,_,_,_,_,_,_,_,_,_,0,_,_,_], bellV:0.035 },
+ /* VIGÍLIA (chefe) — épico fúnebre: bumbo de guerra, sinos, coro grave */
+ boss:{ bpm:72, root:73.42, scale:[0,2,3,5,7,8,11], prog:[0,-4,3,-2], vol:0.19,
+  drone:0.10, drone5:0.06, droneW:"sawtooth",
+  bass:[0,_,_,0,_,_,0,_,-4,_,_,-4,_,_,-2,_], bassW:"triangle", bassV:0.16,
+  mel:[7,_,_,_,8,_,7,_,5,_,_,_,3,_,2,_], melW:"triangle", melV:0.08, melLen:2.2,
+  perc:["k",_,_,_,"k",_,"n",_,"k",_,_,"k",_,_,"n","h"],
+  bell:[0,_,_,_,_,_,_,_,7,_,_,_,_,_,_,_], bellV:0.06 },
+/* ZONA VI — O Avesso: tudo ao contrário, etéreo e errado */
+ zona5:{ bpm:52, root:69.30, scale:[0,1,4,6,7,8,11], prog:[0,1,0,-1], vol:0.13,
+  drone:0.10, drone5:0.05, choir:0.04, droneW:"sawtooth",
+  bass:[0,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null], bassW:"sine", bassV:0.09,
+  mel:[null,11,null,8,null,null,7,null,null,4,null,null,6,null,1,null], melW:"sine", melV:0.05, melLen:3.4,
+  bell:[0,null,null,null,null,null,null,null,6,null,null,null,null,null,null,null], bellV:0.05 },
+ /* O SOBERANO REMENDADO — muitas vozes num corpo, trágico e imenso */
+ t_remendado:{ bpm:80, root:61.74, scale:[0,2,3,5,7,8,11], prog:[0,-4,3,-1,0,-5,-2,-4], vol:0.22,
+  drone:0.11, drone5:0.07, choir:0.07, droneW:"sawtooth",
+  bass:[0,null,0,null,-4,null,null,null,3,null,null,-1,null,null,-4,null], bassW:"sawtooth", bassV:0.16,
+  mel:[7,null,8,null,11,null,8,7,null,5,null,7,null,3,null,0], melW:"triangle", melV:0.08, melLen:1.6,
+  mel2:[0,null,null,3,null,null,4,null,null,null,3,null,null,2,null,null], mel2W:"sawtooth", mel2V:0.045, mel2Len:2,
+  perc:["k",null,null,"h","n",null,"k",null,"k",null,"h",null,"n",null,"h",null],
+  bell:[0,null,null,null,null,null,null,null,7,null,null,null,null,null,11,null], bellV:0.07 },
+ /* ===== TEMAS DE CHEFE — um por Vigília ===== */
+ /* SEPULCRA — coveira paciente: lamento lento, sino de defunto, valsa fúnebre */
+ t_sepulcra:{ bpm:66, root:82.41, scale:[0,1,3,5,7,8,10], prog:[0,-2,0,-5], vol:0.19,
+  drone:0.10, drone5:0.05, droneW:"sine", choir:0.03,
+  bass:[0,_,_,_,-2,_,_,_,0,_,_,_,-5,_,_,_], bassW:"triangle", bassV:0.14,
+  mel:[7,_,_,8,7,_,_,_,5,_,3,_,_,_,0,_], melW:"sine", melV:0.075, melLen:2.6,
+  perc:["k",_,_,_,_,_,_,_,"k",_,_,_,_,_,"n",_],
+  bell:[0,_,_,_,_,_,_,_,_,_,_,_,7,_,_,_], bellV:0.06 },
+ /* CORO — coral crescente: vozes empilhadas, quintas, sino de igreja */
+ t_coro:{ bpm:76, root:98.00, scale:[0,2,3,5,7,8,10], prog:[0,-4,-2,-5,0,-4,3,-2], vol:0.20,
+  drone:0.08, drone5:0.06, choir:0.06, droneW:"triangle",
+  bass:[0,_,0,_,0,_,0,_,-4,_,-4,_,-2,_,-2,_], bassW:"sine", bassV:0.12,
+  mel:[7,_,8,_,7,_,5,_,3,_,5,_,7,_,8,_], melW:"triangle", melV:0.08, melLen:1.8,
+  mel2:[0,_,_,_,3,_,_,_,4,_,_,_,3,_,_,_], mel2W:"sawtooth", mel2V:0.04,
+  bell:[0,_,_,_,_,_,_,_,7,_,_,_,_,_,_,_], bellV:0.055 },
+ /* NERITH — a Mãe-Berço: cantiga de ninar que azeda, caixinha de música quebrada */
+ t_nerith:{ bpm:60, root:130.81, scale:[0,2,3,5,7,8,10], prog:[0,-2,-4,-2], vol:0.19,
+  drone:0.07, drone5:0.04, choir:0.035,
+  bass:[0,_,_,_,-4,_,_,_,-2,_,_,_,-4,_,_,_], bassW:"triangle", bassV:0.11,
+  mel:[12,_,10,_,8,_,7,_,8,_,10,_,7,_,5,_], melW:"sine", melV:0.075, melLen:1.6,
+  bell:[0,_,_,_,3,_,_,_,7,_,_,_,10,_,_,_], bellV:0.06 },
+ /* OSTRAGA — general da maré: marcha de guerra, tambor pesado, maré subindo */
+ t_ostraga:{ bpm:88, root:73.42, scale:[0,2,3,5,7,8,11], prog:[0,0,-2,-4], vol:0.20,
+  drone:0.09, drone5:0.05, droneW:"sawtooth", choir:0.03,
+  bass:[0,0,_,0,_,_,0,_,0,0,_,-2,_,_,-4,_], bassW:"sawtooth", bassV:0.16,
+  mel:[_,_,_,_,7,_,8,_,_,_,_,_,7,_,5,_], melW:"triangle", melV:0.065, melLen:1.6,
+  perc:["k",_,"n",_,"k",_,"n",_,"k","h","n",_,"k",_,"n","n"],
+  bell:[_,_,_,_,_,_,_,_,0,_,_,_,_,_,_,_], bellV:0.04 },
+ /* VASKARION — a Mão do trono: solene, imperial, órgão grave e sino de coroa */
+ t_vaskarion:{ bpm:70, root:65.41, scale:[0,2,3,5,7,8,11], prog:[0,3,-1,-4,0,3,5,-2], vol:0.20,
+  drone:0.11, drone5:0.07, choir:0.05, droneW:"sawtooth",
+  bass:[0,_,_,0,_,3,_,_,0,_,_,-1,_,_,-4,_], bassW:"sawtooth", bassV:0.15,
+  mel:[7,_,_,8,_,_,11,_,_,8,_,7,_,5,_,3], melW:"triangle", melV:0.075, melLen:1.8,
+  mel2:[0,_,_,_,_,_,4,_,_,_,_,3,_,_,2,_], mel2W:"sawtooth", mel2V:0.04,
+  perc:["k",_,_,_,"n",_,_,_,"k",_,_,_,"n",_,"h",_],
+  bell:[0,_,_,_,_,_,_,_,7,_,_,_,_,_,12,_], bellV:0.06 },
+ /* YSOLDE — a Lâmina Impecável: duelo elegante, rápido, lâmina cantante */
+ t_ysolde:{ bpm:112, root:110.00, scale:[0,2,3,5,7,9,11], prog:[0,3,-2,-4], vol:0.19,
+  drone:0.06, drone5:0.04, droneW:"triangle",
+  bass:[0,_,0,_,3,_,_,_,0,_,0,_,-2,_,-4,_], bassW:"triangle", bassV:0.13,
+  mel:[7,_,11,_,12,_,11,9,7,_,9,_,11,_,7,_], melW:"triangle", melV:0.08, melLen:1.2,
+  perc:[_,"h",_,"h","n",_,"h",_,_,"h",_,"h","n",_,"h","h"],
+  bell:[_,_,_,_,_,_,_,_,7,_,_,_,_,_,_,_], bellV:0.045 },
+ /* MALIKETH — a Sombra da Morte: FASE 1 contido, ritual, ameaça sussurrada */
+ t_maliketh1:{ bpm:82, root:69.30, scale:[0,1,3,5,6,8,10], prog:[0,0,-1,-2], vol:0.19,
+  drone:0.09, drone5:0.04, choir:0.04, droneW:"sawtooth",
+  bass:[0,_,0,_,_,0,_,-1,0,_,0,_,-2,_,_,_], bassW:"sawtooth", bassV:0.14,
+  mel:[_,_,6,_,_,5,_,_,_,_,3,_,_,1,_,_], melW:"triangle", melV:0.06, melLen:1.5,
+  perc:["k",_,_,"h","n",_,_,"h","k",_,_,"h","n",_,"h",_],
+  bell:[_,_,_,_,_,_,_,_,6,_,_,_,_,_,_,_], bellV:0.045 },
+ /* MALIKETH — FASE 2, a Besta do Vazio: frenético, coral gritado, sinos em pânico,
+    tambores tribais sem trégua — no espírito do Destined Death */
+ t_maliketh2:{ bpm:138, root:73.42, scale:[0,1,3,5,6,8,11], prog:[0,0,-1,-1,3,3,-2,-2], vol:0.22,
+  drone:0.08, drone5:0.05, choir:0.07, droneW:"sawtooth",
+  bass:[0,0,0,_,0,0,_,3,0,0,0,_,-1,_,-2,_], bassW:"sawtooth", bassV:0.16,
+  mel:[6,_,8,_,11,_,8,6,_,11,_,13,_,11,8,6], melW:"square", melV:0.06, melLen:0.9,
+  mel2:[_,3,_,5,_,6,_,_,3,_,5,_,_,6,_,8], mel2W:"sawtooth", mel2V:0.045, mel2Len:1,
+  perc:["k","h","k","h","n","h","k","h","k","h","k","h","n","h","n","n"],
+  bell:[6,_,_,_,_,_,11,_,6,_,_,_,_,_,13,_], bellV:0.06 },
+ /* O DUELO FINAL — a Vontade. Composição original no espírito do tema do
+    Consorte: tambores de guerra sem trégua, coro desafinado, melodia
+    trágico-heroica de saltos largos, duas seções que alternam. */
+ final:{ bpm:104, root:69.30, scale:[0,2,3,5,7,8,11], prog:[0,0,-4,-4,3,3,-1,-2], vol:0.22,
+  drone:0.09, drone5:0.05, droneW:"sawtooth", choir:0.045,
+  bass:[0,0,_,0,0,_,0,3,0,0,_,0,-4,_,-1,_], bassW:"sawtooth", bassV:0.16,
+  mel:[7,_,_,11,_,_,12,_,_,14,_,12,11,_,8,7], melW:"triangle", melV:0.08, melLen:1.4,
+  mel2:[_,_,4,_,_,5,_,_,7,_,_,_,4,_,2,_], mel2W:"sawtooth", mel2V:0.04, mel2Len:2.2,
+  perc:["k","h","k",_,"n","h","k","h","k","h","k","k","n","h","n","n"],
+  bell:[0,_,_,_,_,_,_,_,7,_,_,_,_,_,12,_], bellV:0.06 },
+};
+
 if(typeof document!=="undefined"&&document.addEventListener){
-  document.addEventListener("pointerdown",e=>{ SFX.unlock();
+document.addEventListener("pointerdown",e=>{ SFX.unlock();
     if(e.target&&e.target.closest&&e.target.closest("button"))SFX.ui(); },true);
 }
 
@@ -687,7 +892,7 @@ const FOES = {
    {n:"prego torto", tell:"Martela-te com um punho que não combina com o corpo.", dmg:18, poise:14},
    {n:"remendo", tell:"Aperta as próprias costuras, firmando-se.", block:true},
   ], flavor:"O caco da Vaidade minguou; ele costura em si pedaços alheios para se sentir inteiro. A cada três turnos enxerta um membro novo — quebra-lhe a postura no momento certo para impedir." },
- ysolde:{ name:"Ysolde, a Lâmina Impecável", hp:320, def:7, poise:65, icor:420, elite:true, super:true, zone:4, regen:8, rebirth:true, pursue:true,
+ ysolde:{ name:"Ysolde, a Lâmina Impecável", hp:320, def:7, poise:65, icor:420, elite:true, super:true, zone:4, regen:8, rebirth:true, pursue:true, track:"t_ysolde",
   moves:[
    {n:"talho florido", tell:"O corte dela floresce antes de doer.", dmg:18, poise:11, build:{bleed:24}},
    {n:"passo impecável", tell:"Ajusta a postura — impecável, impenetrável.", block:true},
@@ -714,14 +919,14 @@ const FOES = {
      {n:"dança: corte cruzado", tell:"Dois cortes em X, rápidos.", dmg:12, poise:8, hits:2},
      {n:"dança: arremate", tell:"Finta o terceiro — e persegue se recuares. FINTA.", dmg:30, poise:20, lento:true, feint:true, wind:true} ]},
   ],
-  phase2:{ hpAt:.62, msg:"A lâmina parte-se ao meio e as duas metades flutuam, guiadas pela ordem. Agora ela luta com o dobro do aço.", regen:5,
+  phase2:{ hpAt:.62, msg:"A lâmina parte-se ao meio e as duas metades flutuam — e o calor da partição CAUTERIZA cada ferida aberta. Agora ela luta com o dobro do aço.", regen:5, cleanse:true, cry:"Ele ergueu esta lâmina contra o próprio pescoço, e a corte deteve-lhe o braço. Eu SOU esse braço detido. Não me deterás uma segunda vez.",
    comboChance:0.72, addCombo:{name:"o Voo do Aço Partido", steps:[
      {n:"aço partido: ascensão", tell:"As duas metades sobem em espiral à tua volta. O que vem tem nome. Guarda o Foco.", dmg:10, poise:8, ranged:true},
      {n:"aço partido: primeira leva", tell:"Chuva de cortes de PERTO — recua para ralear. LENTO.", dmg:12, poise:7, hits:4, lento:true, wind:true},
      {n:"aço partido: segunda leva", tell:"De longe agora, com ALCANCE — recuar não salva, DEFENDE.", dmg:9, poise:6, hits:4, ranged:true, wind:true, guardPierce:0.35},
      {n:"aço partido: dilúvio final", tell:"As metades convergem num só ponto: TU. Recua E que os deuses te valham.", dmg:13, poise:9, hits:3, lento:true, wind:true} ]},
    add:{n:"gravidade da ordem", tell:"Arranca as duas metades do chão num puxão brutal. PUXÃO.", dmg:22, poise:16, pull:true, ranged:true} },
-  phase3:{ hpAt:.3, msg:"O aço reencontra o punho e a Vontade revela o rosto sobre a lâmina reunida. É o teu. Sempre foi.", regen:9, invertPerm:true, comboChance:0.85,
+  phase3:{ hpAt:.3, msg:"O aço reencontra o punho — selando as feridas — e a Vontade revela o rosto sobre a lâmina reunida. É o teu. Sempre foi.", regen:9, invertPerm:true, comboChance:0.9, cleanse:true, cry:"Olha bem. O rosto sob o elmo é o teu, porque a vontade de acabar sempre foi tua também. Vá — acaba-nos aos dois.",
    add:{n:"éco do teu nome", tell:"Ergue a lâmina reunida e pronuncia teu nome com a tua voz. LENTO e final.", dmg:58, poise:38, lento:true, wind:true} },
   flavor:"Não é o Soberano. É a lâmina que ele ergueu contra si mesmo, e a vontade que a guiou — o gesto de um deus a pedir a própria morte, preso para sempre a meio do golpe. Colossal, metódica, imparável. Luta como quem cumpre uma sentença: a sua. Vieste terminar o que ela começou, e ela vai receber-te com todo o aço que resta." },
  afilhada:{ name:"A Afilhada Pálida", hp:52, def:2, poise:16, icor:40, zone:0,
@@ -775,7 +980,91 @@ const FOES = {
   ], flavor:"Remou o Baluarte inteiro para o fundo sem errar o compasso. Continua remando. O destino é detalhe." },
 
  /* ===== CHEFES ===== */
- sepulcra:{ name:"Sepulcra, a Primeira Vigília", hp:230, def:6, poise:60, icor:260, boss:true, zone:1,
+ remendado:{ name:"O Soberano Remendado", hp:560, def:9, poise:120, icor:0, boss:true, avessoBoss:true, zone:5, track:"t_remendado", pursue:true, comboChance:0.55, regen:4, buildResist:0.5, procResist:0.55,
+  caco:"todos eles — a corte inteira, costurada de volta",
+  moves:[
+   {n:"mão que remenda", tell:"Uma das muitas mãos costura o ar em direção a ti.", dmg:24, poise:18},
+   {n:"decreto negado", tell:"A voz da corte fala por ele: uma ordem que corta à distância.", dmg:20, poise:14, ranged:true},
+   {n:"peso de um deus colado", tell:"Ergue todo o corpo remendado. LENTO — recua ou és desfeito.", dmg:46, poise:32, lento:true, wind:true},
+   {n:"costura viva", tell:"Arma o golpe — e as linhas mudam de alvo a meio. FINTA.", dmg:32, poise:22, lento:true, feint:true, wind:true},
+   {n:"reclamar o caco", tell:"Estende as mãos da corte e puxa. PUXÃO.", dmg:16, poise:10, pull:true, ranged:true},
+  ],
+  combos:[
+   {name:"a Corte Inteira", steps:[
+     {n:"corte: a mãe embala", tell:"Um braço de Nerith surge do remendo e balança para ti.", dmg:18, poise:14},
+     {n:"corte: o general firma", tell:"O braço de Ostraga arma o muro — pesado.", dmg:22, poise:18, quick:true},
+     {n:"corte: a lâmina arremata", tell:"O braço de Ysolde desce impecável. LENTO — recua.", dmg:44, poise:30, lento:true, wind:true} ]},
+  ],
+  phase2:{ hpAt:.6, track:"t_remendado", comboChance:0.72, regen:5, cleanse:true,
+   msg:"As costuras estalam. Cada caco da corte grita com a sua própria voz — e todas dizem a mesma coisa: NÃO O SOLTES.",
+   cry:"Eles coseram-me de volta porque me amavam. Sabes o que é ser amado até deixar de poder morrer? Vais saber.",
+   addCombo:{name:"o Coro das Mãos", steps:[
+     {n:"mãos: ascensão", tell:"Todas as mãos da corte erguem-se de uma vez à tua volta. Guarda o Foco.", dmg:9, poise:6, ranged:true},
+     {n:"mãos: primeira vaga", tell:"Chuva de mãos de PERTO — recua para ralear. LENTO.", dmg:11, poise:6, hits:4, lento:true, wind:true},
+     {n:"mãos: segunda vaga", tell:"De longe, com ALCANCE — DEFENDE, recuar não salva.", dmg:10, poise:5, hits:4, ranged:true, wind:true, guardPierce:0.4},
+     {n:"mãos: o abraço", tell:"Todas as mãos convergem para te abraçar até desfazer. Recua E defende.", dmg:14, poise:9, hits:3, lento:true, wind:true} ]},
+   add:{n:"costura de icor", tell:"Reata as próprias feridas com linha dourada. Cura-se.", dmg:0, poise:0, block:true, selfHeal:40} },
+  phase3:{ hpAt:.28, track:"t_remendado", comboChance:0.85, regen:8, cleanse:true, invertPerm:true,
+   msg:"Por um instante, entre as costuras, vês o rosto verdadeiro do Soberano. Ele olha para ti com um alívio terrível. As mãos da corte tentam tapar-lhe a boca. Ele fala mesmo assim.",
+   cry:"Obrigado. Acaba o que eu comecei. Acaba-nos a todos — a mim, e à corte que me amou até isto. Solta-nos.",
+   add:{n:"o último decreto", tell:"O Soberano ergue a própria mão contra si e contra ti ao mesmo tempo. LENTO e final.", dmg:56, poise:38, lento:true, wind:true} },
+  flavor:"Não é o Soberano. É o que a corte fez dele: cada caco que arrancaram, costurado de volta num só corpo, contra a vontade dele. Um deus que pediu para morrer e foi remendado por amor até não poder. As mãos que o seguram são as mesmas que o amavam. Vieste fazer o que a corte nunca teve coragem: deixá-lo acabar." },
+ avessado:{ name:"Cortesão do Avesso", hp:120, def:6, poise:32, icor:130, zone:5,
+   flavor:"Da primeira corte, a que o Soberano teve antes de aprender a ter vergonha. Anda ao contrário — os joelhos dobram para o lado errado — e sorri com isso.",
+   moves:[{n:"vénia invertida", tell:"Curva-se para trás, impossível, e o gesto corta.", dmg:22, poise:16},
+     {n:"protocolo", tell:"Ergue a mão num gesto de corte antigo — e emenda. FINTA.", dmg:30, poise:20, lento:true, feint:true, wind:true},
+     {n:"desfazer", tell:"Aponta-te e algo em ti se desfaz um pouco. Drena Foco.", dmg:14, poise:8, ranged:true, drainFoco:3}] },
+ primogenito:{ name:"O Primogénito Errado", hp:175, def:7, poise:44, icor:180, zone:5,
+   flavor:"O primeiro filho do Soberano, o que foi selado porque saiu parecido demais com a doença que o pai queria curar. Não morre porque nunca foi bem vivo.",
+   moves:[{n:"herança", tell:"Golpeia com um braço que tem cacos de trono cravados.", dmg:26, poise:20},
+     {n:"direito de sangue", tell:"Ergue-se inteiro — o golpe do herdeiro. LENTO, recua.", dmg:44, poise:30, lento:true, wind:true},
+     {n:"reivindicar", tell:"Agarra e puxa, como quem reclama o que é seu. PUXÃO.", dmg:16, poise:12, pull:true},
+     {n:"selo de berço", tell:"Fecha-se e a pele endurece em caco. Refaz a guarda.", block:true, selfHeal:22}] },
+ comedor:{ name:"O que Comeu um Deus", hp:210, def:8, poise:52, icor:220, zone:5,
+   flavor:"Engoliu um caco do Soberano inteiro, para o guardar onde ninguém tirasse. Agora o caco guarda-o a ele, por dentro, e ambos incham.",
+   moves:[{n:"bocado", tell:"Morde o ar na tua direção e o ar sangra.", dmg:24, poise:18, build:{bleed:16}},
+     {n:"fome antiga", tell:"Abre a boca larga demais. LENTO — o que entra ali não volta.", dmg:40, poise:26, lento:true, wind:true, lifesteal:true},
+     {n:"arroto de icor", tell:"Cospe icor meio-digerido, dourado e podre.", dmg:16, poise:10, ranged:true, build:{poison:24}}] },
+ gentil:{ name:"A Alma Gentil", hp:160, def:6, poise:40, icor:200, zone:5,
+   flavor:"Era a mais doce da primeira corte. Selaram-na no fundo por engano, e o fundo é longo, e a solidão fez o que a solidão faz. Ainda pede desculpa a cada golpe.",
+   moves:[{n:"carícia", tell:"Estende a mão para te tocar. A mão corta, e ela lamenta.", dmg:20, poise:14, build:{bleed:12}},
+     {n:"perdão", tell:"Recolhe-se, murmurando desculpas, e as feridas fecham.", block:true, selfHeal:26},
+     {n:"desespero", tell:"Perde o controlo por um instante. LENTO e largo — recua.", dmg:38, poise:24, lento:true, wind:true}] },
+ escriba:{ name:"O Escriba do Decreto", hp:190, def:7, poise:48, icor:210, zone:5,
+   flavor:"Foi ele quem redigiu o último decreto do Soberano — o pedido de morte. Selou-se com o texto para ninguém o apagar. Agora recita-o e o mundo obedece a pedaços.",
+   moves:[{n:"cláusula", tell:"Lê uma linha e a linha corta o ar até ti.", dmg:22, poise:16, ranged:true},
+     {n:"emenda final", tell:"Ergue a pena — e muda o alvo a meio. FINTA.", dmg:32, poise:22, lento:true, feint:true, wind:true},
+     {n:"rasura", tell:"Risca algo no ar e o teu Foco some.", dmg:12, poise:8, ranged:true, drainFoco:4}] },
+ crianca:{ name:"A Criança que Quis Consertar", hp:145, def:5, poise:36, icor:240, zone:5,
+   flavor:"A mais nova da corte. Viu o pai partir-se e tentou colá-lo de volta com as próprias mãos — e colou errado, e é por isso que tudo ficou assim. Ainda tem cola nos dedos.",
+   moves:[{n:"consertar", tell:"Estende as mãozinhas para te 'arranjar'. Dói ser arranjado.", dmg:18, poise:12, build:{bleed:10}},
+     {n:"cola de icor", tell:"Prende-te ao chão com icor pegajoso. PUXÃO e atraso.", dmg:14, poise:10, pull:true, drainFoco:2},
+     {n:"birra do fim", tell:"Chora, e o choro é uma onda. LENTO e grande — recua.", dmg:42, poise:28, lento:true, wind:true}] },
+ malrec:{ name:"Malrec, a Sombra da Sentença", hp:340, def:8, poise:70, icor:460, elite:true, super:true, zone:5, track:"t_maliketh1", pursue:true, comboChance:0.5,
+  moves:[
+   {n:"garra sentenciante", tell:"A lâmina-garra corta em diagonal, rápida.", dmg:22, poise:16},
+   {n:"passo de sombra", tell:"Dissolve-se em sombra e reaparece perto. Fecha a distância.", dmg:14, poise:10, pull:true},
+   {n:"lâmina que julga", tell:"Ergue a garra ao alto — juízo lento. Recua.", dmg:42, poise:28, lento:true, wind:true},
+   {n:"sentença suspensa", tell:"Arma o golpe — e emenda, seguindo o teu passo. FINTA.", dmg:30, poise:20, lento:true, feint:true, wind:true},
+  ],
+  combos:[
+   {name:"os Três Selos", steps:[
+     {n:"selo: primeiro corte", tell:"Corta baixo, girando.", dmg:16, poise:12},
+     {n:"selo: segundo corte", tell:"Devolve a garra pelo alto.", dmg:18, poise:14, quick:true},
+     {n:"selo: sentença", tell:"Salta e DESCE com a garra inteira. Lento — recua.", dmg:40, poise:28, lento:true, wind:true} ]},
+  ],
+  phase2:{ hpAt:.5, track:"t_maliketh2", comboChance:0.8,
+   msg:"Malrec crava a própria garra no peito e ARRANCA a sentença que o prendia. A sombra incha, deforma, uiva. Já não julga: devora.",
+   cry:"Fui a lâmina que guardou a Morte de todos vós. Agora solto-a — a começar por ti!",
+   regen:4,
+   addCombo:{name:"o Dilúvio Negro", steps:[
+     {n:"dilúvio: ascensão", tell:"Ergue-se em sombra girando. O que vem é uma tempestade de garras.", dmg:9, poise:6, ranged:true},
+     {n:"dilúvio: primeira torrente", tell:"Chuva de garras de PERTO — recua para ralear. LENTO.", dmg:11, poise:6, hits:4, lento:true, wind:true},
+     {n:"dilúvio: segunda torrente", tell:"De longe, com ALCANCE — DEFENDE, recuar não salva.", dmg:10, poise:5, hits:4, ranged:true, wind:true, guardPierce:0.4},
+     {n:"dilúvio: sentença negra", tell:"Toda a sombra converge num só ponto: TU. Recua E defende.", dmg:14, poise:9, hits:3, lento:true, wind:true} ]},
+   add:{n:"mordida do vazio", tell:"A sombra abre uma boca e morde. Cura-a.", dmg:20, poise:14, lifesteal:true} },
+  caco:"a Sentença Adiada", flavor:"Foi feito guardião da Morte que o Soberano quis devolver ao mundo — e cumpriu o dever cedo demais, prendendo-a em si para poupar a corte. Segura essa sentença há eras, apodrecendo em sombra. Quando a soltar, solta-a inteira. É mercê matá-lo. É suicídio deixá-lo abrir a boca." },
+ sepulcra:{ name:"Sepulcra, a Primeira Vigília", hp:230, def:6, poise:60, icor:260, boss:true, zone:1, track:"t_sepulcra",
   moves:[
    {n:"foice em arco", tell:"Descreve um arco largo com a foice.", dmg:18, poise:14},
    {n:"flor de sangue", tell:"Gira a lâmina numa flor de cortes.", dmg:10, poise:8, hits:2, build:{bleed:22}},
@@ -784,10 +1073,10 @@ const FOES = {
    {n:"sussurro da cova", tell:"Murmura à terra; a terra devolve-lhe alguma coisa.", block:true, selfHeal:22},
    {n:"vigília", tell:"Recolhe-se sob o manto, refazendo a guarda.", block:true},
   ],
-  phase2:{ hpAt:.5, msg:"Sepulcra despe o manto. O frio da Maré Baixa preenche a sala.",
+  phase2:{ hpAt:.5, msg:"Sepulcra despe o manto. O frio da Maré Baixa preenche a sala.", cry:"Cavei covas para todos, menos para mim. Deixa-me cavar a tua com carinho.",
    add:{n:"lamento gélido", tell:"O ar congela ao redor — geada iminente.", dmg:16, poise:10, build:{geada:38}, ranged:true} },
   caco:"o Sono", flavor:"Empunha o caco do Sono — o fragmento que finge que o Soberano apenas descansa. Cavou covas a vida inteira; a ironia é que a sua não fecha." },
- coro:{ name:"O Coro Descarnado", hp:300, def:5, poise:75, icor:380, boss:true, zone:2, crescendo:4,
+ coro:{ name:"O Coro Descarnado", hp:300, def:5, poise:75, icor:380, boss:true, zone:2, crescendo:4, track:"t_coro",
   moves:[
    {n:"uníssono", tell:"Cem mandíbulas abrem ao mesmo tempo.", dmg:14, poise:9, ranged:true},
    {n:"dissonância", tell:"As vozes desencontram — o som rasga.", dmg:10, poise:6, hits:2, ranged:true},
@@ -795,15 +1084,16 @@ const FOES = {
    {n:"harmonia partida", tell:"Metade do coro inspira para o alto — a outra metade já se move para ti. FINTA.", dmg:11, poise:7, hits:3, lento:true, feint:true, wind:true},
    {n:"contracanto", tell:"As vozes baixam a um murmúrio que fecha as gargantas rachadas.", block:true, selfHeal:26},
   ],
-  phase2:{ hpAt:.5, msg:"Metade do coro cala — a outra metade canta com o dobro da fúria.",
+  phase2:{ hpAt:.5, msg:"Metade do coro cala — a outra metade canta com o dobro da fúria.", cry:"Ele adormeceu no meio da nota. Nós terminamos a canção. SEMPRE terminamos a canção.",
    add:{n:"réquiem", tell:"Uma única nota, sustentada, insuportável.", dmg:22, poise:14, ranged:true} },
   caco:"a Cantiga de Ninar", flavor:"Deviam cantar o Soberano até o sono final. Quando ele se partiu no meio da canção, a canção não parou. O volume só sobe — quebra a postura para calar o crescendo." },
- nerith:{ name:"Nerith, a Mãe-Berço", hp:250, def:5, poise:70, icor:340, boss:true, zone:3, cocoons:160,
+ nerith:{ name:"Nerith, a Mãe-Berço", hp:250, def:5, poise:70, icor:340, boss:true, zone:3, cocoons:160, track:"t_nerith",
   moves:[
    {n:"canção gélida", tell:"A cantiga desce a temperatura da sala.", dmg:13, poise:8, build:{geada:30}, ranged:true, p1only:true},
    {n:"sussurro", tell:"Um acalanto que não era para ti.", dmg:16, poise:9, ranged:true, p1only:true},
    {n:"embalo", tell:"Volta-se para os casulos e embala-os, refazendo-os.", block:true, cocoonHeal:22, p1only:true},
   ],
+  phaseCry:"Embalei-os para que não morressem — e tu vens acordá-los. Então já não há para quem cantar. NÃO OS TOQUES.",
   phaseMoves:[
    {n:"garras do berço", tell:"As mãos que embalavam agora se abrem em garras.", dmg:19, poise:12, build:{bleed:20}},
    {n:"«NÃO OS TOQUES»", tell:"Ela grita o que já não pode proteger. Lento e terminal.", dmg:38, poise:26, lento:true, wind:true},
@@ -811,7 +1101,7 @@ const FOES = {
    {n:"lamento", tell:"O choro dela tem peso físico.", dmg:15, poise:8, ranged:true},
   ],
   caco:"o Ventre", flavor:"Para salvar a corte da morte que voltava, transformou-a em filhos: casulos de icor que nunca vão eclodir. Canta para eles, e não vai parar. Silencia os casulos primeiro — ela não luta enquanto tiver o que embalar." },
- ostraga:{ name:"Ostraga, o General da Maré", hp:300, def:7, poise:85, icor:400, boss:true, zone:4, tideOnStagger:true, buildResist:0.7, caco:"o Muro",
+ ostraga:{ name:"Ostraga, o General da Maré", hp:300, def:7, poise:85, icor:400, boss:true, zone:4, tideOnStagger:true, buildResist:0.7, caco:"o Muro", track:"t_ostraga",
   moves:[
    {n:"quebra-mar", tell:"O braço-dique desce em arco. Lento como um veredito.", dmg:34, poise:24, lento:true, wind:true},
    {n:"cascos e cracas", tell:"O punho encrostado busca teu peito.", dmg:19, poise:16},
@@ -820,10 +1110,10 @@ const FOES = {
    {n:"quebra-mar falso", tell:"O braço-dique sobe... e ele já viu para onde vais correr. FINTA.", dmg:28, poise:20, lento:true, feint:true, wind:true},
    {n:"encostar no muro", tell:"Recosta o peso no muro invisível, firmando-se.", block:true},
   ],
-  phase2:{ hpAt:.5, msg:"Ostraga solta o muro com a segunda mão. A água ruge atrás dele — a maré dobra o passo.", tideRate:2,
+  phase2:{ hpAt:.5, msg:"Ostraga solta o muro com a segunda mão. A água ruge atrás dele — a maré dobra o passo.", tideRate:2, cry:"Se eu soltar, tudo afoga. Se tu venceres, eu solto. Escolhe depressa, Vestígio.",
    add:{n:"peso do oceano", tell:"Ergue os dois braços — todo o mar vem junto. Lento.", dmg:42, poise:30, lento:true, wind:true} },
   flavor:"Segura a Maré Baixa há eras, sozinho, para que ela não afogue o que resta. Esqueceu o porquê; ficou o hábito. Quebrar-lhe a postura é abrir o dique: a maré sobe a cada turno depois disso, e guarda nenhuma a bloqueia. Mata-o depressa — ou afoga com ele." },
- vaskarion:{ name:"Vaskarion, Mão do Soberano", hp:400, def:7, poise:85, icor:0, boss:true, throne:true, zone:3,
+ vaskarion:{ name:"Vaskarion, Mão do Soberano", hp:400, def:7, poise:85, icor:0, boss:true, throne:true, zone:3, track:"t_vaskarion",
   moves:[
    {n:"punho selado", tell:"A mão imensa se fecha sobre ti.", dmg:20, poise:14},
    {n:"unhas de icor", tell:"Cinco lâminas douradas riscam o ar.", dmg:11, poise:7, hits:2, build:{bleed:18}},
@@ -832,9 +1122,9 @@ const FOES = {
    {n:"selar", tell:"Fecha o punho no ar. Algo em ti fecha junto.", dmg:12, poise:8, ranged:true, drainFoco:3},
    {n:"juramento", tell:"Fecha-se em torno de si, selando a guarda.", block:true},
   ],
-  phase2:{ hpAt:.66, msg:"Vaskarion sangra ouro. O sangue do Soberano desperta na ferida.",
+  phase2:{ hpAt:.66, msg:"Vaskarion sangra ouro. O sangue do Soberano desperta na ferida.", cry:"Esta mão fechou-se sobre o trono quando ele se partiu. Não a abro por ti — nem por ninguém.",
    add:{n:"lágrima do trono", tell:"Uma gota de icor puro cai — e congela tudo.", dmg:18, poise:12, build:{geada:40}, ranged:true} },
-  phase3:{ hpAt:.33, msg:"A Mão se abre por inteiro. Dentro dela, um fragmento do trono ainda pulsa.", regen:8,
+  phase3:{ hpAt:.33, msg:"A Mão se abre por inteiro. Dentro dela, um fragmento do trono ainda pulsa.", regen:8, cry:"Guardei o assento vazio uma eternidade. Se o queres, terás de o arrancar dos meus dedos, um a um.",
    add:{n:"éco do soberano", tell:"A voz que não devia existir mais pronuncia teu nome. Lento.", dmg:38, poise:26, lento:true, wind:true} },
   caco:"o próprio Trono", flavor:"Quando o Soberano se partiu, a mão direita recusou-se a soltar o trono. Lealdade além da razão, além da morte, além do sentido. Ainda não soltou." },
 };
@@ -875,7 +1165,7 @@ afilhada:"Uma menina de vestido de algas, descalça na água fria. Segura uma bo
  viuva:"Sai do poço aos poucos, cabelo primeiro. O vestido de luto pesa tanta água que devia afundá-la — não afunda. Chora sem parar, e as lágrimas são pretas e fumegam.",
  sino:"Um sino de bronze da altura de um homem, com pernas de ossos humanos soldadas à base. Anda torto. O badalo lá dentro é uma criança sem rosto, ainda amarrada.",
  cavaleiro:"Armadura completa, encrostada de sal e conchas, com algas a pender das juntas como estandartes. Dentro do elmo, escuro e água. Range a cada movimento — mas não pára.",
- gemeas:"Duas raparigas idênticas, de mãos dadas, cada uma com uma foice na mão livre. Movem-se em espelho perfeito. Quando uma sorri, a outra sorri — meio segundo depois.",
+ gemeas:"Duas moças idênticas, de mãos dadas, cada uma com uma foice na mão livre. Movem-se em espelho perfeito. Quando uma sorri, a outra sorri — meio segundo depois.",
  anselm:"Um homem feito de outras pessoas. Um braço grosso demais, uma perna curta demais, três mãos, tudo cosido com fio de tendão. Os olhos são os únicos que ainda parecem dele, e estão cansados.",
  ysolde:"Está de pé, imóvel, perfeita. Armadura sem um arranhão, lâmina sem uma mossa. Depois vês: sob a placa, a carne floresce — o icor apodrecido brota em botões dourados e cai, e volta a brotar. Ela não olha para baixo. Nunca olhou.",
  sepulcra:"Manto de coveira até ao chão, foice mais alta que ela. Sob o capuz, o rosto de uma mulher que morreu a meio de uma frase. Está à porta há eras. Não se senta.",
@@ -883,6 +1173,14 @@ afilhada:"Uma menina de vestido de algas, descalça na água fria. Segura uma bo
  nerith:"De costas para ti, a embalar. Dos ombros dela pendem casulos de icor do tamanho de crianças, dezenas, presos por cordões de pele. Canta baixinho. Não se vira. Ainda.",
  ostraga:"Um gigante encrostado de cracas, de costas para ti, com os dois braços contra uma parede de água que não devia estar de pé. Os tendões do pescoço são cordas. Conta em voz baixa. Perdeu a conta há eras e continua na mesma.",
  vaskarion:"Uma mão. Só uma mão — do tamanho de uma casa, dourada, com veios de icor a pulsar sob a pele. Os dedos fecham-se sobre um trono vazio. Não solta. Nunca soltou.",
+avessado:"Uma figura de trajes de corte antiquíssimos, de um estilo que nenhum reino usou. Anda ao contrário — os joelhos dobram para o lado errado — e mantém um sorriso de anfitrião o tempo todo. É educado. É a pior coisa que já viste ser educada.",
+ primogenito:"Alto, de ombros largos, com cacos de trono dourado cravados na carne como quem cravou medalhas. O rosto lembra o de uma estátua que viste no alto da Escada — mas mais jovem, e mais errado. É o primeiro filho, o que saiu parecido demais com a doença.",
+ comedor:"Um corpo inchado além do razoável, a pele esticada e translúcida, e lá dentro brilha algo dourado que se move sozinho — o caco que engoliu, ainda vivo. Cada respiração dele é dupla: a sua e a do deus que tem preso na barriga.",
+ gentil:"Uma silhueta esguia e curvada, de mãos longas que se abrem e fecham num gesto de quem quer abraçar mas já esqueceu como. Murmura sem parar — desculpas, todas dirigidas a ti, antecipadamente, por tudo o que vai ter de te fazer.",
+ escriba:"Encurvado sobre um pergaminho que lhe cresce das próprias mãos, sem fim, coberto da mesma frase repetida em mil letras. Lê em voz baixa e o ar à volta obedece em fragmentos. Foi ele quem escreveu o pedido de morte do Soberano. Guarda-o com a vida que não tem.",
+ crianca:"Uma criança pequena de mãos douradas de cola seca, os dedos colados uns aos outros de tanto tentar consertar o impossível. Olha para ti com esperança — como se, desta vez, talvez tu fosses a peça que faltava para colar tudo de volta.",
+ remendado:"Onde um deus se sentaria, senta-se uma coisa feita de muitos: dezenas de mãos, braços, torsos costurados num só corpo com linha de icor dourado, cada costura a estalar sob a tensão. No meio de tudo, quase submerso nos remendos, um rosto sereno e antigo — o do Soberano — de olhos que imploram há eras. A corte que o ama segura-o inteiro. Vieste desfazer o abraço.",
+ malrec:"Um vulto alto e enfaixado, de pele branca como osso lavado, empunhando uma espada-garra negra que bebe a luz à volta. Move-se como fumo que decidiu ter forma. Sob os panos, algo pulsa — uma sombra presa que quer sair, e há eras espera a desculpa. Tu és a desculpa.",
  vontade:"Ergue-se do trono uma figura de armadura colossal, alta como três homens, com uma espada do tamanho de uma quilha de navio cravada no chão à sua frente. Não tem rosto sob o elmo — só a ordem, densa como chumbo. Arranca a lâmina do chão sem esforço. Vieste terminar um duelo que começou há eras, entre um deus e ele próprio.",
 };
 
@@ -918,14 +1216,28 @@ const CENAS=[
    "Aqui já não há água. Há a memória dela, o que é mais pesado.",
    "No alto, uma luz que não ilumina nada. Aproximas-te há muito tempo e ela não fica maior.",
  ],
+ [ "Aqui tudo está ao contrário: a água cai para cima, as sombras precedem quem as lança, e o teu próprio coração bate uma fração antes de tu sentires. É a primeira corte — feita antes de o Soberano aprender as regras que depois quebraria.",
+   "As paredes são forradas de retratos da corte, e em cada um a tinta ainda escorre, fresca há eras. Todos os rostos te seguem. Todos parecem aliviados por te ver — como quem espera há muito por quem faça o serviço.",
+   "Um berço de pedra, vazio, no meio da sala. Ao lado, marcas de mãos pequenas que tentaram colar algo grande demais. A cola secou dourada. Nunca segurou.",
+   "Ouves a corte antes de a ver: um murmúrio de cortesia que nunca acaba, elogios e vénias e protocolos ditos a um trono que já não responde. Continuam. É tudo o que sabem fazer.",
+   "No fundo, uma forma costurada de muitas formas, sentada onde um deus se sentaria. Respira com pulmões que não combinam. Quando te aproximas, todas as suas mãos param ao mesmo tempo — e depois, devagar, uma delas acena para ti. Não sabes se é ameaça ou pedido.",
+ ],
 ];
 
+const _CENAS_VI_SHORT=[
+ "O avesso do mundo range à tua volta. Nada aqui cai para o lado certo.",
+ "Os retratos da corte seguem-te. Aliviados, sempre aliviados.",
+ "A cola dourada nas paredes nunca segurou nada. Continua a tentar.",
+ "O murmúrio da cortesia não cessa. Elogiam um trono vazio há eras.",
+ "Ao fundo, a coisa costurada espera. Uma das mãos treme.",
+];
 const CENAS_CURTAS=[
  ["Mais claustro. Mais água.","Outro corredor afogado, igual aos anteriores.","A água sobe-te aos tornozelos. Já conheces o frio.","Arcos, lodo, silêncio."],
  ["O canto continua. Habituaste-te, o que é pior.","Mais osso sob os pés. Range na mesma nota.","O ossuário repete-se, como a cantiga.","Colunas de mortos, empilhadas com cuidado."],
  ["A corte dança. Ninguém te vê passar.","Mais salão, mais lodo, mais etiqueta.","Lustres acesos debaixo de água. Já não te espanta.","O banquete continua posto."],
  ["Sal, cracas e o zumbido do esforço alheio.","Mais muralha. Alguém ainda a segura.","A água recua ao teu passo, disciplinada.","Restos de nau na parede, tripulação a postos."],
  ["Degraus de icor seco. Rostos lá dentro, a meio de uma frase.","Mais escada. A luz no alto não cresce.","Cada degrau range um nome que não é o teu.","Aqui só há a memória da água."],
+ _CENAS_VI_SHORT,
 ];
 
 /* ---------------- ZONAS E MAPA ---------------- */
@@ -944,7 +1256,10 @@ const ZONES = [
    pool:["guarda","remador","ungido","enxame","nadador","dama"], hard:["carregador","timoneiro"], elites:["cavaleiro","gemeas"], boss:"ostraga" },
  { name:"A Escada de Icor", sub:"Zona V", compact:true,
    intro:"Degraus de sangue divino, secos há eras. Cada passo range como um nome que ninguém pronuncia mais.",
-   pool:["ceifeiro","guarda","lampejo","ungido","arauto","timoneiro"], hard:["carregador","arauto"], elites:["ysolde","cavaleiro"], boss:"vaskarion" },
+   pool:["ceifeiro","guarda","lampejo","ungido","arauto","timoneiro"], hard:["carregador","arauto"], elites:["ysolde","malrec","cavaleiro"], boss:"vaskarion" },
+ { name:"O Avesso", sub:"Zona VI · a verdade selada",
+   intro:"Abaixo do trono há uma porta que não devia existir, e a Chave de Sal encaixa nela como se sempre a tivesse esperado. O que está do outro lado foi selado porque é verdade demais.",
+   pool:["avessado","primogenito","escriba","gentil","comedor","crianca"], hard:["comedor","primogenito"], elites:["gemeas","cavaleiro"], boss:"remendado", avesso:true },
 ];
 
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -1085,7 +1400,7 @@ const Store={
 let META=Store.load()||{frag:0,upgrades:{},seen:{},dialog:{},runs:0,wins:0};
 function saveMeta(){Store.save(META);}
 function metaLv(id){return META.upgrades[id]||0;}
-/* --- Notas do Mestre (bestiário progressivo) --- */
+/* --- Notas de Sétima (bestiário progressivo) --- */
 function bst(id){ META.bestiario=META.bestiario||{};
   if(!META.bestiario[id]) META.bestiario[id]={enc:0,kills:0,deaths:0,moves:{}};
   return META.bestiario[id]; }
@@ -1095,13 +1410,30 @@ function bstKill(id){ const b=bst(id); b.kills++; saveMeta(); }
 function bstDeath(id){ const b=bst(id); b.deaths++; saveMeta(); }
 function bstKnown(id){ const b=META.bestiario&&META.bestiario[id]; return b&&b.enc>0; }
 const META_UPGRADES=[
- {id:"vigor",name:"Cera Endurecida",max:3,cost:l=>30+l*35,desc:"+15 de vida máxima por nível."},
- {id:"frasco",name:"Vidro Paciente",max:2,cost:l=>50+l*60,desc:"+1 carga de Frasco por nível."},
- {id:"foco",name:"Pavio Interior",max:2,cost:l=>45+l*50,desc:"+1 Foco máximo por nível."},
- {id:"heranca",name:"Herança Enterrada",max:1,cost:()=>40,desc:"Começas cada run com 80 ◈."},
- {id:"selo",name:"Primeiro Juramento",max:1,cost:()=>120,desc:"Começas cada run com um Selo aleatório."},
- {id:"excomungado",name:"O Quarto Vestígio",max:1,cost:()=>150,desc:"Desbloqueia o Excomungado — apóstata de fé e ferro."},
+ /* ---- RAMO: A CARNE (sobreviver) ---- */
+ {id:"vigor",   ramo:"carne", name:"Cera Endurecida",   max:5, cost:l=>30+l*30,  desc:"+13 de vida máxima por nível."},
+ {id:"frasco",  ramo:"carne", name:"Vidro Paciente",    max:3, cost:l=>50+l*55,  desc:"+1 carga de Frasco por nível."},
+ {id:"vela",    ramo:"carne", name:"Chama Generosa",    max:3, cost:l=>60+l*45,  desc:"O Frasco cura +8% da vida por nível."},
+ {id:"purga",   ramo:"carne", name:"Sangue Limpo",      max:2, cost:l=>70+l*60,  desc:"Começas cada combate com −20% de veneno/sangue recebido por nível.", req:["vigor",2]},
+ {id:"mortalha",ramo:"carne", name:"Mortalha de Sal",   max:1, cost:()=>260,     desc:"A 1ª Mácula de cada run não reduz vida — só o resto.", req:["vela",2]},
+ /* ---- RAMO: O OFÍCIO (lutar) ---- */
+ {id:"foco",    ramo:"oficio",name:"Pavio Interior",    max:3, cost:l=>45+l*45,  desc:"+1 Foco máximo por nível."},
+ {id:"fio",     ramo:"oficio",name:"Fio Rezado",        max:3, cost:l=>55+l*50,  desc:"+4% de dano de arma por nível."},
+ {id:"aprumo",  ramo:"oficio",name:"Prumo do Coveiro",  max:3, cost:l=>55+l*50,  desc:"+5% de dano de postura por nível."},
+ {id:"vazio",   ramo:"oficio",name:"Passo Vazio",       max:1, cost:()=>200,     desc:"O 1º movimento de cada combate é grátis.", req:["aprumo",2]},
+ {id:"algoz",   ramo:"oficio",name:"Mão de Algoz",      max:2, cost:l=>90+l*70,  desc:"Golpe Crítico causa +12% por nível.", req:["fio",2]},
+ /* ---- RAMO: O PACTO (começar melhor) ---- */
+ {id:"heranca", ramo:"pacto", name:"Herança Enterrada", max:3, cost:l=>40+l*55,  desc:"Começas cada run com +70 ◈ por nível."},
+ {id:"selo",    ramo:"pacto", name:"Primeiro Juramento", max:2, cost:l=>120+l*130,desc:"Começas cada run com +1 Selo aleatório por nível."},
+ {id:"presságio",ramo:"pacto",name:"Presságio",         max:1, cost:()=>180,     desc:"Vês o golpe do inimigo um turno antes — a intenção seguinte fica visível.", req:["heranca",1]},
+ {id:"eco",     ramo:"pacto", name:"Eco de Véspera",    max:3, cost:l=>80+l*70,  desc:"+8% de Fragmentos por abate, por nível."},
+ {id:"vestigio",ramo:"pacto", name:"Vestígio Teimoso",  max:1, cost:()=>300,     desc:"Uma vez por run, a Mácula da tua próxima morte é anulada.", req:["selo",1]},
+ {id:"excomungado",ramo:"pacto",name:"O Quarto Vestígio",max:1,cost:()=>150,     desc:"Desbloqueia o Excomungado — apóstata de fé e ferro."},
 ];
+const RAMOS={ carne:{nome:"A Carne",cor:"var(--blood)",sub:"sobreviver ao que desce"},
+  oficio:{nome:"O Ofício",cor:"var(--frost)",sub:"o dano e a leitura"},
+  pacto:{nome:"O Pacto",cor:"var(--ichor)",sub:"começar menos nu"} };
+function metaReqMet(u){ if(!u.req)return true; return metaLv(u.req[0])>=u.req[1]; }
 
 /* ---------------- NPCS E DIÁLOGO ---------------- */
 const NPCS={
@@ -1215,17 +1547,17 @@ function floatText(txt,color){ const el=document.createElement("div");el.classNa
 
 const MACULA_MAX=3; // 4ª morte encerra o run
 function maculaN(){ return (G&&G.macula)||0; }
-function maculaHP(){ return Math.max(0.62, 1-0.09*maculaN()); }
+function maculaHP(){ const eff=Math.max(0,maculaN()-((G&&metaLv("mortalha")&&G.macula>=1)?1:0)); return Math.max(0.62, 1-0.09*eff); }
 function maculaDmg(){ return 1+0.09*maculaN(); }
-function maxHP(a){ return Math.round((45 + a.vit*11 + (hasRelic("coracao")?30:0) + metaLv("vigor")*15) * maculaHP()); }
+function maxHP(a){ return Math.round((45 + a.vit*11 + (hasRelic("coracao")?30:0) + metaLv("vigor")*13) * maculaHP()); }
 function maxAP(a){ return clamp(3 + Math.floor(a.fol/7) + (hasRelic("algema")?1:0), 3, 8); }
 function maxPoise(a){ return 30 + a.fol*2 + a.for; }
 function maxFoco(a){ return 4 + Math.floor((a.int+a.fe)/6) + (hasRelic("ampulheta")?1:0) + metaLv("foco"); }
-function flaskHeal(a){ let h=Math.round(maxHP(a)*0.28)+a.fe*2; if(hasRelic("vela")) h=Math.round(h*1.35); return h; }
+function flaskHeal(a){ let h=Math.round(maxHP(a)*(0.28+metaLv("vela")*0.08))+a.fe*2; if(hasRelic("vela")) h=Math.round(h*1.35); return h; }
 function hasRelic(id){ return G && G.player.relics.includes(id); }
 
-function weaponAtk(attr,w){ let d=w.base; const h=w.hits||1;
-  for(const s in w.scale){ d+=SCALE[w.scale[s]]*attr[s]*1.5/h; } return Math.round(d); }
+function weaponAtk(attr,w){ let d=w.base; const h=w.hits||1; const fio=1+metaLv("fio")*0.04;
+  for(const s in w.scale){ d+=SCALE[w.scale[s]]*attr[s]*1.5/h; } return Math.round(d*fio); }
 function skillAtk(attr,w,sk){
   let base;
   if(sk.kind==="sorcery"||sk.kind==="faith"){ base=(w.base*0.5)+SCALE["A"]*attr[sk.scale]*1.75; }
@@ -1237,7 +1569,7 @@ function makePlayer(v){
   const attr={...v.base};
   const p={ name:v.name, vestige:v.id, attr, weaponId:v.weapon, skills:[...v.skills],
     invWeapons:[v.weapon], relics:[], items:{}, levelsBought:0, cronica:(G&&G.pendingCronica)||null };
-  p.hp=45+attr.vit*11+metaLv("vigor")*15; p.foco=4+Math.floor((attr.int+attr.fe)/6)+metaLv("foco");
+  p.hp=45+attr.vit*11+metaLv("vigor")*13; p.foco=4+Math.floor((attr.int+attr.fe)/6)+metaLv("foco");
   p.flaskMax=v.flasks+metaLv("frasco"); p.flask=p.flaskMax;
   return p;
 }
@@ -1247,8 +1579,10 @@ function newRun(v){
       clearedNodes:{}, kills:0, deaths:0, curse:null, combat:null, fragEarned:0, lagrimaUsed:false, macula:0,
       mesa:(META.mesa!==false), pendingCronica:(G&&G.pendingCronica)||null };
   G.map=buildZoneFloors(ZONES[0],0);
-  if(metaLv("heranca")) G.icor=80;
-  if(metaLv("selo")) giveRelic();
+  if(metaLv("heranca")) G.icor=70*metaLv("heranca");
+  for(let i=0;i<metaLv("selo");i++) giveRelic();
+  G.pressagio=metaLv("presságio")>0;
+  G.vestigioUso=metaLv("vestigio")>0; G.vestigioGasto=false;
   META.runs++; saveMeta();
 }
 
@@ -1275,6 +1609,7 @@ function applyLoot(loot){
 function render(html){ $app.innerHTML=html; window.scrollTo(0,0); }
 
 function screenTitle(){
+  MUS.stop(1);
   render(`<div class="title-wrap">
     <div class="candle"></div>
     <div class="game disp">VESPERGLOAM</div>
@@ -1291,7 +1626,7 @@ function screenTitle(){
         <span class="sub">${hasSavedRun()?"Abandona a descida guardada e recomeça.":"Escolher um Vestígio e começar"}</span></button>
       <button class="btn" id="vest"><span class="k disp">O VESTÍBULO</span>
         <span class="sub">Sétima aguarda · <span class="mono" style="color:var(--frost)">✦ ${META.frag}</span> fragmentos</span></button>
-      <button class="btn" id="tbest"><span class="k disp">NOTAS DO MESTRE</span>
+      <button class="btn" id="tbest"><span class="k disp">AS NOTAS DE SÉTIMA</span>
         <span class="sub">Bestiário — ${Object.keys(FOES).filter(bstKnown).length}/${Object.keys(FOES).length} criaturas encontradas</span></button>
       <button class="btn" id="how"><span class="k disp">O QUE TE ESPERA</span><span class="sub">Como se joga</span></button>
     </div></div>`);
@@ -1314,7 +1649,7 @@ function screenHow(){
 
     <p style="margin-bottom:14px"><b class="ichor disp">Postura → Atordoamento → Crítico.</b> Cada golpe teu drena a postura do inimigo. Zerada, ele cambaleia e abres o <b>Golpe Crítico</b> — a tua maior janela de dano. Mas chefes <i>endurecem</i>: cada atordoamento aumenta a postura máxima deles. Não contes atordoar duas vezes de graça.</p>
 
-    <p style="margin-bottom:14px"><b class="ichor disp">Inimigos-enigma.</b> Alguns regeneram (fere-os com status), devolvem dano se socares a guarda deles, crescem a cada turno (não demores), arrastam-te com <b class="mono" style="color:var(--frost)">PUXÃO</b>, ou perseguem-te. Cada criatura tem uma resposta certa — e as <b>Notas do Mestre</b> guardam o que aprendeste sobre cada uma.</p>
+    <p style="margin-bottom:14px"><b class="ichor disp">Inimigos-enigma.</b> Alguns regeneram (fere-os com status), devolvem dano se socares a guarda deles, crescem a cada turno (não demores), arrastam-te com <b class="mono" style="color:var(--frost)">PUXÃO</b>, ou perseguem-te. Cada criatura tem uma resposta certa — e as <b>Notas de Sétima</b> guardam o que aprendeste sobre cada uma.</p>
 
     <div class="fl-lbl" style="color:var(--bleed);margin-top:18px">A MORTE CUSTA</div>
     <p style="margin-bottom:14px"><b class="ichor disp">A Mácula.</b> Morrer não é de graça. Cada morte deixa uma marca <i>permanente na descida</i>: menos vida máxima, inimigos mais fortes, um frasco a menos. Elas acumulam — e a <b>quarta morte encerra o run</b>. Podes insistir, mas cada queda te deixa pior, não igual. Faz cada luta contar.</p>
@@ -1324,7 +1659,7 @@ function screenHow(){
     <p style="margin-bottom:14px"><b class="ichor disp">Cada Vestígio joga diferente.</b> Força trava a guerra de postura. Destreza acumula <b style="color:var(--bleed)">SANGUE</b> e detona com <i>Explodir Feridas</i>. A Sina espalha <b style="color:#7fb069">VENENO</b> e joga com o acaso. Feitiçaria e fé preferem LONGE (+20%). Lanças alcançam; adagas só mordem de perto. Os <b>Selos</b> — relíquias passivas achadas na descida — reforçam a tua identidade a cada run.</p>
 
     <div class="fl-lbl" style="color:var(--ichor);margin-top:18px">A MESA</div>
-    <p style="margin-bottom:14px"><b class="ichor disp">O mestre narra, os dados rolam.</b> Antes de descer, preenches a <b>ficha</b> do teu Vestígio — inclusive como morreste; o mestre vai lembrar-se. Nas descidas, ele descreve as salas e as criaturas. As <b>rolagens</b> aparecem abertas (<span class="mono" style="font-size:12px">34 + 1d12</span>) — podes ocultá-las no Vestíbulo. E eventos e Escrituras pedem <b>testes de atributo</b> (d20 + atributo): 20 é crítico, 1 é desastre. É aqui que Fé, Sina e Vitalidade importam fora do combate.</p>
+    <p style="margin-bottom:14px"><b class="ichor disp">Sétima narra, os dados rolam.</b> Antes de descer, preenches a <b>ficha</b> do teu Vestígio — inclusive como morreste; Sétima vai lembrar-se. Nas descidas, ela descreve as salas e as criaturas. As <b>rolagens</b> aparecem abertas (<span class="mono" style="font-size:12px">34 + 1d12</span>) — podes ocultá-las no Vestíbulo. E eventos e Escrituras pedem <b>testes de atributo</b> (d20 + atributo): 20 é crítico, 1 é desastre. É aqui que Fé, Sina e Vitalidade importam fora do combate.</p>
 
     <p class="flavor" style="margin-top:8px">Vais morrer. É o plano. Cada morte escreve uma linha nas Notas e ensina-te a próxima descida. <b>Deixem-me acabar</b>, pediu o Soberano, <b>para que possais.</b></p>
    </div><div class="hr"></div>
@@ -1386,7 +1721,7 @@ function screenBestiario(voltar){
       :`<p class="flavor" style="font-size:13px">Nenhum golpe anotado ainda. Sobrevive mais tempo.</p>`;
     const stats=b.kills>0?`<div class="mono faint" style="font-size:11px;margin-top:6px">
       vida ${f.hp} · defesa ${f.def} · postura ${f.poise}${f.regen?" · regen "+f.regen:""}${f.thorns?" · espinhos "+f.thorns:""}${f.cocoons?" · casulos "+f.cocoons:""}</div>`
-      :`<div class="mono faint" style="font-size:11px;margin-top:6px">Números desconhecidos — o mestre só os anota depois do primeiro abate.</div>`;
+      :`<div class="mono faint" style="font-size:11px;margin-top:6px">Números desconhecidos — Sétima só os anota depois do primeiro abate.</div>`;
     return `<div class="floor" style="${f.boss?"border-color:var(--ichor-deep)":f.super||f.elite?"border-color:var(--bleed)":""}">
       <div class="nt disp"><span class="ic-dot ${f.boss?"d-boss":f.elite||f.super?"d-elite":"d-combat"}"></span>${f.name}
         ${f.caco?`<span class="tag" style="font-size:10px;color:var(--ichor);border-color:var(--ichor-deep)">Caco: ${f.caco}</span>`:""}</div>
@@ -1395,7 +1730,7 @@ function screenBestiario(voltar){
       <div class="mono faint" style="font-size:11px;margin:6px 0">encontros ${b.enc} · abates ${b.kills} · mortes tuas ${b.deaths} · golpes ${vistos.length}/${todos.length}</div>
       <div class="fl-lbl" style="margin-top:8px">Golpes anotados</div>${golpes}</div>`;
   }).join("");
-  render(`<h2 class="disp center" style="padding-top:14px">Notas do Mestre</h2>
+  render(`<h2 class="disp center" style="padding-top:14px">As Notas de Sétima</h2>
     <p class="center flavor" style="max-width:520px;margin:6px auto 0">Tudo o que sobreviveste a ver fica escrito. Os números só aparecem depois do primeiro abate — antes disso é impressão, não medida.
       <br><span class="mono" style="font-size:12px;color:var(--frost)">${known.length}/${ordem.length} criaturas encontradas</span></p>
     <div class="hr"></div>${linhas}
@@ -1404,12 +1739,19 @@ function screenBestiario(voltar){
   document.getElementById("back").onclick=voltar||screenVestibulo;
 }
 function screenVestibulo(){
-  const rows=META_UPGRADES.map(u=>{
-    const lv=metaLv(u.id), maxed=lv>=u.max, cost=maxed?0:u.cost(lv), can=META.frag>=cost&&!maxed;
-    return `<div class="attr-row"><div>
-      <div class="an disp">${u.name} <span class="mono dim" style="font-size:12px">${lv}/${u.max}</span></div>
-      <div class="eff">${u.desc}</div></div>
-      <button class="plus mono" data-up="${u.id}" ${can?"":"disabled"}>${maxed?"MÁX":"✦ "+cost}</button></div>`;
+  MUS.stop(1);
+  const rows=Object.keys(RAMOS).map(rk=>{
+    const R=RAMOS[rk];
+    const items=META_UPGRADES.filter(u=>u.ramo===rk).map(u=>{
+      const lv=metaLv(u.id), maxed=lv>=u.max, cost=maxed?0:u.cost(lv);
+      const req=metaReqMet(u), can=META.frag>=cost&&!maxed&&req;
+      const reqTxt=(!req&&u.req)?` <span class="mono" style="font-size:10px;color:var(--bleed)">requer ${META_UPGRADES.find(x=>x.id===u.req[0]).name} ${u.req[1]}</span>`:"";
+      return `<div class="attr-row" style="${!req?"opacity:.5":""}"><div>
+        <div class="an disp">${u.name} <span class="mono dim" style="font-size:12px">${lv}/${u.max}</span>${reqTxt}</div>
+        <div class="eff">${u.desc}</div></div>
+        <button class="plus mono" data-up="${u.id}" ${can?"":"disabled"}>${maxed?"MÁX":req?"✦ "+cost:"—"}</button></div>`;
+    }).join("");
+    return `<div class="fl-lbl" style="color:${R.cor};margin-top:14px">${R.nome} <span class="faint" style="font-weight:normal">· ${R.sub}</span></div>${items}`;
   }).join("");
   render(`<div class="wane-hero" style="padding-top:5vh">
       <div class="candle" style="height:36px"></div>
@@ -1426,10 +1768,10 @@ function screenVestibulo(){
       :`<p class="flavor" style="font-size:14px">Nenhum verso ainda. As Escrituras Afogadas esperam na descida — ler é fé e risco na mesma página.</p>`}
     ${hasChave()?`<div class="floor" style="border-color:var(--frost);margin-top:10px"><div class="nt disp" style="color:var(--frost)">◈ A Chave de Sal</div><div class="nd">Reuniste a verdade inteira: o Soberano partiu-se de propósito, e a corte — por amor — remendou-o contra a vontade dele. Levas a Chave contigo em toda descida. No trono, ela abre uma quarta escolha que os outros não conseguem sequer ver.</div></div>`:""}
     <div style="max-width:340px;margin:16px auto 0">
-      <button class="btn" id="best"><span class="k disp">NOTAS DO MESTRE</span>
+      <button class="btn" id="best"><span class="k disp">AS NOTAS DE SÉTIMA</span>
         <span class="sub">Bestiário — ${Object.keys(FOES).filter(bstKnown).length}/${Object.keys(FOES).length} criaturas</span></button>
       <button class="btn" id="mesa"><span class="k disp">ROLAGENS: ${META.mesa!==false?"VISÍVEIS":"OCULTAS"}</span>
-        <span class="sub">${META.mesa!==false?"O mestre mostra a matemática de cada golpe.":"Combate rápido: só o resultado."}</span></button>
+        <span class="sub">${META.mesa!==false?"Sétima mostra a matemática de cada golpe.":"Combate rápido: só o resultado."}</span></button>
       <button class="btn gold" id="godesc"><span class="k disp">DESCER</span></button>
       <button class="btn" id="back"><span class="k disp faint">TÍTULO</span></button></div>`);
   document.getElementById("best").onclick=()=>screenBestiario(screenVestibulo);
@@ -1438,6 +1780,7 @@ function screenVestibulo(){
     if(b.disabled)return;
     b.onclick=()=>{
       const u=META_UPGRADES.find(x=>x.id===b.dataset.up);
+      if(!metaReqMet(u))return;
       const cost=u.cost(metaLv(u.id));
       if(META.frag<cost)return;
       SFX.buy();
@@ -1462,7 +1805,7 @@ function screenFicha(v){
     <div class="nt disp">${o.t}</div><div class="nd">${o.d}</div></button>`).join("");
   render(`<h2 class="disp center" style="padding-top:14px">A Ficha do Vestígio</h2>
     <p class="center flavor" style="margin-top:4px;max-width:520px;margin-left:auto;margin-right:auto">
-      Antes de descer, o mestre precisa saber quem desce. ${v.name} é o que restou de ti — mas o que restou tem forma, e a forma tem história.</p>
+      Antes de descer, Sétima precisa saber quem desce. ${v.name} é o que restou de ti — mas o que restou tem forma, e a forma tem história.</p>
     <div class="hr"></div>
     <div class="fl-lbl">Nome — como te chamavam quando respiravas</div>
     <input id="f-nome" maxlength="28" placeholder="${v.name}" class="mesa-input">
@@ -1470,7 +1813,7 @@ function screenFicha(v){
     <div class="nodegrid two" id="g-apar">${cards(APARENCIAS,"apar")}</div>
     <div class="fl-lbl" style="margin-top:16px">A tua marca</div>
     <div class="nodegrid two" id="g-marca">${cards(MARCAS,"marca")}</div>
-    <div class="fl-lbl" style="margin-top:16px">Como morreste? <span class="faint">— o mestre vai lembrar-se disto</span></div>
+    <div class="fl-lbl" style="margin-top:16px">Como morreste? <span class="faint">— Sétima vai lembrar-se disto</span></div>
     <textarea id="f-morte" maxlength="180" rows="2" class="mesa-input" placeholder="${pick(MORTES_SUGERIDAS)}"></textarea>
     <div style="max-width:380px;margin:16px auto 0">
       <button class="btn gold" id="go"><span class="k disp">DESCER</span>
@@ -1500,6 +1843,7 @@ function screenFicha(v){
 }
 
 function screenZoneBanner(){
+  MUS.play("zona"+Math.min(G.zone,4));
   const z=ZONES[G.zone];
   render(`<div class="zonebanner">
     <div class="tag" style="margin-bottom:16px">${z.sub}</div>
@@ -1545,6 +1889,7 @@ function cenaPara(z){
 }
 function screenMap(){
   saveRun();
+  MUS.play("zona"+Math.min(G.zone,4));
   const fl=G.map[G.floor];
   if(!fl){ return victoryScreen(); }
   if(fl.kind==="wane") return screenWane();
@@ -1663,7 +2008,7 @@ function resolveEvent(node){
 }
 
 /* ============================================================ COMBATE */
-/* O mestre descreve a criatura — só na primeira vez que a vês nesta descida. */
+/* Sétima descreve a criatura — só na primeira vez que a vês nesta descida. */
 function screenEncontro(foeId,depois){
   const f=FOES[foeId];
   const vis=VISUAIS[foeId]||f.flavor;
@@ -1673,12 +2018,12 @@ function screenEncontro(foeId,depois){
   render(`${hudTop()}
     <div class="fl-lbl" style="margin-top:6px">${f.boss?"Uma Vigília ergue-se":f.super||f.elite?"Algo maior barra o caminho":"Encontro"}</div>
     <div class="mestre" style="border-left-color:${f.boss?"var(--ichor)":f.elite||f.super?"var(--bleed)":"var(--edge)"}">
-      <b>O mestre descreve:</b><br>${vis}</div>
+      <b>Sétima, à distância:</b><br>${vis}</div>
     <h2 class="disp center" style="margin-top:10px">${f.name}</h2>
     ${f.caco?`<p class="center"><span class="tag" style="color:var(--ichor);border-color:var(--ichor-deep)">Caco: ${f.caco}</span></p>`:""}
     <p class="flavor center" style="max-width:520px;margin:8px auto 0">${f.flavor}</p>
     ${jaViu?`<p class="center mono faint" style="font-size:11px;margin-top:8px">Já a enfrentaste ${b.enc}× · abateste ${b.kills}× · matou-te ${b.deaths}×</p>`:
-      `<p class="center mono" style="font-size:11px;margin-top:8px;color:var(--frost)">Criatura nova — o mestre vai anotá-la.</p>`}
+      `<p class="center mono" style="font-size:11px;margin-top:8px;color:var(--frost)">Criatura nova — Sétima vai anotá-la.</p>`}
     <div style="max-width:320px;margin:16px auto 0">
       <button class="btn gold danger" id="lutar"><span class="k disp">ENFRENTAR</span></button></div>`);
   document.getElementById("lutar").onclick=()=>depois();
@@ -1703,6 +2048,7 @@ function startCombat(foeId,isElite){
     comboChance:base.comboChance||0, _combo:null,
     cocoons:base.cocoons?Math.round(base.cocoons*HPB):0, cocoonsMax:base.cocoons?Math.round(base.cocoons*HPB):0,
     phaseMoves:(base.phaseMoves||[]).map(m=>({...m,dmg:m.dmg?Math.round(m.dmg*DMGB):m.dmg})),
+    phaseCry:base.phaseCry||null, track:base.track||null, avessoBoss:base.avessoBoss||false,
     caco:base.caco,
     phase2:base.phase2?{...base.phase2,add:{...base.phase2.add,dmg:Math.round(base.phase2.add.dmg*DMGB)},done:false}:null,
     phase3:base.phase3?{...base.phase3,add:{...base.phase3.add,dmg:Math.round(base.phase3.add.dmg*DMGB)},done:false}:null,
@@ -1716,6 +2062,8 @@ function startCombat(foeId,isElite){
   G.combat=C;
   // maldição de evento
   if(G.curse==="poison"){ C.pStatus.poison=60; G.curse=null; clog(C,`<span class="proc">A sina do altar te acompanha: veneno acumula em ti.</span>`); }
+  C.purga=metaLv("purga")*0.2;
+  MUS.play(base.track?base.track:(base.final?"final":base.boss?"boss":(base.elite||base.super)?"elite":"zona"+Math.min(G.zone,4)));
   bstEncounter(foeId);
   chooseIntent(foe,C);
   const _b=META.bestiario&&META.bestiario[foeId];
@@ -1733,8 +2081,8 @@ function startCombat(foeId,isElite){
 function clog(C,msg,cls){ C.log.push(`<p class="${cls||''}">${msg}</p>`); if(C.log.length>70)C.log.shift(); }
 
 function chooseIntent(foe,C){
-  if(foe.staggered){ foe.intent={n:"—",tell:"Cambaleia, atordoado.",stagger:true}; foe._combo=null; return; }
   checkPhases(foe,C);
+  if(foe.staggered){ foe.intent={n:"—",tell:"Cambaleia, atordoado.",stagger:true}; foe._combo=null; return; }
   // --- combo scriptado em andamento: continua a sequência ---
   if(foe._combo&&foe._combo.length){
     const step=foe._combo.shift();
@@ -1814,16 +2162,20 @@ function aiPick(foe,C,pool,r){
 function checkPhases(foe,C){
   if(foe.phase2&&!foe.phase2.done&&foe.hp<=foe.maxHp*foe.phase2.hpAt){
     foe.phase2.done=true; foe.moves.push(foe.phase2.add); foe._phaseMsg=foe.phase2.msg;
+    if(foe.phase2.cry) foe._phaseCry={cry:foe.phase2.cry,who:foe.name,track:foe.phase2.track};
     if(foe.phase2.tideRate){ foe.tideRate=foe.phase2.tideRate;
       if(C&&foe.tideOnStagger&&!C.tideStarted){ C.tideStarted=true;C.tide=0; } }
     if(foe.phase2.healOnHit) foe.healOnHit=foe.phase2.healOnHit;
     if(foe.phase2.regen) foe.regen=Math.max(foe.regen,foe.phase2.regen);
+    if(foe.phase2.cleanse){ foe.status={bleed:0,poison:0,geada:0}; foe.poisonTurns=0; foe.geadaTurns=0; }
     if(foe.phase2.comboChance) foe.comboChance=foe.phase2.comboChance;
     if(foe.phase2.addCombo){ foe.combos=(foe.combos||[]).concat([foe.phase2.addCombo]); }
   }
   if(foe.phase3&&!foe.phase3.done&&foe.hp<=foe.maxHp*foe.phase3.hpAt){
     foe.phase3.done=true; foe.moves.push(foe.phase3.add); foe._phaseMsg=foe.phase3.msg;
+    if(foe.phase3.cry) foe._phaseCry={cry:foe.phase3.cry,who:foe.name,track:foe.phase3.track};
     if(foe.phase3.regen) foe.regen=Math.max(foe.regen,foe.phase3.regen);
+    if(foe.phase3.cleanse){ foe.status={bleed:0,poison:0,geada:0}; foe.poisonTurns=0; foe.geadaTurns=0; }
     if(foe.phase3.comboChance) foe.comboChance=foe.phase3.comboChance;
     if(foe.phase3.addCombo){ foe.combos=(foe.combos||[]).concat([foe.phase3.addCombo]); }
     if(foe.phase3.invertPerm){ foe.invertPerm=true; if(C)C.invertControls=999; }
@@ -1841,6 +2193,16 @@ function intentTags(m,C){
   return t;
 }
 
+function phaseScene(pc,C){
+  if(pc.track) MUS.play(pc.track);
+  SFX.boss();
+  render(`<div class="epitaph phasecut" style="padding-top:16vh">
+    <div class="tag" style="margin-bottom:18px;color:var(--blood);border-color:var(--blood)">${pc.who} — a máscara cai</div>
+    <p class="line" style="max-width:560px;font-size:22px;line-height:1.7;color:var(--bone);font-style:italic">«${pc.cry}»</p>
+    <div style="max-width:300px;margin:30px auto 0">
+      <button class="btn danger gold" id="pcont"><span class="k disp">AGUENTAR O QUE VEM</span></button></div></div>`);
+  document.getElementById("pcont").onclick=()=>{ SFX.ui(); foeTurn(); };
+}
 function renderCombat(){
   const C=G.combat,foe=C.foe,p=G.player,a=p.attr,w=WEAPONS[p.weaponId];
   const apPips=Array.from({length:maxAP(a)},(_,i)=>`<div class="ap-pip ${i<C.ap?'on':''}"></div>`).join("");
@@ -1864,6 +2226,7 @@ function renderCombat(){
         ${statusBars(foe.status)}${foeChips}
         <div class="intent ${foe.staggered?'stagger':''}">
           <b>${foe.staggered?"ATORDOADO":"INTENÇÃO"}</b> — ${foe.intent?foe.intent.tell:""} ${foe.intent?intentTags(foe.intent,C):""}
+          ${(G.pressagio&&foe._combo&&foe._combo.length&&!foe.staggered)?`<div class="mono faint" style="font-size:11px;margin-top:4px;color:var(--ichor)">↳ presságio: a seguir — ${foe._combo[0].n}</div>`:""}
         </div>
       </div>
       ${C.tideStarted?`<div class="fl-lbl" style="text-align:center;color:var(--frost);border:1px dashed var(--frost-deep);padding:6px;border-radius:2px">≈ A MARÉ SOBE — nível ${Math.max(1,C.tide)}${C.tide>=8?" (máx)":""} · ${3*Math.min(Math.max(1,C.tide),8)} de dano por turno ≈</div>`:""}
@@ -2060,7 +2423,9 @@ function doAction(act){
       const amt=Math.round(foe.status.bleed);
       if(amt<=0){ clog(C,`<span class="sys">Não há sangue acumulado para explodir.</span>`); return afterPlayerAct(); }
       foe.status.bleed=0;
-      const dmg=Math.round(amt*(1+a.sin*0.015));
+      let dmg=Math.round(amt*(1+a.sin*0.015));
+      if(foe.procResist&&foe.procResist<1){ dmg=Math.round(dmg*foe.procResist);
+        clog(C,`<span class="frost">A carne dela resiste ao sangue (×${foe.procResist.toFixed(2)}).</span>`); }
       floatText("-"+dmg,"var(--bleed)");
       clog(C,`<span class="proc">EXPLODIR FERIDAS! ${dmg} de dano do sangue acumulado.</span>`);
       if(hasRelic("sanguessuga")){ p.hp=clamp(p.hp+8,0,maxHP(a)); clog(C,`<span class="hit">A Sanguessuga te devolve 8.</span>`); }
@@ -2100,9 +2465,10 @@ function foeTakeRaw(C,foe,dmg){
     foe.cocoons-=dmg;
     if(foe.cocoons<=0){ foe.cocoons=0;
       SFX.boss();
-      clog(C,`<span class="crit">O último casulo cala. Nerith deixa de embalar — e volta-se para ti. Não te odeia. Só já não tem mais nada.</span>`);
+      clog(C,`<span class="crit">O último casulo cala. Nerith deixa de embalar — e volta-se para ti.</span>`);
       foe.moves=foe.moves.filter(m=>!m.p1only).concat(foe.phaseMoves||[]);
       chooseIntent(foe,C);
+      if(foe.phaseCry){ foe._phaseCry={cry:foe.phaseCry,who:foe.name,track:"t_nerith"}; foe.phaseCry=null; }
     }
     return;
   }
@@ -2136,7 +2502,7 @@ function hitFoe(C,foe,p,rawAtk,poiseDmg,build,isCrit,ignoreDef,flat,guardcrush){
   if(_w&&_w.plague&&foe.poisonTurns>0){ dmg=Math.round(dmg*1.3); }
   if(hasRelic("agulha")&&p.hp<maxHP(p.attr)*0.35) dmg=Math.round(dmg*1.15);
   if(C.whet){ dmg=Math.round(dmg*1.5); C.whet=false; clog(C,`<span class="hit">O fio amolado canta.</span>`); }
-  if(isCrit) dmg=Math.round(dmg*2.0*(hasRelic("olho")?1.5:1));
+  if(isCrit) dmg=Math.round(dmg*(2.0+metaLv("algoz")*0.12)*(hasRelic("olho")?1.5:1));
   foeTakeRaw(C,foe,dmg);
   if(C.over)return;
   floatText("-"+dmg,isCrit?"var(--ichor)":"var(--bone)");
@@ -2151,7 +2517,7 @@ function hitFoe(C,foe,p,rawAtk,poiseDmg,build,isCrit,ignoreDef,flat,guardcrush){
   }
   // postura
   if(!foe.staggered){
-    let pd=poiseDmg*(hasRelic("bigorna")?1.3:1);
+    let pd=poiseDmg*(hasRelic("bigorna")?1.3:1)*(1+metaLv("aprumo")*0.05);
     if(guardcrush&&foe.blocking)pd*=1.6;
     foe.poise-=pd;
     if(foe.poise<=0){
@@ -2182,13 +2548,17 @@ function procStatus(C,ent,type,isFoe){
     let dmg=isFoe ? Math.round(ent.maxHp*0.045)+12+Math.round(G.player.attr.sin*1.2)
                   : Math.round(maxHP(G.player.attr)*0.10)+12;
     if(isFoe&&ent.procResist)dmg=Math.round(dmg*ent.procResist);
-    if(isFoe){foeTakeRaw(C,ent,dmg);}else{G.player.hp-=dmg;}
+    if(isFoe){foeTakeRaw(C,ent,dmg);
+      if(ent.boss||ent.elite||ent.super){ ent.procResist=Math.max(0.3,(ent.procResist||1)*0.8);
+        clog(C,`<span class="frost">※ A carne de ${name} aprende: sangue e veneno morderão menos (×${ent.procResist.toFixed(2)}).</span>`); } }
+    else{G.player.hp-=dmg;}
     ent.status.bleed=0;
     clog(C,`<span class="proc">SANGRAMENTO! ${name} perde ${dmg} de vida.</span>`);
     floatText("-"+dmg,"var(--bleed)");
     if(isFoe&&hasRelic("sanguessuga")){ G.player.hp=clamp(G.player.hp+8,0,maxHP(G.player.attr)); }
     if(!isFoe&&G.player.hp<=0&&!tearSave(C)){loseCombat();}
   }
+  if(type==="poison"&&isFoe&&(ent.boss||ent.elite||ent.super)){ ent.procResist=Math.max(0.3,(ent.procResist||1)*0.85); }
   if(type==="poison"){
     SFX.poison();
     ent.status.poison=0;
@@ -2220,6 +2590,12 @@ function endPlayerTurn(){
 function foeTurn(){
   const C=G.combat;if(!C||C.over)return;
   const foe=C.foe,p=G.player,a=p.attr;
+  // Cutscene de virada de fase: interrompe ANTES de o turno começar.
+  // Ao clicar em continuar, foeTurn() é chamado de novo e corre por inteiro
+  // (incluindo devolver o turno e os AP ao jogador).
+  if(foe._phaseCry){ const pc=foe._phaseCry; foe._phaseCry=null;
+    if(foe._phaseMsg){ clog(C,`<span class="crit">${foe._phaseMsg}</span>`); foe._phaseMsg=null; }
+    return phaseScene(pc,C); }
   foe._t++;
   if(foe.pursue&&C.range==="longe"&&!foe.staggered){
     C.range="perto";
@@ -2341,6 +2717,8 @@ function foeHit(C,foe,p,m){
   if(foe.healOnHit&&dmg>0&&!C.guarding){ const h=Math.round(dmg*foe.healOnHit);
     foe.hp=clamp(foe.hp+h,0,foe.maxHp);
     clog(C,`<span class="proc">A Vontade drena a tua ferida em guarda baixa: +${h} para ela.</span>`); }
+  if(m.lifesteal&&dmg>0){ const h=Math.round(dmg*0.8); foe.hp=clamp(foe.hp+h,0,foe.maxHp);
+    clog(C,`<span class="proc">${foe.name} devora a ferida: +${h} para si.</span>`); }
   if(p.hp<=0)tearSave(C);
   if(C.guarding)SFX.guard();else SFX.hurt();
   floatText("-"+dmg,"var(--blood)");
@@ -2355,7 +2733,7 @@ function foeHit(C,foe,p,m){
   if(m.build){
     for(const s in m.build){
       if(s==="geada"&&hasRelic("brasa")){clog(C,`<span class="frost">A Brasa Interior repele a geada.</span>`);continue;}
-      C.pStatus[s]=clamp(C.pStatus[s]+m.build[s],0,100);
+      C.pStatus[s]=clamp(C.pStatus[s]+Math.round(m.build[s]*(1-(C.purga||0))),0,100);
       if(C.pStatus[s]>=100)procStatus(C,{status:C.pStatus},s,false);
     }
   }
@@ -2395,10 +2773,11 @@ function winCombat(){
   const C=G.combat;if(!C||C.over)return;C.over=true;
   const foe=C.foe;
   SFX.win();
+  if(!foe.final) MUS.play("zona"+Math.min(G.zone,4)); else MUS.stop(2);
   bstKill(foe.id);
   G.kills++;
-  const fr=foe.final?40:foe.boss?20:foe.super?15:foe.elite?6:1;
-  META.frag+=fr; G.fragEarned+=fr; saveMeta();
+  let fr=foe.final?40:foe.boss?20:foe.super?15:foe.elite?6:1;
+  fr=Math.round(fr*(1+metaLv("eco")*0.08)); META.frag+=fr; G.fragEarned+=fr; saveMeta();
   let gain=Math.round(foe.icor*(1+G.zone*0.05)*(hasRelic("moeda")?1.25:1));
   G.icor+=gain;
   markCleared();
@@ -2448,19 +2827,58 @@ function eliteRewardScreen(foe,gain){
 }
 
 function startVontade(){
-  SFX.boss();
+  // Com a Chave de Sal e o Avesso ainda não feito: oferece a bifurcação
+  if(hasChave()&&!G.avessoFeito&&!G.noAvesso){
+    return thronForkAvesso();
+  }
+  MUS.play("final");
   const seen=META.seen.vontade||0;
   const vl=BOSS_LINES.vontade[Math.min(seen,BOSS_LINES.vontade.length-1)];
   META.seen.vontade=seen+1; saveMeta();
-  render(`<div class="epitaph" style="padding-top:8vh">
-    <div class="tag" style="margin-bottom:16px;color:var(--ichor);border-color:var(--ichor-deep)">O que resta do deus</div>
-    <h1 class="disp" style="font-size:clamp(24px,6vw,42px);color:var(--bone)">A Vontade Pálida</h1>
-    <p class="line" style="max-width:500px;color:var(--bone);font-style:italic">${vl}</p>
-    <p class="line flavor" style="max-width:500px">O trono está livre — mas o ar sobre ele endurece, e uma vontade sem corpo ocupa o assento vazio. Não é o Soberano. É o que dele restou querendo: a ordem que ainda impede tudo de acabar. Ela reordena o que fazes. Cura-se do que lhe tiras. E não vai deixar-te desfazer a única coisa em que ainda acredita.</p>
-    <p class="line" style="color:var(--bleed);font-style:italic;max-width:500px">Última prova. Sem Minguante. Sem recuo. Ela conhece teu nome.</p>
-    <div style="max-width:320px;margin:18px auto 0">
-      <button class="btn danger gold" id="fin"><span class="k disp">DESFAZER A ORDEM</span></button></div></div>`);
-  document.getElementById("fin").onclick=()=>startCombat("vontade",false);
+  const passos=[
+   { tag:"O trono está vazio", txt:`Vaskarion desfez-se dedo por dedo, e o assento que a Mão guardou por eras está livre.<br><br>Dás um passo. O Icor seco dos degraus range um nome que não é o teu — ainda.<br><br>Mais um passo. O ar sobre o trono... endurece.` },
+   { tag:"Algo se lembra de ser um deus", txt:`Do assento vazio ergue-se uma armadura colossal, alta como três homens, forjada de ordem e teimosia. Na mão dela, uma espada do tamanho de uma quilha de navio — <b>a lâmina que o Soberano ergueu contra si mesmo</b>, presa para sempre a meio do golpe.<br><br>Não tem rosto sob o elmo. Tem atenção. E a atenção inteira é tua.` },
+   { tag:"Sétima, muito longe, quase um sussurro", txt:`<i>«${vl}»</i>` },
+   { tag:"A ÚLTIMA PROVA", txt:`Não haverá Minguante. Não haverá recuo que a distância salve — ela persegue. O que desce aquela lâmina não é ódio: é uma sentença que um deus assinou contra si e nunca pôde cumprir.<br><br><b class="disp" style="color:var(--ichor)">A VONTADE PÁLIDA</b><br><span class="mono" style="font-size:12px;color:var(--bone-faint)">o fim da descida · o duelo que faltava ao mundo</span>`, final:true },
+  ];
+  let i=0;
+  const show=()=>{
+    const p=passos[i];
+    render(`<div class="epitaph" style="padding-top:10vh">
+      <div class="tag" style="margin-bottom:16px;color:var(--ichor);border-color:var(--ichor-deep)">${p.tag}</div>
+      <p class="line flavor" style="max-width:540px;font-size:17px;line-height:1.75">${p.txt}</p>
+      <div style="max-width:340px;margin:26px auto 0">
+        ${p.final
+          ? `<button class="btn danger gold" id="fin"><span class="k disp">ERGUER A TUA LÂMINA</span><span class="sub">Terminar o que ele começou.</span></button>`
+          : `<button class="btn gold" id="next"><span class="k disp">${i===0?"APROXIMAR-TE":"CONTINUAR"}</span></button>`}
+      </div></div>`);
+    const nx=document.getElementById("next");
+    if(nx)nx.onclick=()=>{ SFX.step(); i++; show(); };
+    const fn=document.getElementById("fin");
+    if(fn)fn.onclick=()=>{ SFX.boss(); startCombat("vontade",false); };
+  };
+  show();
+}
+function thronForkAvesso(){
+  MUS.stop(1);
+  render(`<div class="epitaph" style="padding-top:9vh">
+    <div class="tag" style="margin-bottom:16px;color:var(--frost);border-color:var(--frost)">A Chave de Sal aquece na tua mão</div>
+    <p class="line flavor" style="max-width:560px;font-size:17px;line-height:1.75">
+      O trono está livre, e a Vontade Pálida espera nele — o fim honesto da descida.<br><br>
+      Mas a Chave de Sal arde contra a tua palma, virada para <b>baixo</b>. Sob o trono, o Icor seco esconde uma porta que não devia existir: a <b>primeira corte</b> do Soberano, selada porque guarda o motivo real de tudo. A Chave encaixa nela como se sempre a tivesse esperado.<br><br>
+      Podes erguer a lâmina contra a Vontade agora — e terás um fim. Ou podes descer ao <b class="disp" style="color:var(--frost)">Avesso</b>, enfrentar a verdade que a corte selou, e talvez merecer um fim <i>verdadeiro</i>.
+    </p>
+    <div style="max-width:380px;margin:28px auto 0;display:flex;flex-direction:column;gap:10px">
+      <button class="btn gold" id="goavesso"><span class="k disp">DESCER AO AVESSO</span><span class="sub">A verdade selada. Uma zona inteira, e o final verdadeiro.</span></button>
+      <button class="btn" id="govontade"><span class="k disp">ENFRENTAR A VONTADE AGORA</span><span class="sub">O fim honesto. Podes sempre descer ao Avesso noutra run.</span></button>
+    </div></div>`);
+  document.getElementById("goavesso").onclick=()=>{ SFX.boss(); enterAvesso(); };
+  document.getElementById("govontade").onclick=()=>{ SFX.ui(); G.noAvesso=true; startVontade(); };
+}
+function enterAvesso(){
+  G.zone=5; G.map=buildZoneFloors(ZONES[5],5); G.floor=0; G.lastWane=0; G.clearedNodes={};
+  G.avessoFeito=true; saveRun();
+  screenZoneBanner();
 }
 function bossRewardScreen(foe){
   if(foe.final)return victoryScreen();
@@ -2476,7 +2894,7 @@ function bossRewardScreen(foe){
       <div style="max-width:320px;margin:18px auto 0">
         <button class="btn gold" id="desc"><span class="k disp">${throne?"APROXIMAR-SE DO TRONO":(opts.length?"RECUSAR E DESCER":"DESCER")}</span></button></div>
     </div>`);
-  const nextStep=foe.throne?startVontade:advanceFloor;
+  const nextStep=foe.avessoBoss?startAvessoEnding:(foe.throne?startVontade:advanceFloor);
   document.querySelectorAll(".node[data-relic]").forEach(b=>{
     b.onclick=()=>{giveRelic(b.dataset.relic);nextStep();};
   });
@@ -2503,19 +2921,23 @@ const MACULA_LINES=[
   "Terceira. Já quase não és Vestígio: és hábito. A próxima queda não terá Minguante.",
 ];
 function screenDeath(){
+  MUS.stop(1.2);
   SFX.die();
   G.deaths++;
   if(G.icor>0)G.mancha={floor:G.floor,zone:G.zone,amount:G.icor};
   G.icor=0;
   const final=G.macula>=MACULA_MAX;
-  if(!final){ G.macula++; G.player.hp=1; saveRun(); } else { clearRun(); }
+  if(!final){
+    if(G.vestigioUso&&!G.vestigioGasto){ G.vestigioGasto=true; G.player.hp=1; toast("Vestígio Teimoso: a Mácula não te toca desta vez."); saveRun(); }
+    else { G.macula++; G.player.hp=1; saveRun(); }
+  } else { clearRun(); }
   const mn=G.macula;
   const cm=cron()&&cron().morte;
   render(`<div class="epitaph">
     <div class="word disp">FENECESTE</div>
     <p class="line flavor">${pick(DEATHS)}</p>
     ${cm?`<div class="mestre" style="max-width:480px;margin:0 auto 16px;text-align:left">
-      <b>O mestre:</b> Já morreste antes, ${cronNome()}. Disseste que foi assim:<br>
+      <b>Sétima:</b> Já morreste antes, ${cronNome()}. Disseste que foi assim:<br>
       <span style="color:var(--bone)">«${cm}»</span><br>
       Desta vez foi mais barato. É o que a repetição faz.</div>`:""}
     ${G.mancha?`<p class="center mono" style="color:var(--ichor);font-size:14px">Largaste ${G.mancha.amount} ◈ na profundidade ${G.zone*10+G.mancha.floor}.</p>`:""}
@@ -2561,7 +2983,7 @@ function screenWane(){
   G.lastWane=G.floor;
   while(G.debts&&G.debts.length){ a[G.debts.pop()]++; toast("O verso devolve o que cobrou."); }
   if(hasRelic("corvo")&&!fl._corvo){ fl._corvo=true; const it=pick(Object.keys(ITEMS)); giveItem(it); toast("O Corvo de Ossos te traz: "+ITEMS[it].name); }
-  p.hp=maxHP(a);p.flask=p.flaskMax;p.foco=maxFoco(a);
+  p.flask=p.flaskMax;p.foco=maxFoco(a); // a vida NÃO se restaura de graça — vela-se
   if(!fl._rested){
     for(const key in G.clearedNodes){
       const parts=key.split(":");
@@ -2576,6 +2998,7 @@ function screenWane(){
   renderWane();
 }
 
+function velarCost(){ return 35+G.zone*22; }
 function levelCost(){return Math.round(62*Math.pow(1.115,G.player.levelsBought));}
 function derivedHint(k){
   const a=G.player.attr;
@@ -2625,8 +3048,13 @@ function renderWane(){
     ${relicList}
     <div class="hr"></div>
     <div style="max-width:380px;margin:0 auto">
+      ${(()=>{ const vc=velarCost(), falta=maxHP(a)-p.hp;
+        if(falta<=0) return `<div class="floor" style="text-align:center;color:var(--bone-faint);font-size:13px">A chama olha-te e não cobra: estás inteiro.</div>`;
+        return `<button class="btn gold" id="velar" ${G.icor>=vc?"":"disabled"}>
+          <span class="k disp">VELAR A CHAMA · ${vc}◈</span>
+          <span class="sub">Restaura a vida por completo (+${falta}). O frasco e o Foco a vela repõe de graça — a carne, cobra.</span></button>`; })()}
       ${swapWeaponBlock()}
-      <button class="btn" id="wbest"><span class="k disp">NOTAS DO MESTRE</span>
+      <button class="btn" id="wbest"><span class="k disp">AS NOTAS DE SÉTIMA</span>
         <span class="sub">Rever o que anotaste antes de descer — ${Object.keys(FOES).filter(bstKnown).length}/${Object.keys(FOES).length}</span></button>
       <button class="btn gold" id="descend"><span class="k disp">CONTINUAR A DESCIDA</span>
         <span class="sub">Adiante. Sempre adiante.</span></button></div>`);
@@ -2636,6 +3064,9 @@ function renderWane(){
     document.getElementById("wnpcline").textContent=npcLine(npcId); };
   bindMerchant();bindSwap();
   const wb=document.getElementById("wbest");
+  const vb=document.getElementById("velar");
+  if(vb)vb.onclick=()=>{ const vc=velarCost(); if(G.icor<vc)return;
+    G.icor-=vc; G.player.hp=maxHP(G.player.attr); SFX.heal(); toast("A chama vela por ti."); saveRun(); renderWane(); };
   if(wb)wb.onclick=()=>screenBestiario(renderWane);
   document.getElementById("descend").onclick=()=>{G.floor++;screenMap();};
 }
@@ -2645,7 +3076,7 @@ function levelUp(k){
   SFX.buy();
   G.icor-=cost;G.player.attr[k]++;G.player.levelsBought++;
   const p=G.player;
-  if(k==="vit")p.hp=maxHP(p.attr);else p.hp=Math.min(p.hp,maxHP(p.attr));
+  if(k==="vit")p.hp=Math.min(maxHP(p.attr),p.hp+Math.round(11*maculaHP()));else p.hp=Math.min(p.hp,maxHP(p.attr));
   p.foco=maxFoco(p.attr);
   renderWane();
 }
@@ -2741,6 +3172,27 @@ const ENDINGS={
  apagar:{t:"O ÚLTIMO MINGUANTE",txt:"Voltas ao Vestíbulo e apagas Sétima com dois dedos. Ela agradece — sempre soube. A morte, enfim liberta, percorre Vespergloam como uma maré mansa apagando nomes. Tudo pode acabar. Portanto, tudo pode começar."},
  decreto:{t:"O DECRETO CUMPRIDO", hidden:true, txt:"Ergues a Chave de Sal e ela não serve ao trono — serve a ti. Doze versos para descobrir a única coisa que ninguém na corte suportou ler: que o teu deus não foi assassinado. Ele pediu licença. E vós, todos vós, dissestes que não.<br><br>Não sentas. Não devoras. Não apagas vela nenhuma — a vela nunca foi o problema. O que resta do Soberano em ti — porque há sempre um caco, Vestígio, e o teu chamava-se teimosia — tu soltas. Simplesmente soltas.<br><br>A ordem para de te segurar. O Icor esfria nos veios como devia ter esfriado há eras. Sepulcra dorme. O Coro cala-se a meio da nota. Nerith deita os filhos. Ostraga larga o muro e a maré, enfim, entra — mansa, atrasada, educada. Vaskarion abre a mão.<br><br>E Vespergloam acaba. Não em fogo, não em glória: em alívio. O último decreto do Soberano Pálido, cumprido pela única pessoa que se deu ao trabalho de o ler até ao fim.<br><br><i>«Deixem-me acabar», dissera ele, «para que possais.»</i><br><br>Podeis."},
 };
+function startAvessoEnding(){
+  MUS.stop(2.5); clearRun();
+  META.endings=META.endings||{}; META.endings.avesso=true;
+  META.wins=(META.wins||0); saveMeta();
+  const passos=[
+   { t:"O ABRAÇO DESFEITO", txt:`As costuras cedem, uma a uma, e a corte que segurava o Soberano cai de si como roupa velha. A mãe. O general. A lâmina. A criança de dedos colados. Cada mão que o amava, enfim, larga.<br><br>E por baixo de tudo, pela primeira vez em eras, o Soberano Pálido respira sozinho.` },
+   { t:"O QUE ELE DIZ", txt:`Ele olha para ti — não com ódio, não com gratidão sequer, mas com o cansaço absoluto de quem esperou tempo demais pela única pessoa disposta a ouvir.<br><br><i>«Pedi para acabar», diz ele, na voz que a corte tapou por eras, «para que o mundo pudesse recomeçar. Amaram-me até fazerem disto. Tu não me amas — e é por isso que consegues.»</i><br><br>Ele fecha os olhos. Não pede mais nada. Nunca pediu mais do que isto.` },
+   { t:"O DECRETO, ENFIM CUMPRIDO", txt:`Não sentas no trono. Não devoras caco nenhum. Não apagas Sétima — ela nunca foi o problema, e agora sorri de longe, sabendo.<br><br>Soltas. O Icor esfria nos veios como devia ter esfriado há eras. Lá em cima, sente-se: Sepulcra dorme. O Coro cala-se a meio da nota. Nerith deita os filhos, enfim, num sono de verdade. Ostraga larga o muro e a maré entra mansa, atrasada, educada.<br><br>Vespergloam acaba. Não em fogo, não em glória — em alívio. E porque desceste ao Avesso, porque viste a corte inteira e entendeste que nenhum deles era vilão, apenas gente que amou demais para soltar, o teu fim carrega o que o outro não podia: <b>misericórdia com conhecimento de causa</b>.<br><br><i>«Deixem-me acabar», dissera ele, «para que possais.»</i><br><br>E tu, que desceste até ao fundo do fundo para ter a certeza — deixaste.<br><br><span class="mono" style="color:var(--frost)">O FIM VERDADEIRO · O Avesso, cumprido</span>` },
+  ];
+  let i=0;
+  const show=()=>{
+    const p=passos[i], last=i===passos.length-1;
+    render(`<div class="epitaph"><div class="candle"></div>
+      <div class="word win disp" style="font-size:clamp(26px,7vw,52px);color:var(--frost)">${p.t}</div>
+      <p class="line flavor" style="max-width:560px">${p.txt}</p>
+      <div style="max-width:320px;margin:26px auto 0">
+        <button class="btn gold" id="pn"><span class="k disp">${last?"VER O RUN":"CONTINUAR"}</span></button></div></div>`);
+    document.getElementById("pn").onclick=()=>{ SFX.step(); if(last){ G._winCounted=false; screenSummary(true); } else { i++; show(); } };
+  };
+  show();
+}
 function victoryScreen(){
   render(`<div class="epitaph">
     <div class="candle"></div>
@@ -2815,7 +3267,9 @@ function screenSummary(won){
 
 /* ---------------- BOOT ---------------- */
 const _mb=document.getElementById("mutebtn");
-if(_mb)_mb.onclick=()=>{ SFX.unlock(); SFX.on=!SFX.on; _mb.classList.toggle("off",!SFX.on); if(SFX.on)SFX.ui(); };
+if(_mb)_mb.onclick=()=>{ SFX.unlock(); SFX.on=!SFX.on; MUS.on=SFX.on;
+  if(!SFX.on){ MUS.stop(0.3); } else { if(G&&G.combat&&G.combat.foe){ const f=G.combat.foe; MUS.play(f.track?f.track:(f.final?"final":f.boss?"boss":(f.elite||f.super)?"elite":"zona"+Math.min(G.zone,4))); } else if(G&&G.player){ MUS.play("zona"+Math.min(G.zone||0,4)); } }
+  _mb.classList.toggle("off",!SFX.on); if(SFX.on)SFX.ui(); };
 screenTitle();
 </script>
 </body>
