@@ -4,6 +4,8 @@ Roguelite de texto em dark fantasy, inspirado em Elden Ring e Buriedbornes. Voc�
 
 **[▶ Jogar no navegador](https://marcoslisboajr.github.io/vespergloam/)**
 
+<p align="center"><img src="media/tela-inicial.jpg" width="640" alt="Tela inicial do Vespergloam"></p>
+
 ## Destaques
 
 - **Um arquivo só:** HTML, CSS e JavaScript puros em `index.html`, sem framework nem build.
