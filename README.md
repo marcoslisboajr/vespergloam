@@ -6,8 +6,11 @@ Roguelite de texto em dark fantasy, inspirado em Elden Ring e Buriedbornes. Voc�
 
 <p align="center"><img src="media/tela-inicial.jpg" width="640" alt="Tela inicial do Vespergloam"></p>
 
+<p align="center"><img src="media/combate.jpg" width="480" alt="Combate contra o Acólito Encharcado"></p>
+
 ## Destaques
 
+- **Direção de arte própria, "Manuscrito Sangrento":** a interface é um códice iluminado, com capitulares em vermelho, molduras e fleurons em SVG inline, barras em forma de frasco e animações de golpe, dano e descida. Tudo em CSS, sem nenhuma imagem baixada.
 - **Um arquivo só:** HTML, CSS e JavaScript puros em `index.html`, sem framework nem build.
 - **Combate por turnos com a matemática aberta:** a narradora, Sétima, pode mostrar o cálculo de cada golpe ou rodar no modo rápido.
 - **Bestiário** que vai se preenchendo conforme as criaturas aparecem.

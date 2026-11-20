@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VESPERGLOAM — A Descida</title>
+<meta name="description" content="Roguelite de texto em dark fantasy. Desce pelo Claustro Afogado, lê o inimigo e sobrevive às Três Vigílias. Joga no navegador.">
+<meta name="theme-color" content="#0c0706">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230c0706'/%3E%3Crect x='14.5' y='13' width='3' height='15' fill='%23e9d9bb'/%3E%3Cpath d='M16 3c-3 4-4 7-1 10h2c3-3 2-6-1-10z' fill='%23d24a3a'/%3E%3Cpath d='M16 7c-1.4 2-1.6 3.5 0 5 1.6-1.5 1.4-3 0-5z' fill='%23f6d48a'/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="VESPERGLOAM — A Descida">
+<meta property="og:description" content="Roguelite de texto em dark fantasy. Desce pelo Claustro Afogado, lê o inimigo e sobrevive às Três Vigílias.">
+<meta property="og:url" content="https://marcoslisboajr.github.io/vespergloam/">
+<meta property="og:image" content="https://marcoslisboajr.github.io/vespergloam/media/og-card.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=IM+Fell+DW+Pica:ital@0;1&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
@@ -20,7 +31,7 @@
   --frost:#86a3a8; --frost-deep:#3a5154;
   --bleed:#d24a3a; --poison:#8fa456; --geada:#a3c2c9;
   --edge:#4a2c22; --edge-soft:#33201a;
-  --rubric:#b8322a; --ink:#0a0504;
+  --rubric:#b8322a; --ink:#0a0504; --event:#a98bc4;
   --font-disp:"IM Fell English SC","IM Fell English",Georgia,serif;
   --font-body:"IM Fell DW Pica","IM Fell English",Georgia,serif;
   --font-mono:"Courier Prime","Courier New",monospace;
@@ -236,7 +247,7 @@ body.fx-hurt::before{content:"";position:fixed;inset:0;pointer-events:none;z-ind
 .d-combat{background:var(--blood)} .d-elite{background:var(--bleed);box-shadow:0 0 8px var(--bleed)}
 .d-wane{background:var(--ichor);box-shadow:0 0 8px var(--ichor);border-radius:50%} .d-treasure{background:var(--frost)}
 .d-merchant{background:var(--poison)} .d-boss{background:#f4e6c8;box-shadow:0 0 0 2px var(--rubric),0 0 10px var(--blood)}
-.d-event{background:#9a7fb8}
+.d-event{background:var(--event)}
 
 /* ── HUD ── */
 .hud-top{display:flex;justify-content:space-between;align-items:center;padding:4px 50px 12px 0;margin-bottom:10px;flex-wrap:wrap;gap:8px;
@@ -257,6 +268,15 @@ body.fx-hurt::before{content:"";position:fixed;inset:0;pointer-events:none;z-ind
 .mestre::before{content:"✠ Sétima";position:absolute;top:-11px;left:12px;padding:0 8px;background:var(--void);
   font-family:var(--font-disp);font-style:normal;font-size:13px;letter-spacing:.22em;text-transform:lowercase;color:var(--rubric)}
 .mestre b{color:var(--bone);font-style:normal}
+.mestre.named::before{display:none}
+.mestre.named{margin-top:14px}
+.intent .rtag{white-space:nowrap;display:inline-block;margin-top:3px}
+.depthbanner{position:fixed;inset:0;z-index:65;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  background:radial-gradient(ellipse at center,rgba(12,7,6,.92) 0%,rgba(12,7,6,.75) 45%,transparent 75%);animation:depthfade 1.7s ease forwards}
+.depthbanner span{font-family:var(--font-disp);font-size:15px;letter-spacing:.4em;text-transform:lowercase;color:var(--rubric)}
+.depthbanner b{font-family:var(--font-black);font-weight:400;font-size:clamp(64px,16vw,110px);line-height:1;color:#efdcb8;text-shadow:0 3px 0 var(--ink),0 0 40px rgba(193,55,44,.45)}
+@keyframes depthfade{0%{opacity:0}15%{opacity:1}65%{opacity:1}100%{opacity:0}}
+.depthbanner b{animation:descend 1.7s ease both}
 .wane-hero{text-align:center;padding:16px 0 6px}
 .attr-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;
   border:0;border-bottom:1px solid var(--edge-soft);margin:4px 0;background:linear-gradient(90deg,rgba(45,29,21,.6),transparent)}
@@ -844,7 +864,7 @@ function readScripture(cls){
 function screenEventResult(ev,opt,tres,txt){
   render(`${hudTop()}
     <div class="floor" style="margin-top:18px">
-      <div class="nt disp" style="color:#b49fd0"><span class="ic-dot d-event"></span>${ev.title} — ${opt.k}</div>
+      <div class="nt disp" style="color:var(--event)"><span class="ic-dot d-event"></span>${ev.title} — ${opt.k}</div>
       ${testBox(tres,opt.test.nome)}
       <p style="margin-top:8px">${txt||""}</p></div>
     <div style="max-width:320px;margin:16px auto 0">
@@ -1657,7 +1677,12 @@ const $app=document.getElementById("app");
 function toast(msg){ const t=document.createElement("div");t.className="toast";t.textContent=msg;
   document.body.appendChild(t);setTimeout(()=>t.remove(),1900); }
 function floatText(txt,color){ const el=document.createElement("div");el.className="float";el.textContent=txt;
-  el.style.color=color||"var(--bone)"; el.style.left=(30+Math.random()*40)+"%";el.style.top=(36+Math.random()*10)+"%";
+  el.style.color=color||"var(--bone)";
+  // o número nasce em quem recebe: sangue/cura em ti, o resto no inimigo
+  const tgt=document.querySelector((color==="var(--blood)"||txt[0]==="+")?".combatant:not(.foe)":".combatant.foe");
+  if(tgt){ const r=tgt.getBoundingClientRect();
+    el.style.left=(r.left+r.width*(.55+Math.random()*.3))+"px"; el.style.top=(r.top+Math.min(r.height*.35,90))+"px"; }
+  else { el.style.left=(30+Math.random()*40)+"%";el.style.top=(36+Math.random()*10)+"%"; }
   document.body.appendChild(el);setTimeout(()=>el.remove(),1000);
   // só apresentação: dano em ti (sangue) treme a tela; golpe teu corta o inimigo
   if(txt[0]==="-") fxPulse(color==="var(--blood)"?"fx-hurt":"fx-strike"); }
@@ -1730,7 +1755,15 @@ function render(html){ $app.innerHTML=html; window.scrollTo(0,0);
   // transição de página só quando o tipo de tela muda (não a cada ação no combate)
   const kind=/class="arena"/.test(html)?"combate":html.replace(/\s+/g,"").slice(0,90);
   if(kind!==render._k){ $app.classList.remove("fx-page"); void $app.offsetWidth; $app.classList.add("fx-page"); clearTimeout(render._t); render._t=setTimeout(()=>$app.classList.remove("fx-page"),600); }
-  render._k=kind; }
+  render._k=kind;
+  // falas que já começam com "Sétima…" dispensam o selo
+  $app.querySelectorAll(".mestre").forEach(m=>{ if(/^\s*S[ée]tima/.test(m.textContent)) m.classList.add("named"); });
+  // transição entre andares: mostra a nova profundidade quando ela muda
+  const depth=(typeof G!=="undefined"&&G&&G.map)?(G.zone||0)*10+(G.floor||0):null;
+  if(depth!==null&&render._depth!=null&&depth>render._depth&&!/class="arena"/.test(html)) depthBanner(depth);
+  render._depth=depth; }
+function depthBanner(d){ const b=document.createElement("div"); b.className="depthbanner";
+  b.innerHTML=`<span>profundidade</span><b>${d}</b>`; document.body.appendChild(b); setTimeout(()=>b.remove(),1700); }
 
 function screenTitle(){
   MUS.stop(1);
@@ -1780,7 +1813,7 @@ function screenHow(){
     <p style="margin-bottom:14px"><b class="ichor disp">Icor e Minguantes.</b> O Icor sobe atributos. Morre e largas todo o Icor onde caíste — recupera-o descendo de novo, ou perde-o na próxima morte. Os <b>Minguantes</b> (velas) são os teus pontos de descanso: curam e guardam a descida.</p>
 
     <div class="fl-lbl" style="color:var(--frost);margin-top:18px">BUILDS</div>
-    <p style="margin-bottom:14px"><b class="ichor disp">Cada Vestígio joga diferente.</b> Força trava a guerra de postura. Destreza acumula <b style="color:var(--bleed)">SANGUE</b> e detona com <i>Explodir Feridas</i>. A Sina espalha <b style="color:#7fb069">VENENO</b> e joga com o acaso. Feitiçaria e fé preferem LONGE (+20%). Lanças alcançam; adagas só mordem de perto. Os <b>Selos</b> — relíquias passivas achadas na descida — reforçam a tua identidade a cada run.</p>
+    <p style="margin-bottom:14px"><b class="ichor disp">Cada Vestígio joga diferente.</b> Força trava a guerra de postura. Destreza acumula <b style="color:var(--bleed)">SANGUE</b> e detona com <i>Explodir Feridas</i>. A Sina espalha <b style="color:var(--poison)">VENENO</b> e joga com o acaso. Feitiçaria e fé preferem LONGE (+20%). Lanças alcançam; adagas só mordem de perto. Os <b>Selos</b> — relíquias passivas achadas na descida — reforçam a tua identidade a cada run.</p>
 
     <div class="fl-lbl" style="color:var(--ichor);margin-top:18px">A MESA</div>
     <p style="margin-bottom:14px"><b class="ichor disp">Sétima narra, os dados rolam.</b> Antes de descer, preenches a <b>ficha</b> do teu Vestígio — inclusive como morreste; Sétima vai lembrar-se. Nas descidas, ela descreve as salas e as criaturas. As <b>rolagens</b> aparecem abertas (<span class="mono" style="font-size:12px">34 + 1d12</span>) — podes ocultá-las no Vestíbulo. E eventos e Escrituras pedem <b>testes de atributo</b> (d20 + atributo): 20 é crítico, 1 é desastre. É aqui que Fé, Sina e Vitalidade importam fora do combate.</p>
@@ -2112,7 +2145,7 @@ function resolveEvent(node){
     <span class="sub">${o.d}</span></button>`).join("");
   render(`${hudTop()}
     <div class="floor" style="margin-top:16px">
-      <div class="nt disp" style="color:#b49fd0"><span class="ic-dot d-event"></span>${ev.title}</div>
+      <div class="nt disp" style="color:var(--event)"><span class="ic-dot d-event"></span>${ev.title}</div>
       <p class="flavor" style="margin-top:10px">${ev.text}</p></div>
     <div style="max-width:480px;margin:10px auto 0">${opts}</div>`);
   document.querySelectorAll(".btn[data-o]").forEach(b=>{
